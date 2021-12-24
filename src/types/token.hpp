@@ -1,3 +1,5 @@
+#ifndef SRC_TYPES_TOKEN_HPP
+#define SRC_TYPES_TOKEN_HPP
 enum class token
 {
     // Syntax
@@ -9,6 +11,7 @@ enum class token
     RBRACE,
     SEMICOLON,
     COMMA,
+    IDENTIFIER,
     // Operators
     LESS,
     GREATER,
@@ -39,3 +42,4 @@ enum class token
     PROCEDURE,
     RETURN
 };
+#endif    // SRC_TYPES_TOKEN_HPP
