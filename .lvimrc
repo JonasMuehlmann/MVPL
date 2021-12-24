@@ -1,0 +1,8 @@
+let g:rooter_patterns = ['.code_runner.json']
+autocmd BufEnter * :Rooter
+
+lua << EOF
+require('code_runner').setup {
+  project_path = ".code_runner.json"
+  }
+EOF
