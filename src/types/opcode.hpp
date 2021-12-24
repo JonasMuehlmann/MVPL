@@ -1,4 +1,4 @@
-enum class Opcodes
+enum class opcode
 {
     // Arithmetic
     ADD,

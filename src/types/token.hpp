@@ -1,4 +1,4 @@
-enum class Tokens
+enum class token
 {
     // Syntax
     LPAREN,
