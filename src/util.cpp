@@ -160,9 +160,19 @@ token str_to_token(const std::string& str)
 
 void print_token_stream(const std::vector<lexeme>& token_stream)
 {
-    for (auto lexeme_ : token_stream)
+    std::cout << "token_stream = [\n    ";
+
+    for (const auto& lexeme_ : token_stream)
     {
-        std::cout << "Token: token=" << token_to_str(lexeme_.token)
-                  << ", value=" << lexeme_.value << '\n';
+        std::cout << "<Token: {token=" << token_to_str(lexeme_.token)
+                  << ", value=" << lexeme_.source << ", line=" << lexeme_.line
+                  << ", col=" << lexeme_.col << "}>";
+
+
+        if (&lexeme_ != &token_stream.back())
+        {
+            std::cout << "\n    ";
+        }
     }
+    std::cout << "\n]";
 }
