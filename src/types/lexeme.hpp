@@ -6,7 +6,9 @@
 #include "token.hpp"
 struct lexeme
 {
+    std::string source;
     token       token;
-    std::string value;
+    int         line;
+    int         col;
 };
 #endif    // SRC_TYPES_LEXEME_HPP
