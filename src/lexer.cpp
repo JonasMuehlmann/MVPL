@@ -32,11 +32,25 @@
 lexer::lexer(std::string_view source_code) : source_code{source_code} {}
 
 
+bool lexer::is_whitespace(char c)
+{
+    return c == ' ' || c == '\t' || c == '\v' || c == '\f';
+}
+
+std::string_view lexer::peek_next_word()
+{
+    return source_code.substr(
+        0,
+        std::distance(begin(source_code), std::ranges::find_if(source_code, [](char c) {
+                          return lexer::is_whitespace(c) || c == '\n';
+                      })));
+}
+
 void lexer::skip_whitespace()
 {
     auto n_whitespace_chars = std::distance(
         cur_char, std::find_if_not(cur_char, end(source_code), [](char c) {
-            return c == ' ' || c == '\t' || c == '\v' || c == '\f';
+            return is_whitespace(c);
         }));
 
     auto n_line_breaks = std::distance(
@@ -62,12 +76,14 @@ std::vector<lexeme> lexer::lex()
     {
         skip_whitespace();
 
-        if (std::string_view(cur_char, end(source_code)).starts_with("function"))
+        std::string_view next_word = peek_next_word();
+
+        if (LUT_STRING_TO_TOKEN.contains(next_word))
         {
-            token_stream.emplace_back(
-                lexeme(token::FUNCTION, "function", cur_line, cur_col));
+            token_stream.emplace_back(lexeme(
+                LUT_STRING_TO_TOKEN.at(next_word), next_word, cur_line, cur_col));
         }
-        std::advance(cur_char, 8);
+        std::advance(cur_char, next_word.size());
         skip_whitespace();
     }
 

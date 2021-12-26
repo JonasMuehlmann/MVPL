@@ -40,8 +40,10 @@ class lexer
     size_t                           cur_line = 0;
     size_t                           cur_col  = 0;
     // Methods
-    void   skip_whitespace();
-    size_t try_tokenize_keyword();
-    size_t try_tokenize_keyword_function();
+    static bool      is_whitespace(char c);
+    std::string_view peek_next_word();
+    void             skip_whitespace();
+    size_t           try_tokenize_keyword();
+    size_t           try_tokenize_keyword_function();
 };
 #endif    // SRC_LEXER_HPP_
