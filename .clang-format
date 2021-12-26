@@ -1,7 +1,7 @@
 ---
 Language: Cpp
 # BasedOnStyle:  Google
-AccessModifierOffset: -4
+AccessModifierOffset: -3
 AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
