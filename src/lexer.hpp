@@ -21,7 +21,7 @@
 #define SRC_LEXER_HPP_
 #include <array>
 #include <functional>
-#include <string>
+#include <string_view>
 #include <vector>
 
 #include "lexeme.hpp"
@@ -29,16 +29,16 @@ class lexer
 {
  public:
     // Methods
-    explicit lexer(const std::string& source_code);
+    explicit lexer(std::string_view source_code);
     std::vector<lexeme> lex();
 
  private:
     // Variables
-    const std::string&          source_code;
-    std::vector<lexeme>         token_stream;
-    std::string::const_iterator cur_char = begin(source_code);
-    size_t                      cur_line = 0;
-    size_t                      cur_col  = 0;
+    std::string_view                 source_code;
+    std::vector<lexeme>              token_stream;
+    std::string_view::const_iterator cur_char = begin(source_code);
+    size_t                           cur_line = 0;
+    size_t                           cur_col  = 0;
     // Methods
     void   skip_whitespace();
     size_t try_tokenize_keyword();

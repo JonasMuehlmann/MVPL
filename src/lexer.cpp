@@ -29,7 +29,7 @@
 
 #include "lexeme.hpp"
 #include "token.hpp"
-lexer::lexer(const std::string& source_code) : source_code{source_code} {}
+lexer::lexer(std::string_view source_code) : source_code{source_code} {}
 
 
 void lexer::skip_whitespace()
