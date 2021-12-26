@@ -27,12 +27,12 @@
 #include "lexeme.hpp"
 class lexer
 {
-public:
+ public:
     // Methods
     explicit lexer(const std::string& source_code);
     std::vector<lexeme> lex();
 
-private:
+ private:
     // Variables
     const std::string&          source_code;
     std::vector<lexeme>         token_stream;
@@ -44,4 +44,4 @@ private:
     size_t try_tokenize_keyword();
     size_t try_tokenize_keyword_function();
 };
-#endif    // SRC_LEXER_HPP
+#endif    // SRC_LEXER_HPP_

@@ -59,7 +59,7 @@ struct EnumRange
             return static_cast<T>(value);
         }
 
-    private:
+     private:
         int value = 0;
     };
 

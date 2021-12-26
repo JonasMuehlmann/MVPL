@@ -27,4 +27,4 @@
 std::string token_to_str(const token t);
 token       str_to_token(const std::string& str);
 void        print_token_stream(const std::vector<lexeme>& token_stream);
-#endif    // SRC_UTIL_HPP // SRC_UTIL_HPP_
+#endif    // SRC_UTIL_HPP_
