@@ -84,25 +84,19 @@ const int NUM_TOKENS = []() {
     return range.size();
 }();
 
+// PERF: Should all other arrays be spans to save memory?
 const auto ALL_TOKENS = enum_to_array<token_type, token_type::END_TOKEN>();
 
 const auto STATIC_TOKENS = []() {
     std::array<token_type, NUM_TOKENS> arr;
 
-    std::set_difference(begin(ALL_TOKENS),
-                        end(ALL_TOKENS),
-                        begin(DYNAMIC_TOKENS),
-                        end(DYNAMIC_TOKENS),
-                        begin(arr));
+    std::ranges::set_difference(ALL_TOKENS, DYNAMIC_TOKENS, begin(arr));
 
-    std::set_difference(begin(arr),
-                        end(arr),
-                        begin(NON_VALUE_TOKENS),
-                        end(NON_VALUE_TOKENS),
-                        begin(arr));
+    std::ranges::set_difference(arr, NON_VALUE_TOKENS, begin(arr));
 
     return arr;
 }();
+
 
 const auto LUT_TOKEN_TO_STRING_VALUE = []() {
     using namespace std::literals::string_view_literals;
@@ -241,5 +235,33 @@ const auto LUT_STRING_TO_TOKEN = []() {
     });
 
     return map;
+}();
+
+const auto KEYWORD_TOKENS = []() {
+    std::array<token_type, NUM_TOKENS> arr;
+
+    std::ranges::copy_if(STATIC_TOKENS, begin(arr), [](token_type t) {
+        auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
+
+        return std::ranges::all_of(keyword, [](char c) {
+            return std::isalpha(static_cast<unsigned char>(c)) == 1;
+        });
+    });
+
+    return arr;
+}();
+
+const auto OPERATOR_TOKENS = []() {
+    std::array<token_type, NUM_TOKENS> arr;
+
+    std::ranges::copy_if(STATIC_TOKENS, begin(arr), [](token_type t) {
+        auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
+
+        return std::ranges::all_of(keyword, [](char c) {
+            return std::isalpha(static_cast<unsigned char>(c)) == 0;
+        });
+    });
+
+    return arr;
 }();
 #endif    // SRC_TYPES_TOKEN_TYPE_HPP_

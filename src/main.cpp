@@ -25,6 +25,7 @@
 
 #include "lexer.hpp"
 #include "token.hpp"
+#include "token_type.hpp"
 #include "util.hpp"
 
 int main(int argc, char* argv[])
@@ -37,9 +38,9 @@ int main(int argc, char* argv[])
     std::string   source_code((std::istreambuf_iterator<char>(source_stream)),
                             std::istreambuf_iterator<char>());
 
-    lexer               lexer(source_code);
-    std::vector<token> token_stream = lexer.lex();
+    lexer lexer(source_code);
+    // std::vector<token> token_stream = lexer.lex();
 
-    print_token_stream(token_stream);
+    // print_token_stream(token_stream);
     return 0;
 }

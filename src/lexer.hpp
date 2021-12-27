@@ -35,7 +35,7 @@ class lexer
  private:
     // Variables
     std::string_view                 source_code;
-    std::vector<token>              token_stream;
+    std::vector<token>               token_stream;
     std::string_view::const_iterator cur_char = begin(source_code);
     size_t                           cur_line = 0;
     size_t                           cur_col  = 0;
