@@ -41,6 +41,7 @@ class lexer
     size_t                           cur_col  = 0;
     // Methods
     static bool      is_whitespace(char c);
+    static bool      is_word(char c);
     std::string_view peek_next_word();
     void             skip_whitespace();
     size_t           try_tokenize_keyword();

@@ -36,14 +36,17 @@ bool lexer::is_whitespace(char c)
 {
     return c == ' ' || c == '\t' || c == '\v' || c == '\f';
 }
-
+bool lexer::is_word(char c)
+{
+    return std::isalnum(static_cast<unsigned char>(c)) == 1 || c == '_';
+}
 std::string_view lexer::peek_next_word()
 {
     // FIX: This seems to be buggy, it substrings until the end of the file
     return source_code.substr(
         0,
         std::distance(begin(source_code), std::ranges::find_if(source_code, [](char c) {
-                          return lexer::is_whitespace(c) || c == '\n';
+                          return !is_word(c);
                       })));
 }
 
@@ -79,7 +82,7 @@ std::vector<token> lexer::lex()
 
         std::string_view next_word = peek_next_word();
 
-        // Handle static tokens
+        // Handle keywords
         if (LUT_STRING_VALUE_TO_TOKEN.contains(next_word))
         {
             token_stream.emplace_back(token(
@@ -99,6 +102,19 @@ std::vector<token> lexer::lex()
         {
             token_stream.emplace_back(
                 token(token_type::IDENTIFIER, next_word, cur_line, cur_col));
+        }
+        // Handle double char operators
+        else if (auto lexeme = source_code.substr(0, 2);
+                 OPERATOR_LEXEMES.contains(lexeme))
+        {
+            token_stream.emplace_back(
+                token(LUT_STRING_VALUE_TO_TOKEN.at(lexeme), lexeme, cur_line, cur_col));
+        }
+        // Handle single char operators
+        else if (lexeme = source_code.substr(0, 1); OPERATOR_LEXEMES.contains(lexeme))
+        {
+            token_stream.emplace_back(
+                token(LUT_STRING_VALUE_TO_TOKEN.at(lexeme), lexeme, cur_line, cur_col));
         }
         else
         {

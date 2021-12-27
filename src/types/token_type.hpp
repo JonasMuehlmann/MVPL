@@ -88,6 +88,7 @@ const int NUM_TOKENS = []() {
 // PERF: Should all other arrays be spans to save memory?
 const auto ALL_TOKENS = enum_to_array<token_type, token_type::END_TOKEN>();
 
+// TODO: Try using ranges and views here
 const auto STATIC_TOKENS = []() {
     std::array<token_type, NUM_TOKENS> arr;
 
