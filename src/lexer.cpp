@@ -39,6 +39,7 @@ bool lexer::is_whitespace(char c)
 
 std::string_view lexer::peek_next_word()
 {
+    // FIX: This seems to be buggy, it substrings until the end of the file
     return source_code.substr(
         0,
         std::distance(begin(source_code), std::ranges::find_if(source_code, [](char c) {
@@ -78,11 +79,35 @@ std::vector<token> lexer::lex()
 
         std::string_view next_word = peek_next_word();
 
-        if (LUT_STRING_TO_TOKEN.contains(next_word))
+        // Handle static tokens
+        if (LUT_STRING_VALUE_TO_TOKEN.contains(next_word))
         {
-            token_stream.emplace_back(lexeme(
-                LUT_STRING_TO_TOKEN.at(next_word), next_word, cur_line, cur_col));
+            token_stream.emplace_back(token(
+                LUT_STRING_VALUE_TO_TOKEN.at(next_word), next_word, cur_line, cur_col));
         }
+        // Handle literals
+        else if (std::ranges::all_of(next_word,
+                                     [](unsigned char c) { return std::isdigit(c); }))
+        {
+            token_stream.emplace_back(
+                token(token_type::LITERAL, next_word, cur_line, cur_col));
+        }
+        // Handle identifiers
+        else if (std::ranges::all_of(next_word, [](unsigned char c) {
+                     return (std::isalpha(c) != 0) || c == '_';
+                 }))
+        {
+            token_stream.emplace_back(
+                token(token_type::IDENTIFIER, next_word, cur_line, cur_col));
+        }
+        else
+        {
+            throw std::runtime_error(
+                std::string("Invalid token_type ") + std::string(next_word)
+                + std::string(" at line ") + std::to_string(cur_line)
+                + std::string(", column ") + std::to_string(cur_col));
+        }
+
         std::advance(cur_char, next_word.size());
         skip_whitespace();
     }
