@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "enum_range.hpp"
 
@@ -159,9 +160,10 @@ const auto LUT_TOKEN_TO_STRING_VALUE = []() {
 const auto LUT_STRING_VALUE_TO_TOKEN = []() {
     std::unordered_map<std::string_view, token_type> map;
 
-    std::for_each(begin(STATIC_TOKENS), end(STATIC_TOKENS), [&map](token_type t) {
+    for (auto t : STATIC_TOKENS)
+    {
         map.insert({LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)], t});
-    });
+    }
 
     return map;
 }();
@@ -230,38 +232,47 @@ const auto LUT_TOKEN_TO_STRING = []() {
 const auto LUT_STRING_TO_TOKEN = []() {
     std::unordered_map<std::string_view, token_type> map;
 
-    std::for_each(begin(STATIC_TOKENS), end(STATIC_TOKENS), [&map](token_type t) {
+    for (auto t : STATIC_TOKENS)
+    {
         map.insert({LUT_TOKEN_TO_STRING[static_cast<size_t>(t)], t});
-    });
+    }
 
     return map;
 }();
 
-const auto KEYWORD_TOKENS = []() {
-    std::array<token_type, NUM_TOKENS> arr;
+const auto KEYWORD_LEXEMES = []() {
+    std::unordered_set<std::string_view> lexemes;
 
-    std::ranges::copy_if(STATIC_TOKENS, begin(arr), [](token_type t) {
+    for (auto t : STATIC_TOKENS)
+    {
         auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
 
-        return std::ranges::all_of(keyword, [](char c) {
-            return std::isalpha(static_cast<unsigned char>(c)) == 1;
-        });
-    });
+        if (std::ranges::all_of(keyword, [](char c) {
+                return std::isalpha(static_cast<unsigned char>(c)) == 1;
+            }))
+        {
+            lexemes.insert(keyword);
+        };
+    }
 
-    return arr;
+    return lexemes;
 }();
 
-const auto OPERATOR_TOKENS = []() {
-    std::array<token_type, NUM_TOKENS> arr;
+const auto OPERATOR_LEXEMES = []() {
+    std::unordered_set<std::string_view> lexemes;
 
-    std::ranges::copy_if(STATIC_TOKENS, begin(arr), [](token_type t) {
+    for (auto t : STATIC_TOKENS)
+    {
         auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
 
-        return std::ranges::all_of(keyword, [](char c) {
-            return std::isalpha(static_cast<unsigned char>(c)) == 0;
-        });
-    });
+        if (std::ranges::all_of(keyword, [](char c) {
+                return std::isalpha(static_cast<unsigned char>(c)) == 0;
+            }))
+        {
+            lexemes.insert(keyword);
+        };
+    }
 
-    return arr;
+    return lexemes;
 }();
 #endif    // SRC_TYPES_TOKEN_TYPE_HPP_
