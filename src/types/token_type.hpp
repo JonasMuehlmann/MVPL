@@ -72,18 +72,19 @@ enum class token_type
     FUNCTION,
     PROCEDURE,
     RETURN,
-    END
+    END_TOKEN
 };
 
 const std::array DYNAMIC_TOKENS{token_type::IDENTIFIER, token_type::LITERAL};
+const std::array NON_VALUE_TOKENS{token_type::END_TOKEN};
 
 const int NUM_TOKENS = []() {
-    EnumRange<token_type, token_type::END> range;
+    EnumRange<token_type, token_type::END_TOKEN> range;
 
     return range.size();
 }();
 
-const auto ALL_TOKENS = enum_to_array<token_type, token_type::END>();
+const auto ALL_TOKENS = enum_to_array<token_type, token_type::END_TOKEN>();
 
 const auto STATIC_TOKENS = []() {
     std::array<token_type, NUM_TOKENS> arr;
@@ -92,6 +93,12 @@ const auto STATIC_TOKENS = []() {
                         end(ALL_TOKENS),
                         begin(DYNAMIC_TOKENS),
                         end(DYNAMIC_TOKENS),
+                        begin(arr));
+
+    std::set_difference(begin(arr),
+                        end(arr),
+                        begin(NON_VALUE_TOKENS),
+                        end(NON_VALUE_TOKENS),
                         begin(arr));
 
     return arr;
@@ -149,7 +156,7 @@ const auto LUT_TOKEN_TO_STRING_VALUE = []() {
 
     static_assert(
         std::ranges::count_if(arr, [](std::string_view str) { return str == ""sv; })
-            == DYNAMIC_TOKENS.size(),
+            == DYNAMIC_TOKENS.size() + NON_VALUE_TOKENS.size(),
         "Static token_type missing value");
 
     return arr;
@@ -213,7 +220,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "FUNCTION"sv;
         arr[static_cast<size_t>(token_type::PROCEDURE)]      = "PROCEDURE"sv;
         arr[static_cast<size_t>(token_type::RETURN)]         = "RETURN"sv;
-        arr[static_cast<size_t>(token_type::END)]            = "END"sv;
+        arr[static_cast<size_t>(token_type::END_TOKEN)]      = "END"sv;
 
         return arr;
     }();
