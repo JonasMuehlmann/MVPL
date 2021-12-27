@@ -27,8 +27,8 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "lexeme.hpp"
 #include "token.hpp"
+#include "token_type.hpp"
 lexer::lexer(std::string_view source_code) : source_code{source_code} {}
 
 
@@ -68,7 +68,7 @@ void lexer::skip_whitespace()
 
     std::advance(cur_char, n_line_breaks);
 }
-std::vector<lexeme> lexer::lex()
+std::vector<token> lexer::lex()
 {
     skip_whitespace();
 

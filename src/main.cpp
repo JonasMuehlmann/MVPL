@@ -23,8 +23,8 @@
 #include <streambuf>
 #include <string>
 
-#include "lexeme.hpp"
 #include "lexer.hpp"
+#include "token.hpp"
 #include "util.hpp"
 
 int main(int argc, char* argv[])
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
                             std::istreambuf_iterator<char>());
 
     lexer               lexer(source_code);
-    std::vector<lexeme> token_stream = lexer.lex();
+    std::vector<token> token_stream = lexer.lex();
 
     print_token_stream(token_stream);
     return 0;

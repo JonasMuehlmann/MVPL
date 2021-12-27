@@ -24,18 +24,18 @@
 #include <string_view>
 #include <vector>
 
-#include "lexeme.hpp"
+#include "token.hpp"
 class lexer
 {
  public:
     // Methods
     explicit lexer(std::string_view source_code);
-    std::vector<lexeme> lex();
+    std::vector<token> lex();
 
  private:
     // Variables
     std::string_view                 source_code;
-    std::vector<lexeme>              token_stream;
+    std::vector<token>              token_stream;
     std::string_view::const_iterator cur_char = begin(source_code);
     size_t                           cur_line = 0;
     size_t                           cur_col  = 0;

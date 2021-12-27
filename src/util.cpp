@@ -23,22 +23,22 @@
 #include <stdexcept>
 
 #include "enum_range.hpp"
-#include "token.hpp"
+#include "token_type.hpp"
 
 
-void print_token_stream(const std::vector<lexeme>& token_stream)
+void print_token_stream(const std::vector<token>& token_stream)
 {
     std::cout << "token_stream = [\n    ";
 
-    for (const auto& lexeme_ : token_stream)
+    for (const auto& token_ : token_stream)
     {
-        std::cout << "<Token: {token="
-                  << LUT_TOKEN_TO_STRING[static_cast<size_t>(lexeme_.token)]
-                  << ", value=" << lexeme_.source << ", line=" << lexeme_.line
-                  << ", col=" << lexeme_.col << "}>";
+        std::cout << "<Token: {token_type="
+                  << LUT_TOKEN_TO_STRING[static_cast<size_t>(token_.type)]
+                  << ", value=" << token_.value << ", line=" << token_.line
+                  << ", col=" << token_.col << "}>";
 
 
-        if (&lexeme_ != &token_stream.back())
+        if (&token_ != &token_stream.back())
         {
             std::cout << "\n    ";
         }
