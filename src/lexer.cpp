@@ -78,7 +78,6 @@ void lexer::skip_whitespace()
     }
 }
 
-// FIX: This does not properly increment line and col counts
 void lexer::skip_block_comment()
 {
     using namespace std::string_view_literals;
@@ -123,6 +122,7 @@ void lexer::skip_block_comment()
                 n_commented_out_chars =
                     std::distance(begin(source_code), decision_point);
                 source_code.remove_prefix(n_commented_out_chars);
+                cur_col += n_commented_out_chars;
 
                 return;
             }
@@ -130,10 +130,13 @@ void lexer::skip_block_comment()
         else if (decision_point < end(source_code) - 1)
         {
             decision_point++;
+            cur_col = 0;
+            cur_line++;
         }
 
         n_commented_out_chars = std::distance(begin(source_code), decision_point);
         source_code.remove_prefix(n_commented_out_chars);
+        cur_col += n_commented_out_chars;
     }
 }
 
