@@ -79,7 +79,6 @@ void lexer::skip_whitespace()
 }
 
 // FIX: This does not properly increment line and col counts
-// FIX: Throw error if EOF reached before closing comment
 void lexer::skip_block_comment()
 {
     using namespace std::string_view_literals;
@@ -100,6 +99,12 @@ void lexer::skip_block_comment()
         decision_point = std::ranges::find_if(source_code, [block_comment_end](char c) {
             return c == block_comment_end[0] || c == '\n';
         });
+
+        if (decision_point == end(source_code)
+            || decision_point == end(source_code) - 1)
+        {
+            throw std::runtime_error("Reached EOF before closing block comment");
+        }
 
         // Found the first char of the end marker for the block comment
         if (*decision_point == block_comment_end[0])
