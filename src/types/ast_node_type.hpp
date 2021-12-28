@@ -17,31 +17,22 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#include <fstream>
-#include <iostream>
-#include <ostream>
-#include <streambuf>
-#include <string>
-
-#include "lexer.hpp"
-#include "token.hpp"
-#include "token_type.hpp"
-#include "util.hpp"
-
-// TODO: Add CLI flags for building and printing up to: tokenstream, AST, bytecode.
-int main(int argc, char* argv[])
+#ifndef SRC_TYPES_AST_NODE_TYPE_HPP_
+#define SRC_TYPES_AST_NODE_TYPE_HPP_
+enum class ast_node_type
 {
-    if (argc == 1)
-    {
-        return 1;
-    }
-    std::ifstream source_stream(argv[1]);
-    std::string   source_code((std::istreambuf_iterator<char>(source_stream)),
-                            std::istreambuf_iterator<char>());
-
-    lexer              lexer(source_code);
-    std::vector<token> token_stream = lexer.lex();
-
-    print_token_stream(token_stream);
-    return 0;
-}
+    EXPRESSION,               // x + 1
+    FUNCTION_DECLARATION,     // function x(a,b,c){return 1;}
+    FUNCTION_SIGNATURE,       // function x(a,b,c)
+    PARAMETER_DECLARATION,    // a,b,c
+    PRODECURE_DECLARATION,    // procedure x(){}
+    VAR_DECLARATION,          // x
+    VAR_INITIALIZATION,       // let x = 5;
+    VAR_ASSIGNMENT,           // x = 5;
+    CALL,                     // f(2, 5)
+    PARAMETER_PASS,           // 2,5
+    BLOCK,                    // { x = 5; y = x;}//
+    CONTROL_BLOCK,            // while(x){x--;}
+    CONTROL_HEAD,             // while(x)
+};
+#endif    // SRC_TYPES_AST_NODE_TYPE_HPP_

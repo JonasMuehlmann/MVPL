@@ -45,6 +45,9 @@ enum class token_type
     RBLOCKCOMMENT,
     LINECOMMENT,
     // Operators
+    // TODO: Having all these token_types might be useless, BINARY_OPERATOR and
+    // UNARY_OPERATOR should be enough, beyond that e.g. LESS, BINARY_AND, etc. should
+    // be lexemes
     LESS,
     LESSEQ,
     GREATER,
@@ -73,6 +76,7 @@ enum class token_type
     ELIF,
     ELSE,
     // Misc
+    LET,
     FUNCTION,
     PROCEDURE,
     RETURN,
@@ -149,6 +153,7 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::IF)]             = "if"sv;
         arr[static_cast<size_t>(token_type::ELIF)]           = "elif"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "else"sv;
+        arr[static_cast<size_t>(token_type::LET)]            = "let"sv;
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "function"sv;
         arr[static_cast<size_t>(token_type::PROCEDURE)]      = "procedure"sv;
         arr[static_cast<size_t>(token_type::RETURN)]         = "return"sv;
@@ -223,6 +228,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::IF)]             = "IF"sv;
         arr[static_cast<size_t>(token_type::ELIF)]           = "ELIF"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "ELSE"sv;
+        arr[static_cast<size_t>(token_type::LET)]            = "LET"sv;
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "FUNCTION"sv;
         arr[static_cast<size_t>(token_type::PROCEDURE)]      = "PROCEDURE"sv;
         arr[static_cast<size_t>(token_type::RETURN)]         = "RETURN"sv;
