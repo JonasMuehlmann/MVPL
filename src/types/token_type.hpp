@@ -232,7 +232,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "FUNCTION"sv;
         arr[static_cast<size_t>(token_type::PROCEDURE)]      = "PROCEDURE"sv;
         arr[static_cast<size_t>(token_type::RETURN)]         = "RETURN"sv;
-        arr[static_cast<size_t>(token_type::END_TOKEN)]      = "END"sv;
+        arr[static_cast<size_t>(token_type::END_TOKEN)]      = "END_TOKEN"sv;
 
         return arr;
     }();

@@ -226,5 +226,6 @@ std::vector<token> lexer::lex()
         skip_whitespace();
     }
 
+    token_stream.emplace_back(token(token_type::END_TOKEN, "", cur_line, cur_col));
     return token_stream;
 }
