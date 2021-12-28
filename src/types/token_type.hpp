@@ -103,7 +103,7 @@ const auto STATIC_TOKENS = []() {
 }();
 
 
-const auto LUT_TOKEN_TO_STRING_VALUE = []() {
+const auto LUT_TOKEN_TO_LEXEME = []() {
     using namespace std::literals::string_view_literals;
 
     constexpr auto arr = []() {
@@ -164,12 +164,12 @@ const auto LUT_TOKEN_TO_STRING_VALUE = []() {
     return arr;
 }();
 
-const auto LUT_STRING_VALUE_TO_TOKEN = []() {
+const auto LUT_LEXEME_TO_TOKEN = []() {
     std::unordered_map<std::string_view, token_type> map;
 
     for (auto t : STATIC_TOKENS)
     {
-        map.insert({LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)], t});
+        map.insert({LUT_TOKEN_TO_LEXEME[static_cast<size_t>(t)], t});
     }
 
     return map;
@@ -255,7 +255,7 @@ const auto KEYWORD_LEXEMES = []() {
 
     for (auto t : STATIC_TOKENS)
     {
-        auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
+        auto keyword = LUT_TOKEN_TO_LEXEME[static_cast<size_t>(t)];
 
         if (std::ranges::all_of(keyword, [](char c) {
                 return std::isalpha(static_cast<unsigned char>(c)) == 1;
@@ -273,7 +273,7 @@ const auto OPERATOR_LEXEMES = []() {
 
     for (auto t : STATIC_TOKENS)
     {
-        auto keyword = LUT_TOKEN_TO_STRING_VALUE[static_cast<size_t>(t)];
+        auto keyword = LUT_TOKEN_TO_LEXEME[static_cast<size_t>(t)];
 
         if (std::ranges::all_of(keyword, [](char c) {
                 return std::isalpha(static_cast<unsigned char>(c)) == 0;

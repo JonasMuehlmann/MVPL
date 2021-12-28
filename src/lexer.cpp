@@ -83,14 +83,14 @@ void lexer::skip_block_comment()
     using namespace std::string_view_literals;
 
     auto block_comment_end =
-        LUT_TOKEN_TO_STRING_VALUE.at(static_cast<size_t>(token_type::RBLOCKCOMMENT));
+        LUT_TOKEN_TO_LEXEME.at(static_cast<size_t>(token_type::RBLOCKCOMMENT));
 
     size_t n_commented_out_chars = 0;
     auto   decision_point        = begin(source_code);
     auto   new_decision_point    = begin(source_code);
 
     source_code.remove_prefix(
-        LUT_TOKEN_TO_STRING_VALUE.at(static_cast<size_t>(token_type::LBLOCKCOMMENT))
+        LUT_TOKEN_TO_LEXEME.at(static_cast<size_t>(token_type::LBLOCKCOMMENT))
             .length());
 
     while (!source_code.starts_with(block_comment_end))
@@ -162,14 +162,13 @@ std::vector<token> lexer::lex()
         next_lexeme = source_code.substr(0, 2);
 
         if (next_lexeme
-            == LUT_TOKEN_TO_STRING_VALUE.at(
-                static_cast<size_t>(token_type::LINECOMMENT)))
+            == LUT_TOKEN_TO_LEXEME.at(static_cast<size_t>(token_type::LINECOMMENT)))
         {
             skip_line_comment();
             continue;
         }
         else if (next_lexeme
-                 == LUT_TOKEN_TO_STRING_VALUE.at(
+                 == LUT_TOKEN_TO_LEXEME.at(
                      static_cast<size_t>(token_type::LBLOCKCOMMENT)))
         {
             skip_block_comment();
@@ -179,12 +178,10 @@ std::vector<token> lexer::lex()
         next_lexeme = peek_next_word();
 
         // Handle keywords
-        if (LUT_STRING_VALUE_TO_TOKEN.contains(next_lexeme))
+        if (LUT_LEXEME_TO_TOKEN.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(LUT_STRING_VALUE_TO_TOKEN.at(next_lexeme),
-                                            next_lexeme,
-                                            cur_line,
-                                            cur_col));
+            token_stream.emplace_back(token(
+                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
         }
         // Handle literals
         else if ((next_lexeme.length() != 0U)
@@ -206,19 +203,15 @@ std::vector<token> lexer::lex()
         else if (next_lexeme = source_code.substr(0, 2);
                  OPERATOR_LEXEMES.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(LUT_STRING_VALUE_TO_TOKEN.at(next_lexeme),
-                                            next_lexeme,
-                                            cur_line,
-                                            cur_col));
+            token_stream.emplace_back(token(
+                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
         }
         // Handle single char operators
         else if (next_lexeme = source_code.substr(0, 1);
                  OPERATOR_LEXEMES.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(LUT_STRING_VALUE_TO_TOKEN.at(next_lexeme),
-                                            next_lexeme,
-                                            cur_line,
-                                            cur_col));
+            token_stream.emplace_back(token(
+                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
         }
         else
         {
