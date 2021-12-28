@@ -34,17 +34,14 @@ class lexer
 
  private:
     // Variables
-    std::string_view                 source_code;
-    std::vector<token>               token_stream;
-    std::string_view::const_iterator cur_char = begin(source_code);
-    size_t                           cur_line = 0;
-    size_t                           cur_col  = 0;
+    std::string_view   source_code;
+    std::vector<token> token_stream;
+    size_t             cur_line = 0;
+    size_t             cur_col  = 0;
     // Methods
     static bool      is_whitespace(char c);
     static bool      is_word(char c);
     std::string_view peek_next_word();
     void             skip_whitespace();
-    size_t           try_tokenize_keyword();
-    size_t           try_tokenize_keyword_function();
 };
 #endif    // SRC_LEXER_HPP_
