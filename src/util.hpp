@@ -22,9 +22,12 @@
 #include <string>
 #include <vector>
 
+#include "ast_node.hpp"
 #include "token.hpp"
 #include "token_type.hpp"
+
 std::string token_to_str(const token_type t);
 token_type  str_to_token(const std::string& str);
 void        print_token_stream(const std::vector<token>& token_stream);
+void        print_ast(const ast_node& ast, int nesting = 0);
 #endif    // SRC_UTIL_HPP_

@@ -21,7 +21,11 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 
+#include "ast_node.hpp"
+#include "ast_node_type.hpp"
 #include "enum_range.hpp"
 #include "token_type.hpp"
 
@@ -45,4 +49,41 @@ void print_token_stream(const std::vector<token>& token_stream)
         }
     }
     std::cout << "\n]}";
+}
+
+void print_ast(const ast_node& ast, int nesting)
+{
+    if (nesting == 0)
+    {
+        std::cout << "{\n\"ast\": ";
+    }
+    std::cout << std::string(4 * nesting, ' ');
+
+    std::cout << "{\"type\": \""
+              << LUT_AST_NODE_TYPE_TO_STRING[static_cast<size_t>(ast.type)] << "\","
+              << " \"line_start\": " << ast.line_start
+              << ", \"col_start\": " << ast.col_start
+              << ", \"line_end\": " << ast.line_end << ", \"col_end\": " << ast.col_end
+              << ", \"children\": [";
+
+    for (const auto& child : ast.children)
+    {
+        if (&child == &ast.children.front())
+        {
+            std::cout << "\n";
+        }
+
+        print_ast(child, nesting + 1);
+
+
+        std::cout << "\n";
+    }
+
+    std::cout << "]";
+
+    std::cout << "}";
+    if (nesting == 0)
+    {
+        std::cout << "\n}";
+    }
 }
