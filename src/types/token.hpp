@@ -29,8 +29,9 @@ struct token
 {
     std::string_view value;
     token_type       type;
-    size_t           line;
-    size_t           col;
+    // TODO: Add col and line end in addition to start
+    size_t line;
+    size_t col;
 
     token(enum token_type type, std::string_view value, size_t line, size_t col) :
         value{value}, type{type}, line{line}, col{col}

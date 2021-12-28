@@ -1,3 +1,4 @@
+
 // Copyright © 2021 Jonas Muehlmann
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -17,23 +18,35 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_TYPES_AST_NODE_TYPE_HPP_
-#define SRC_TYPES_AST_NODE_TYPE_HPP_
-enum class ast_node_type
+#ifndef SRC_TYPES_AST_NODE_HPP_
+#define SRC_TYPES_AST_NODE_HPP_
+
+#include <vector>
+
+#include "ast_node_type.hpp"
+#include "token.hpp"
+
+struct ast_node
 {
-    EXPRESSION,               // x + 1
-    FUNCTION_DECLARATION,     // function x(a,b,c){return 1;}
-    FUNCTION_SIGNATURE,       // function x(a,b,c)
-    PARAMETER_DECLARATION,    // a,b,c
-    PRODECURE_DECLARATION,    // procedure x(){}
-    VAR_DECLARATION,          // x
-    VAR_INITIALIZATION,       // let x = 5;
-    VAR_ASSIGNMENT,           // x = 5;
-    CALL,                     // f(2, 5)
-    PARAMETER_PASS,           // 2,5
-    BLOCK,                    // { x = 5; y = x;}//
-    CONTROL_BLOCK,            // while(x){x--;}
-    CONTROL_HEAD,             // while(x)
-    PROGRAM                   // Root node
+    std::vector<ast_node> children();
+    ast_node_type         type;
+
+    size_t line_start;
+    size_t col_start;
+
+    size_t line_end;
+    size_t col_end;
+
+    ast_node(enum ast_node_type type,
+             size_t             line_start,
+             size_t             col_start,
+             size_t             line_end,
+             size_t             col_end) :
+        type{type},
+        line_start{line_start},
+        col_start{col_start},
+        line_end{line_end},
+        col_end{col_end}
+    {}
 };
-#endif    // SRC_TYPES_AST_NODE_TYPE_HPP_
+#endif    // SRC_TYPES_AST_NODE_HPP_
