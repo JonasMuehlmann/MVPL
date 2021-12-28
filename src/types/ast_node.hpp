@@ -28,7 +28,7 @@
 
 struct ast_node
 {
-    std::vector<ast_node> children();
+    std::vector<ast_node> children;
     ast_node_type         type;
 
     size_t line_start;

@@ -20,4 +20,19 @@
 #ifndef SRC_PARSER_HPP_
 #define SRC_PARSER_HPP_
 
+#include <vector>
+
+#include "ast_node.hpp"
+#include "token.hpp"
+
+class parser
+{
+ private:
+    std::vector<token> token_stream_;
+    ast_node           ast;
+
+ public:
+    explicit parser(std::vector<token> token_stream_);
+    ast_node parse();
+};
 #endif    // SRC_PARSER_HPP_

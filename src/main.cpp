@@ -23,7 +23,9 @@
 #include <streambuf>
 #include <string>
 
+#include "ast_node.hpp"
 #include "lexer.hpp"
+#include "parser.hpp"
 #include "token.hpp"
 #include "token_type.hpp"
 #include "util.hpp"
@@ -42,6 +44,12 @@ int main(int argc, char* argv[])
     lexer              lexer(source_code);
     std::vector<token> token_stream = lexer.lex();
 
-    print_token_stream(token_stream);
+    parser   parser(token_stream);
+    ast_node ast = parser.parse();
+
+    ast.children.emplace_back(ast_node_type::PROGRAM, 0, 0, 0, 0);
+    ast.children.emplace_back(ast_node_type::PROGRAM, 0, 0, 0, 0);
+
+    print_ast(ast);
     return 0;
 }

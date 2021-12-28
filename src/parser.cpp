@@ -18,3 +18,19 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "parser.hpp"
+
+#include "ast_node.hpp"
+#include "ast_node_type.hpp"
+
+ast_node parser::parse()
+{
+    return ast;
+}
+parser::parser(std::vector<token> token_stream_) :
+    token_stream_{token_stream_},
+    ast(ast_node_type::PROGRAM,
+        token_stream_[0].line,
+        token_stream_[0].col,
+        token_stream_[0].line,
+        token_stream_[0].col)
+{}
