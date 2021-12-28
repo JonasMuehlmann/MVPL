@@ -28,20 +28,21 @@
 
 void print_token_stream(const std::vector<token>& token_stream)
 {
-    std::cout << "token_stream = [\n    ";
+    std::cout << "{\n\"token_stream\": [\n    ";
 
     for (const auto& token_ : token_stream)
     {
-        std::cout << "<Token: {token_type="
+        std::cout << "{\"token_type\": \""
                   << LUT_TOKEN_TO_STRING[static_cast<size_t>(token_.type)]
-                  << ", value=" << token_.value << ", line=" << token_.line
-                  << ", col=" << token_.col << "}>";
+                  << "\", \"value\": \"" << token_.value
+                  << "\", \"line\":" << token_.line << ", \"col\": " << token_.col
+                  << "}";
 
 
         if (&token_ != &token_stream.back())
         {
-            std::cout << "\n    ";
+            std::cout << ",\n    ";
         }
     }
-    std::cout << "\n]";
+    std::cout << "\n]}";
 }
