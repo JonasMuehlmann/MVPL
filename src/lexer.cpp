@@ -23,7 +23,9 @@
 #include <cctype>
 #include <cstddef>
 #include <exception>
+#include <iostream>
 #include <iterator>
+#include <ostream>
 #include <stdexcept>
 #include <string_view>
 
@@ -53,34 +55,120 @@ std::string_view lexer::peek_next_word()
 
 void lexer::skip_whitespace()
 {
-    auto n_whitespace_chars = std::distance(
-        begin(source_code), std::ranges::find_if_not(source_code, is_whitespace));
-
-    auto n_line_breaks = std::distance(
-        begin(source_code),
-        std::ranges::find_if_not(source_code, [](char c) { return c == '\n'; }));
-
-    source_code.remove_prefix(n_whitespace_chars);
-    cur_col += n_whitespace_chars;
-
-    if (n_line_breaks > 0)
+    while (is_whitespace(source_code[0]) || source_code[0] == '\n')
     {
-        cur_col = 0;
-        cur_line += n_line_breaks;
-    }
+        auto n_whitespace_chars = std::distance(
+            begin(source_code), std::ranges::find_if_not(source_code, is_whitespace));
 
-    source_code.remove_prefix(n_line_breaks);
+        // FIX: This probably does not handle whitespaces after line breaks
+        auto n_line_breaks = std::distance(
+            begin(source_code),
+            std::ranges::find_if_not(source_code, [](char c) { return c == '\n'; }));
+
+        source_code.remove_prefix(n_whitespace_chars);
+        cur_col += n_whitespace_chars;
+
+        if (n_line_breaks > 0)
+        {
+            cur_col = 0;
+            cur_line += n_line_breaks;
+        }
+
+        source_code.remove_prefix(n_line_breaks);
+    }
+}
+
+// FIX: This does not properly increment line and col counts
+// FIX: Throw error if EOF reached before closing comment
+void lexer::skip_block_comment()
+{
+    using namespace std::string_view_literals;
+
+    auto block_comment_end =
+        LUT_TOKEN_TO_STRING_VALUE.at(static_cast<size_t>(token_type::RBLOCKCOMMENT));
+
+    size_t n_commented_out_chars = 0;
+    auto   decision_point        = begin(source_code);
+    auto   new_decision_point    = begin(source_code);
+
+    source_code.remove_prefix(
+        LUT_TOKEN_TO_STRING_VALUE.at(static_cast<size_t>(token_type::LBLOCKCOMMENT))
+            .length());
+
+    while (!source_code.starts_with(block_comment_end))
+    {
+        decision_point = std::ranges::find_if(source_code, [block_comment_end](char c) {
+            return c == block_comment_end[0] || c == '\n';
+        });
+
+        // Found the first char of the end marker for the block comment
+        if (*decision_point == block_comment_end[0])
+        {
+            new_decision_point = std::ranges::mismatch(
+                                     std::string_view(decision_point, end(source_code)),
+                                     block_comment_end)
+                                     .in1;
+
+            // Found the remaining chars of the end marker for the block comment
+            if (static_cast<size_t>(std::distance(decision_point, new_decision_point))
+                == block_comment_end.length())
+            {
+                decision_point = new_decision_point;
+
+                n_commented_out_chars =
+                    std::distance(begin(source_code), decision_point);
+                source_code.remove_prefix(n_commented_out_chars);
+
+                return;
+            }
+        }
+        else if (decision_point < end(source_code) - 1)
+        {
+            decision_point++;
+        }
+
+        n_commented_out_chars = std::distance(begin(source_code), decision_point);
+        source_code.remove_prefix(n_commented_out_chars);
+    }
+}
+
+void lexer::skip_line_comment()
+{
+    auto comment_length =
+        std::distance(begin(source_code), std::ranges::find(source_code, '\n'));
+
+    cur_col += comment_length;
+    source_code.remove_prefix(comment_length);
 }
 
 std::vector<token> lexer::lex()
 {
     skip_whitespace();
 
+    std::string_view next_lexeme;
+
     while (begin(source_code) < end(source_code))
     {
         skip_whitespace();
 
-        std::string_view next_lexeme = peek_next_word();
+        next_lexeme = source_code.substr(0, 2);
+
+        if (next_lexeme
+            == LUT_TOKEN_TO_STRING_VALUE.at(
+                static_cast<size_t>(token_type::LINECOMMENT)))
+        {
+            skip_line_comment();
+            continue;
+        }
+        else if (next_lexeme
+                 == LUT_TOKEN_TO_STRING_VALUE.at(
+                     static_cast<size_t>(token_type::LBLOCKCOMMENT)))
+        {
+            skip_block_comment();
+            continue;
+        }
+
+        next_lexeme = peek_next_word();
 
         // Handle keywords
         if (LUT_STRING_VALUE_TO_TOKEN.contains(next_lexeme))
@@ -133,6 +221,7 @@ std::vector<token> lexer::lex()
         }
 
         source_code.remove_prefix(next_lexeme.size());
+        cur_col += next_lexeme.size();
         skip_whitespace();
     }
 

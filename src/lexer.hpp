@@ -43,5 +43,7 @@ class lexer
     static bool      is_word(char c);
     std::string_view peek_next_word();
     void             skip_whitespace();
+    void             skip_line_comment();
+    void             skip_block_comment();
 };
 #endif    // SRC_LEXER_HPP_

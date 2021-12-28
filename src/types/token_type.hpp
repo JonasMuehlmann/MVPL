@@ -41,6 +41,9 @@ enum class token_type
     IDENTIFIER,
     LITERAL,
     ASSIGN,
+    LBLOCKCOMMENT,
+    RBLOCKCOMMENT,
+    LINECOMMENT,
     // Operators
     LESS,
     LESSEQ,
@@ -117,6 +120,9 @@ const auto LUT_TOKEN_TO_STRING_VALUE = []() {
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = ";"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = ","sv;
         arr[static_cast<size_t>(token_type::ASSIGN)]         = "="sv;
+        arr[static_cast<size_t>(token_type::LBLOCKCOMMENT)]  = "/*"sv;
+        arr[static_cast<size_t>(token_type::RBLOCKCOMMENT)]  = "*/"sv;
+        arr[static_cast<size_t>(token_type::LINECOMMENT)]    = "//"sv;
         arr[static_cast<size_t>(token_type::LESS)]           = "<"sv;
         arr[static_cast<size_t>(token_type::LESSEQ)]         = "<="sv;
         arr[static_cast<size_t>(token_type::GREATER)]        = ">"sv;
@@ -188,6 +194,9 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::LITERAL)]        = "LITERAL"sv;
         arr[static_cast<size_t>(token_type::IDENTIFIER)]     = "IDENTIFIER"sv;
         arr[static_cast<size_t>(token_type::ASSIGN)]         = "ASSIGN"sv;
+        arr[static_cast<size_t>(token_type::LBLOCKCOMMENT)]  = "LBLOCKCOMMENT"sv;
+        arr[static_cast<size_t>(token_type::RBLOCKCOMMENT)]  = "RBLOCKCOMMENT"sv;
+        arr[static_cast<size_t>(token_type::LINECOMMENT)]    = "LINECOMMENT"sv;
         arr[static_cast<size_t>(token_type::LESS)]           = "LESS"sv;
         arr[static_cast<size_t>(token_type::LESSEQ)]         = "LESSEQ"sv;
         arr[static_cast<size_t>(token_type::GREATER)]        = "GREATER"sv;

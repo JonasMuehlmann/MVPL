@@ -1,4 +1,10 @@
+// The main function
 function main()
 {
+    /*return 1;*/
+    /*
+    This function
+    is kinda
+    useless*/
     return 0;
 }
