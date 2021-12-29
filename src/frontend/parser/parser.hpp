@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "ast_node.hpp"
-#include "token.hpp"
+#include "frontend/lexer/token.hpp"
 
 class parser
 {

@@ -22,16 +22,19 @@
 
 #include <string_view>
 
-#include "enum_range.hpp"
+#include "common/enum_range.hpp"
 
 enum class ast_node_type
 {
     EXPRESSION,        // x + 1
-    FUNC_DECL,         // function x(a,b,c){return 1;}
-    PROCEDURE_DECL,    // procedure x(){}
+    BINARY_OP,         // 1 + 1
+    UNARY_OP,          // i--
+    FUNC_DEF,          // function x(a,b,c){return 1;}
+    PROCEDURE_DEF,     // procedure x(){}
     FUNC_SIGNATURE,    // function x(a,b,c)
-    PARAMETER_DECL,    // a,b,c
-    VAR_DECL,          // x
+    RETURN_STMT,       // return x;
+    PARAMETER_DEF,     // a,b,c
+    VAR_DEF,           // x
     VAR_INIT,          // let x = 5;
     VAR_ASSIGNMENT,    // x = 5;
     CALL,              // f(2, 5)
@@ -60,11 +63,14 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
         arr.fill(""sv);
 
         arr[static_cast<size_t>(ast_node_type::EXPRESSION)]     = "EXPRESSION"sv;
-        arr[static_cast<size_t>(ast_node_type::FUNC_DECL)]      = "FUNC_DECL"sv;
-        arr[static_cast<size_t>(ast_node_type::PROCEDURE_DECL)] = "PROCEDURE_DECL"sv;
+        arr[static_cast<size_t>(ast_node_type::BINARY_OP)]      = "BINARY_OP"sv;
+        arr[static_cast<size_t>(ast_node_type::UNARY_OP)]       = "UNARY_OP"sv;
+        arr[static_cast<size_t>(ast_node_type::FUNC_DEF)]       = "FUNC_DEF"sv;
+        arr[static_cast<size_t>(ast_node_type::PROCEDURE_DEF)]  = "PROCEDURE_DEF"sv;
         arr[static_cast<size_t>(ast_node_type::FUNC_SIGNATURE)] = "FUNC_SIGNATURE"sv;
-        arr[static_cast<size_t>(ast_node_type::PARAMETER_DECL)] = "PARAMETER_DECL"sv;
-        arr[static_cast<size_t>(ast_node_type::VAR_DECL)]       = "VAR_DECL"sv;
+        arr[static_cast<size_t>(ast_node_type::RETURN_STMT)]    = "RETURN_STMT"sv;
+        arr[static_cast<size_t>(ast_node_type::PARAMETER_DEF)]  = "PARAMETER_DEF"sv;
+        arr[static_cast<size_t>(ast_node_type::VAR_DEF)]        = "VAR_DEF"sv;
         arr[static_cast<size_t>(ast_node_type::VAR_INIT)]       = "VAR_INIT"sv;
         arr[static_cast<size_t>(ast_node_type::VAR_ASSIGNMENT)] = "VAR_ASSIGNMENT"sv;
         arr[static_cast<size_t>(ast_node_type::CALL)]           = "CALL"sv;

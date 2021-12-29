@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "enum_range.hpp"
+#include "common/enum_range.hpp"
 
 enum class token_type
 {

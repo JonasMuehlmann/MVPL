@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "ast_node.hpp"
-#include "token.hpp"
-#include "token_type.hpp"
+#include "frontend/lexer/token.hpp"
+#include "frontend/lexer/token_type.hpp"
+#include "frontend/parser/ast_node.hpp"
 
 std::string token_to_str(const token_type t);
 token_type  str_to_token(const std::string& str);

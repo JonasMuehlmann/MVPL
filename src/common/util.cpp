@@ -24,10 +24,10 @@
 #include <string>
 #include <string_view>
 
-#include "ast_node.hpp"
-#include "ast_node_type.hpp"
 #include "enum_range.hpp"
-#include "token_type.hpp"
+#include "frontend/lexer/token_type.hpp"
+#include "frontend/parser/ast_node.hpp"
+#include "frontend/parser/ast_node_type.hpp"
 
 
 void print_token_stream(const std::vector<token>& token_stream)

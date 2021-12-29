@@ -23,12 +23,12 @@
 #include <streambuf>
 #include <string>
 
-#include "ast_node.hpp"
-#include "lexer.hpp"
-#include "parser.hpp"
-#include "token.hpp"
-#include "token_type.hpp"
-#include "util.hpp"
+#include "common/util.hpp"
+#include "frontend/lexer/token.hpp"
+#include "frontend/lexer/token_type.hpp"
+#include "frontend/parser/ast_node.hpp"
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 // TODO: Add CLI flags for building and printing up to: tokenstream, AST, bytecode.
 int main(int argc, char* argv[])

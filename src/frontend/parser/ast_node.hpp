@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "ast_node_type.hpp"
-#include "token.hpp"
+#include "frontend/lexer/token.hpp"
 
 struct ast_node
 {
