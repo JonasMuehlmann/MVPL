@@ -40,7 +40,7 @@ void print_token_stream(const std::vector<token>& token_stream)
                   << LUT_TOKEN_TO_STRING[static_cast<size_t>(token_.type)]
                   << "\", \"lexeme\": \"" << token_.value
                   << "\", \"line\":" << token_.line << ", \"col\": " << token_.col
-                  << "}";
+                  << '}';
 
 
         if (&token_ != &token_stream.back())
@@ -70,18 +70,22 @@ void print_ast(const ast_node& ast, int nesting)
     {
         if (&child == &ast.children.front())
         {
-            std::cout << "\n";
+            std::cout << '\n';
         }
 
         print_ast(child, nesting + 1);
 
 
-        std::cout << "\n";
+        if (&child != &ast.children.back())
+        {
+            std::cout << ',';
+        }
+            std::cout << '\n';
     }
 
-    std::cout << "]";
+    std::cout << ']';
 
-    std::cout << "}";
+    std::cout << '}';
     if (nesting == 0)
     {
         std::cout << "\n}";
