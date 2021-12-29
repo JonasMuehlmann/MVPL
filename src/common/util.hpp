@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_UTIL_HPP_
-#define SRC_UTIL_HPP_
+#ifndef SRC_COMMON_UTIL_HPP
+#define SRC_COMMON_UTIL_HPP
 #include <string>
 #include <vector>
 
@@ -30,4 +30,4 @@ std::string token_to_str(const token_type t);
 token_type  str_to_token(const std::string& str);
 void        print_token_stream(const std::vector<token>& token_stream);
 void        print_ast(const ast_node& ast, int nesting = 0);
-#endif    // SRC_UTIL_HPP_
+#endif    // SRC_COMMON_UTIL_HPP

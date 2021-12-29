@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_TYPES_TOKEN_HPP_
-#define SRC_TYPES_TOKEN_HPP_
+#ifndef SRC_FRONTEND_LEXER_TOKEN_HPP
+#define SRC_FRONTEND_LEXER_TOKEN_HPP
 
 #include <cstddef>
 #include <string>
@@ -37,4 +37,4 @@ struct token
         value{value}, type{type}, line{line}, col{col}
     {}
 };
-#endif    // SRC_TYPES_TOKEN_HPP_
+#endif    // SRC_FRONTEND_LEXER_TOKEN_HPP

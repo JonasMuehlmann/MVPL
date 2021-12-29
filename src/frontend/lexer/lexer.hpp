@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_LEXER_HPP_
-#define SRC_LEXER_HPP_
+#ifndef SRC_FRONTEND_LEXER_LEXER_HPP
+#define SRC_FRONTEND_LEXER_LEXER_HPP
 #include <array>
 #include <functional>
 #include <string_view>
@@ -46,4 +46,4 @@ class lexer
     void             skip_line_comment();
     void             skip_block_comment();
 };
-#endif    // SRC_LEXER_HPP_
+#endif    // SRC_FRONTEND_LEXER_LEXER_HPP

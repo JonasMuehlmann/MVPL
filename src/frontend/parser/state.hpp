@@ -1,3 +1,6 @@
+#ifndef SRC_FRONTEND_PARSER_STATE_HPP
+#define SRC_FRONTEND_PARSER_STATE_HPP
+
 // Copyright © 2021 Jonas Muehlmann
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -17,11 +20,5 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_BACKEND_TRAP_HPP
-#define SRC_BACKEND_TRAP_HPP
-enum class trap
-{
-    READ,
-    WRITE
-};
-#endif    // SRC_BACKEND_TRAP_HPP
+
+#endif
