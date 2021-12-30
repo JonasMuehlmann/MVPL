@@ -26,7 +26,7 @@
 
 enum class ast_node_type
 {
-    EXPRESSION,        // x + 1
+    // EXPRESSION,        // x + 1
     BINARY_OP,         // 1 + 1
     UNARY_OP,          // i--
     FUNC_DEF,          // function x(a,b,c){return 1;}
@@ -62,7 +62,7 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
 
         arr.fill(""sv);
 
-        arr[static_cast<size_t>(ast_node_type::EXPRESSION)]     = "EXPRESSION"sv;
+        // arr[static_cast<size_t>(ast_node_type::EXPRESSION)]     = "EXPRESSION"sv;
         arr[static_cast<size_t>(ast_node_type::BINARY_OP)]      = "BINARY_OP"sv;
         arr[static_cast<size_t>(ast_node_type::UNARY_OP)]       = "UNARY_OP"sv;
         arr[static_cast<size_t>(ast_node_type::FUNC_DEF)]       = "FUNC_DEF"sv;
