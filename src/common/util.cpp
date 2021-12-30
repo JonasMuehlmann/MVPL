@@ -36,11 +36,10 @@ void print_token_stream(const std::vector<token>& token_stream)
 
     for (const auto& token_ : token_stream)
     {
-        std::cout << "{\"token_type\": \""
+        std::cout << R"({"token_type": ")"
                   << LUT_TOKEN_TO_STRING[static_cast<size_t>(token_.type)]
-                  << "\", \"lexeme\": \"" << token_.value
-                  << "\", \"line\":" << token_.line << ", \"col\": " << token_.col
-                  << '}';
+                  << R"(", "lexeme": ")" << token_.value << R"(", "line":)"
+                  << token_.line << R"(, "col": )" << token_.col << '}';
 
 
         if (&token_ != &token_stream.back())
@@ -51,43 +50,20 @@ void print_token_stream(const std::vector<token>& token_stream)
     std::cout << "\n]}";
 }
 
-void print_ast(const ast_node& ast, int nesting)
+
+void print_source_location(const source_location& source_location, const size_t nesting)
 {
-    if (nesting == 0)
-    {
-        std::cout << "{\n\"ast\": ";
-    }
-    std::cout << std::string(4 * nesting, ' ');
+    std::cout << std::string(4LL * nesting, ' ') << R"({"line_start": )"
+              << source_location.line_start << R"(, "col_start": )"
+              << source_location.col_start << R"(, "line_end": )"
+              << source_location.line_end << R"(, "col_end": )"
+              << source_location.col_end << '}';
+}
 
-    std::cout << "{\"type\": \""
-              << LUT_AST_NODE_TYPE_TO_STRING[static_cast<size_t>(ast.type)] << "\","
-              << " \"line_start\": " << ast.line_start
-              << ", \"col_start\": " << ast.col_start
-              << ", \"line_end\": " << ast.line_end << ", \"col_end\": " << ast.col_end
-              << ", \"children\": [";
-
-    for (const auto& child : ast.children)
-    {
-        if (&child == &ast.children.front())
-        {
-            std::cout << '\n';
-        }
-
-        print_ast(child, nesting + 1);
-
-
-        if (&child != &ast.children.back())
-        {
-            std::cout << ',';
-        }
-            std::cout << '\n';
-    }
-
-    std::cout << ']';
-
-    std::cout << '}';
-    if (nesting == 0)
-    {
-        std::cout << "\n}";
-    }
+void print_ast(const ast_node& ast)
+{
+    std::cout << R"({
+"ast": )";
+    ast.print(0);
+    std::cout << "\n}";
 }
