@@ -62,12 +62,12 @@ procedure_def_node::procedure_def_node(const ast_node&       signature,
     body{std::make_unique<ast_node>(body)}
 {}
 
-signature_node::signature_node(const ast_node&       name,
+signature_node::signature_node(const std::string&    identifier,
                                const ast_node&       parameter_list,
                                const source_location location) :
 
     ast_node(ast_node_type::FUNC_SIGNATURE, location),
-    name{std::make_unique<ast_node>(name)},
+    identifier{identifier},
     parameter_list{std::make_unique<ast_node>(parameter_list)}
 {}
 return_stmt_node::return_stmt_node(const ast_node&       value,
@@ -84,37 +84,36 @@ parameter_def_node::parameter_def_node(const ast_node&       parameter_list,
     parameter_list{std::make_unique<ast_node>(parameter_list)}
 {}
 
-var_decl_node::var_decl_node(const ast_node&       identifier,
+var_decl_node::var_decl_node(const std::string&    identifier,
                              const source_location location) :
 
-    ast_node(ast_node_type::VAR_DEF, location),
-    identifier{std::make_unique<ast_node>(identifier)}
+    ast_node(ast_node_type::VAR_DEF, location), identifier{identifier}
 {}
 
-var_init_node::var_init_node(const ast_node&       identifier,
+var_init_node::var_init_node(const std::string&    identifier,
                              const ast_node&       value,
                              const source_location location) :
 
     ast_node(ast_node_type::VAR_INIT, location),
-    identifier{std::make_unique<ast_node>(identifier)},
+    identifier{identifier},
     value{std::make_unique<ast_node>(value)}
 {}
 
-var_assignment_node::var_assignment_node(const ast_node&       identifier,
+var_assignment_node::var_assignment_node(const std::string&    identifier,
                                          const ast_node&       value,
                                          const source_location location) :
 
     ast_node(ast_node_type::VAR_ASSIGNMENT, location),
-    identifier{std::make_unique<ast_node>(identifier)},
+    identifier{identifier},
     value{std::make_unique<ast_node>(value)}
 {}
 
-call_node::call_node(const ast_node&       identifier,
+call_node::call_node(const std::string&    identifier,
                      const ast_node&       parameter_pass,
                      const source_location location) :
 
     ast_node(ast_node_type::CALL, location),
-    identifier{std::make_unique<ast_node>(identifier)},
+    identifier{identifier},
     parameter_pass{std::make_unique<ast_node>(parameter_pass)}
 {}
 

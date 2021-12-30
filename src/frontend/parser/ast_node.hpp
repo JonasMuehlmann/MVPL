@@ -33,8 +33,9 @@ struct ast_node
     const source_location source_location_;
 
     ast_node(const ast_node_type type, const source_location location);
-    virtual void print();
+    virtual void print(int nesting);
 };
+
 
 struct program_node : public ast_node
 {
@@ -43,6 +44,7 @@ struct program_node : public ast_node
     program_node(std::vector<std::unique_ptr<ast_node>>& globals,
                  const source_location                   location);
 };
+
 
 struct binary_op_node : public ast_node
 {
@@ -53,12 +55,14 @@ struct binary_op_node : public ast_node
                    const ast_node&       rhs_,
                    const source_location location);
 };
+
 struct unary_op_node : public ast_node
 {
     const std::unique_ptr<ast_node> operand;
 
     unary_op_node(const ast_node& operand, const source_location location);
 };
+
 struct func_def_node : public ast_node
 {
     const std::unique_ptr<ast_node> signature;
@@ -68,6 +72,7 @@ struct func_def_node : public ast_node
                   const ast_node&       body,
                   const source_location location);
 };
+
 struct procedure_def_node : public ast_node
 {
     const std::unique_ptr<ast_node> signature;
@@ -77,72 +82,82 @@ struct procedure_def_node : public ast_node
                        const ast_node&       body,
                        const source_location location);
 };
+
 struct signature_node : public ast_node
 {
-    const std::unique_ptr<ast_node> name;
+    const std::string&              identifier;
     const std::unique_ptr<ast_node> parameter_list;
 
-    signature_node(const ast_node&       name,
+    signature_node(const std::string&    identifier,
                    const ast_node&       parameter_list,
                    const source_location location);
 };
+
 struct return_stmt_node : public ast_node
 {
     const std::unique_ptr<ast_node> value;
 
     return_stmt_node(const ast_node& value, const source_location location);
 };
+
 struct parameter_def_node : public ast_node
 {
     const std::unique_ptr<ast_node> parameter_list;
 
     parameter_def_node(const ast_node& parameter_list, const source_location location);
 };
+
 struct var_decl_node : public ast_node
 {
-    const std::unique_ptr<ast_node> identifier;
+    const std::string& identifier;
 
-    var_decl_node(const ast_node& identifier, const source_location location);
+    var_decl_node(const std::string& identifier, const source_location location);
 };
+
 struct var_init_node : public ast_node
 {
-    const std::unique_ptr<ast_node> identifier;
+    const std::string&              identifier;
     const std::unique_ptr<ast_node> value;
 
-    var_init_node(const ast_node&       identifier,
+    var_init_node(const std::string&    identifier,
                   const ast_node&       value,
                   const source_location location);
 };
+
 struct var_assignment_node : public ast_node
 {
-    const std::unique_ptr<ast_node> identifier;
+    const std::string&              identifier;
     const std::unique_ptr<ast_node> value;
 
-    var_assignment_node(const ast_node&       identifier,
+    var_assignment_node(const std::string&    identifier,
                         const ast_node&       value,
                         const source_location location);
 };
+
 struct call_node : public ast_node
 {
-    const std::unique_ptr<ast_node> identifier;
+    const std::string&              identifier;
     const std::unique_ptr<ast_node> parameter_pass;
 
-    call_node(const ast_node&       identifier,
+    call_node(const std::string&    identifier,
               const ast_node&       parameter_pass,
               const source_location location);
 };
+
 struct parameter_pass_node : public ast_node
 {
     const std::unique_ptr<ast_node> parameter_list;
 
     parameter_pass_node(const ast_node& parameter_list, const source_location location);
 };
+
 struct block_node : public ast_node
 {
     const std::vector<std::unique_ptr<ast_node>> statements;
 
     block_node(const ast_node& statements, const source_location location);
 };
+
 struct control_block_node : public ast_node
 {
     const std::unique_ptr<ast_node> head;
@@ -152,11 +167,13 @@ struct control_block_node : public ast_node
                        const ast_node&       body,
                        const source_location location);
 };
+
 struct control_head_node : public ast_node
 {
     const std::unique_ptr<ast_node> expression;
 
     control_head_node(const ast_node& expression, const source_location location);
 };
+
 
 #endif    // SRC_FRONTEND_PARSER_AST_NODE_HPP
