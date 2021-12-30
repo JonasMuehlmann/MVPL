@@ -53,17 +53,17 @@ void print_token_stream(const std::vector<token>& token_stream)
 
 void print_source_location(const source_location& source_location, const size_t nesting)
 {
-    std::cout << std::string(4LL * nesting, ' ') << R"({"line_start": )"
-              << source_location.line_start << R"(, "col_start": )"
-              << source_location.col_start << R"(, "line_end": )"
-              << source_location.line_end << R"(, "col_end": )"
+    std::cout << R"({"line_start": )" << source_location.line_start
+              << R"(, "col_start": )" << source_location.col_start
+              << R"(, "line_end": )" << source_location.line_end << R"(, "col_end": )"
               << source_location.col_end << '}';
 }
 
 void print_ast(const ast_node& ast)
 {
     std::cout << R"({
-"ast": )";
-    ast.print(0);
+"ast":
+)";
+    ast.print(1);
     std::cout << "\n}";
 }

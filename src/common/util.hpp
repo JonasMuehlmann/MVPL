@@ -30,7 +30,7 @@
 std::string token_to_str(const token_type t);
 token_type  str_to_token(const std::string& str);
 void        print_token_stream(const std::vector<token>& token_stream);
-void        print_ast(const ast_node& ast, int nesting = 0);
+void        print_ast(const ast_node& ast);
 void        print_source_location(const source_location& source_location,
                                   const size_t           nesting);
 #endif    // SRC_COMMON_UTIL_HPP
