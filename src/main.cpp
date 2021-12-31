@@ -19,6 +19,7 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <streambuf>
 #include <string>
@@ -46,10 +47,19 @@ int main(int argc, char* argv[])
     lexer              lexer(source_code);
     std::vector<token> token_stream = lexer.lex();
 
-    parser   parser(token_stream);
-    ast_node ast = parser.parse();
+    parser parser(token_stream);
+    // std::unique_ptr<ast_node> ast = parser.parse();
+    std::vector<std::unique_ptr<ast_node>> v1{};
 
-    print_ast(ast);
+    std::vector<std::unique_ptr<ast_node>> v2{};
+
+    std::vector<std::unique_ptr<ast_node>> foo{};
+    foo.push_back(std::make_unique<program_node>(v1, source_location()));
+    foo.push_back(std::make_unique<program_node>(v2, source_location()));
+
+    auto ast = std::make_unique<program_node>(program_node(foo, source_location()));
+
+    print_ast(*ast);
 
     return 0;
 }

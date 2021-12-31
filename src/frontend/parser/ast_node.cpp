@@ -59,6 +59,8 @@ void program_node::print(int nesting) const
 
     std::cout << R"("globals": [)";
 
+    nesting++;
+
     for (const auto& global : globals)
     {
         if (&global == &globals.front())
@@ -76,7 +78,13 @@ void program_node::print(int nesting) const
         std::cout << '\n';
     }
 
-    std::cout << std::string(4LL * nesting, ' ') << ']';
+    if (!globals.empty())
+    {
+        std::cout << std::string(4LL * nesting, ' ');
+    }
+    std::cout << ']';
+    nesting--;
+
     std::cout << "\n";
     std::cout << std::string(4LL * nesting, ' ');
     std::cout << '}';

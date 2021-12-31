@@ -62,8 +62,7 @@ void print_source_location(const source_location& source_location, const size_t 
 void print_ast(const ast_node& ast)
 {
     std::cout << R"({
-"ast":
-)";
+"ast": )";
     ast.print(1);
     std::cout << "\n}";
 }
