@@ -19,18 +19,18 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "parser.hpp"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "ast_node.hpp"
 #include "ast_node_type.hpp"
 
-ast_node parser::parse()
+std::unique_ptr<ast_node> parser::parse()
 {
-    return ast;
+    return std::move(ast);
 }
-parser::parser(std::vector<token> token_stream_) :
-    token_stream_{token_stream_},
-    ast(ast_node_type::PROGRAM,
-        token_stream_[0].line,
-        token_stream_[0].col,
-        token_stream_[0].line,
-        token_stream_[0].col)
+
+// Based on parser combinators
+parser::parser(const std::vector<token>& token_stream_) : token_stream_{token_stream_}
 {}

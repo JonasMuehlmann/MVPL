@@ -1,6 +1,3 @@
-#ifndef SRC_FRONTEND_PARSER_FINITE_STATE_MACHINE_HPP
-#define SRC_FRONTEND_PARSER_FINITE_STATE_MACHINE_HPP
-
 // Copyright © 2021 Jonas Muehlmann
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -20,5 +17,20 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#ifndef SRC_FRONTEND_PARSER_FINITE_STATE_MACHINE_HPP_
+#define SRC_FRONTEND_PARSER_FINITE_STATE_MACHINE_HPP_
+#include <vector>
 
-#endif
+#include "state.hpp"
+
+// template <typename TStateEnum>
+// class finite_state_machine
+// {
+//  public:
+//     finite_state_machine() : states{states}, cur_state{begin(states)} {}
+
+//  private:
+//     const std::vector<state<TStateEnum>>              states;
+//     typename std::vector<state<TStateEnum>>::iterator cur_state;
+// };
+#endif    // SRC_FRONTEND_PARSER_FINITE_STATE_MACHINE_HPP_

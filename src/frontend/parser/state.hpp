@@ -1,6 +1,3 @@
-#ifndef SRC_FRONTEND_PARSER_STATE_HPP
-#define SRC_FRONTEND_PARSER_STATE_HPP
-
 // Copyright © 2021 Jonas Muehlmann
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -20,5 +17,22 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#ifndef SRC_FRONTEND_PARSER_STATE_HPP_
+#define SRC_FRONTEND_PARSER_STATE_HPP_
 
-#endif
+#include <cstddef>
+#include <vector>
+
+template <typename TStateEnum>
+struct state
+{
+ public:
+    state(TStateEnum cur_state, std::initializer_list<TStateEnum> next_states_) :
+        cur_state{cur_state}, next_states{next_states_}
+    {}
+
+ private:
+    const TStateEnum              cur_state;
+    const std::vector<TStateEnum> next_states;
+};
+#endif    // SRC_FRONTEND_PARSER_STATE_HPP_

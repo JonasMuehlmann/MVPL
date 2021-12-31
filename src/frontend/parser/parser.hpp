@@ -17,22 +17,24 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_PARSER_PARSER_HPP
-#define SRC_FRONTEND_PARSER_PARSER_HPP
+#ifndef SRC_FRONTEND_PARSER_PARSER_HPP_
+#define SRC_FRONTEND_PARSER_PARSER_HPP_
 
+#include <memory>
 #include <vector>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
 
+// Recursive descent parser
 class parser
 {
  private:
-    std::vector<token> token_stream_;
-    ast_node           ast;
+    std::vector<token>        token_stream_;
+    std::unique_ptr<ast_node> ast;
 
  public:
-    explicit parser(std::vector<token> token_stream_);
-    ast_node parse();
+    explicit parser(const std::vector<token>& token_stream_);
+    std::unique_ptr<ast_node> parse();
 };
-#endif    // SRC_FRONTEND_PARSER_PARSER_HPP
+#endif    // SRC_FRONTEND_PARSER_PARSER_HPP_
