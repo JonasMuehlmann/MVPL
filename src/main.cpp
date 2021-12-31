@@ -49,13 +49,13 @@ int main(int argc, char* argv[])
 
     parser parser(token_stream);
     // std::unique_ptr<ast_node> ast = parser.parse();
-    std::vector<std::unique_ptr<ast_node>> v1{};
+    std::vector<std::unique_ptr<ast_node_t>> v1{};
 
-    std::vector<std::unique_ptr<ast_node>> v2{};
+    std::vector<std::unique_ptr<ast_node_t>> v2{};
 
-    std::vector<std::unique_ptr<ast_node>> foo{};
-    foo.push_back(std::make_unique<program_node>(v1, source_location()));
-    foo.push_back(std::make_unique<program_node>(v2, source_location()));
+    std::vector<std::unique_ptr<ast_node_t>> foo{};
+    foo.push_back(std::make_unique<ast_node_t>(program_node(v1, source_location())));
+    foo.push_back(std::make_unique<ast_node_t>(program_node(v2, source_location())));
 
     auto ast = std::make_unique<program_node>(program_node(foo, source_location()));
 

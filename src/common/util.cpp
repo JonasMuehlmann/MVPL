@@ -28,6 +28,7 @@
 #include "frontend/lexer/token_type.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_node_type.hpp"
+#include "print.hpp"
 
 
 void print_token_stream(const std::vector<token>& token_stream)
@@ -51,7 +52,7 @@ void print_token_stream(const std::vector<token>& token_stream)
 }
 
 
-void print_source_location(const source_location& source_location, const size_t nesting)
+void print_source_location(const source_location& source_location)
 {
     std::cout << R"({"line_start": )" << source_location.line_start
               << R"(, "col_start": )" << source_location.col_start
@@ -59,10 +60,10 @@ void print_source_location(const source_location& source_location, const size_t 
               << source_location.col_end << '}';
 }
 
-void print_ast(const ast_node& ast)
+void print_ast(const ast_node_t& ast)
 {
     std::cout << R"({
 "ast": )";
-    ast.print(1);
+    std::visit(print_visitor(), ast);
     std::cout << "\n}";
 }
