@@ -102,6 +102,6 @@ const auto LUT_OPERATOR_TYPE_TO_STRING = []() {
 
 inline void to_json(json& j, const operator_type& node)
 {
-    j = json{LUT_OPERATOR_TYPE_TO_STRING[static_cast<size_t>(node)]};
+    j = LUT_OPERATOR_TYPE_TO_STRING[static_cast<size_t>(node)];
 };
 #endif    // SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_

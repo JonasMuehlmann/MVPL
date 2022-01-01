@@ -26,6 +26,9 @@
 #include <unordered_set>
 
 #include "common/enum_range.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 enum class token_type
 {
@@ -291,4 +294,9 @@ const auto OPERATOR_LEXEMES = []() {
 
     return lexemes;
 }();
+
+inline void to_json(json& j, const token_type& node)
+{
+    j = LUT_TOKEN_TO_STRING[static_cast<size_t>(node)];
+}
 #endif    // SRC_FRONTEND_LEXER_TOKEN_TYPE_HPP_

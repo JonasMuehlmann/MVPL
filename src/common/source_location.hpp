@@ -22,13 +22,15 @@
 
 #include <cstddef>
 
+#include "nlohmann/json.hpp"
+
 struct source_location
 {
-    const size_t line_start{};
-    const size_t col_start{};
+    size_t line_start{};
+    size_t col_start{};
 
-    const size_t line_end{};
-    const size_t col_end{};
+    size_t line_end{};
+    size_t col_end{};
 
     source_location() = default;
 
@@ -43,4 +45,6 @@ struct source_location
     {}
 };
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    source_location, line_start, col_start, line_end, col_end);
 #endif    // SRC_COMMON_SOURCE_LOCATION_HPP_

@@ -28,42 +28,22 @@
 #include "frontend/lexer/token_type.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_node_type.hpp"
-#include "print.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 
 void print_token_stream(const std::vector<token>& token_stream)
 {
-    std::cout << "{\n\"token_stream\": [\n    ";
-
-    for (const auto& token_ : token_stream)
-    {
-        std::cout << R"({"token_type": ")"
-                  << LUT_TOKEN_TO_STRING[static_cast<size_t>(token_.type)]
-                  << R"(", "lexeme": ")" << token_.value << R"(", "line":)"
-                  << token_.line << R"(, "col": )" << token_.col << '}';
-
-
-        if (&token_ != &token_stream.back())
-        {
-            std::cout << ",\n    ";
-        }
-    }
-    std::cout << "\n]}";
-}
-
-
-void print_source_location(const source_location& source_location)
-{
-    std::cout << R"({"line_start": )" << source_location.line_start
-              << R"(, "col_start": )" << source_location.col_start
-              << R"(, "line_end": )" << source_location.line_end << R"(, "col_end": )"
-              << source_location.col_end << '}';
+    // Double brackets to define as key-value pair instead of list
+    json j = {{"token_stream", token_stream}};
+    std::cout << j.dump(4) << std::endl;
 }
 
 void print_ast(const ast_node_t& ast)
 {
-    std::cout << R"({
-"ast": )";
-    std::visit(print_visitor(), ast);
-    std::cout << "\n}";
+    // Double brackets to define as key-value pair instead of list
+    json j = {{"ast", ast}};
+
+    std::cout << j.dump(4) << std::endl;
 }

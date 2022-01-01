@@ -24,7 +24,12 @@
 #include <string>
 #include <string_view>
 
+#include "nlohmann/json.hpp"
 #include "token_type.hpp"
+
+using json = nlohmann::json;
+
+// TODO: This should be refactored to use a source_location struct
 struct token
 {
     std::string_view value;
@@ -37,4 +42,6 @@ struct token
         value{value}, type{type}, line{line}, col{col}
     {}
 };
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(token, value, type, line, col);
 #endif    // SRC_FRONTEND_LEXER_TOKEN_HPP_

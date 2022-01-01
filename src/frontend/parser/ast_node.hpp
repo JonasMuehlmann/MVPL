@@ -27,6 +27,7 @@
 #include "ast_node_type.hpp"
 #include "common/source_location.hpp"
 #include "frontend/lexer/token.hpp"
+#include "nlohmann/json.hpp"
 #include "operator_type.hpp"
 
 struct program_node;
@@ -46,6 +47,8 @@ struct block_node;
 struct control_block_node;
 struct control_head_node;
 
+using json = nlohmann::json;
+
 using ast_node_t = std::variant<program_node,
                                 binary_op_node,
                                 unary_op_node,
@@ -62,10 +65,12 @@ using ast_node_t = std::variant<program_node,
                                 block_node,
                                 control_block_node,
                                 control_head_node>;
+
+
 struct ast_node
 {
-    const ast_node_type   type;
-    const source_location source_location_;
+    ast_node_type   type;
+    source_location source_location_;
 
     ast_node(ast_node_type type, source_location location);
     virtual ~ast_node() = default;
@@ -80,7 +85,6 @@ struct program_node final : public ast_node
                  source_location                           location);
 };
 
-
 struct binary_op_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> lhs;
@@ -94,6 +98,7 @@ struct binary_op_node final : public ast_node
                    source_location location);
 };
 
+
 struct unary_op_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> operand;
@@ -105,6 +110,7 @@ struct unary_op_node final : public ast_node
                   source_location location);
 };
 
+
 struct func_def_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> signature;
@@ -114,6 +120,7 @@ struct func_def_node final : public ast_node
                   std::unique_ptr<ast_node_t>& body,
                   source_location              location);
 };
+
 
 struct procedure_def_node final : public ast_node
 {
@@ -125,6 +132,7 @@ struct procedure_def_node final : public ast_node
                        source_location              location);
 };
 
+
 struct signature_node final : public ast_node
 {
     std::string&                identifier;
@@ -135,12 +143,14 @@ struct signature_node final : public ast_node
                    source_location              location);
 };
 
+
 struct return_stmt_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> value;
 
     return_stmt_node(std::unique_ptr<ast_node_t>& value, source_location location);
 };
+
 
 struct parameter_def_node final : public ast_node
 {
@@ -150,12 +160,14 @@ struct parameter_def_node final : public ast_node
                        source_location              location);
 };
 
+
 struct var_decl_node final : public ast_node
 {
     std::string& identifier;
 
     var_decl_node(std::string& identifier, source_location location);
 };
+
 
 struct var_init_node final : public ast_node
 {
@@ -167,6 +179,7 @@ struct var_init_node final : public ast_node
                   source_location              location);
 };
 
+
 struct var_assignment_node final : public ast_node
 {
     std::string&                identifier;
@@ -176,6 +189,7 @@ struct var_assignment_node final : public ast_node
                         std::unique_ptr<ast_node_t>& value,
                         source_location              location);
 };
+
 
 struct call_node final : public ast_node
 {
@@ -187,6 +201,7 @@ struct call_node final : public ast_node
               source_location              location);
 };
 
+
 struct parameter_pass_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> parameter_list;
@@ -195,6 +210,7 @@ struct parameter_pass_node final : public ast_node
                         source_location              location);
 };
 
+
 struct block_node final : public ast_node
 {
     std::vector<std::unique_ptr<ast_node_t>> statements;
@@ -202,6 +218,7 @@ struct block_node final : public ast_node
     block_node(std::vector<std::unique_ptr<ast_node_t>>& statements,
                source_location                           location);
 };
+
 
 struct control_block_node final : public ast_node
 {
@@ -213,6 +230,7 @@ struct control_block_node final : public ast_node
                        source_location              location);
 };
 
+
 struct control_head_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> expression;
@@ -221,5 +239,81 @@ struct control_head_node final : public ast_node
                       source_location              location);
 };
 
+// Needed forawrd declaration
+inline void to_json(json& j, const ast_node_t& node);
 
+// Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
+// json->T conversion functions
+inline void from_json(const json& j, ast_node_t& node) {}
+
+inline void to_json(json& j, const std::unique_ptr<ast_node_t>& node)
+{
+    if (node != nullptr)
+    {
+        j = *node;
+    }
+    else
+    {
+        j = nullptr;
+    }
+}
+
+// Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
+// json->T conversion functions
+inline void from_json(const json& j, std::unique_ptr<ast_node_t>& node) {}
+
+// These must be declared after all structs are fully defined, because they are all part
+// of ast_node_t
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(program_node, globals, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ast_node, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    binary_op_node, lhs, rhs, operator_, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    unary_op_node, operand, operator_, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    func_def_node, signature, body, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    procedure_def_node, signature, body, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    signature_node, identifier, parameter_list, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(return_stmt_node, value, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(parameter_def_node,
+                                   parameter_list,
+                                   type,
+                                   source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(var_decl_node, identifier, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    var_init_node, identifier, value, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    var_assignment_node, identifier, value, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    call_node, identifier, parameter_pass, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(parameter_pass_node,
+                                   parameter_list,
+                                   type,
+                                   source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(block_node, statements, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    control_block_node, head, body, type, source_location_);
+
+inline void to_json(json& j, const ast_node_t& node)
+{
+    // std::visit([&j](const auto& node) { to_json(j, node); }, node);
+    std::visit([&](auto&& value) { j = std::forward<decltype(value)>(value); }, node);
+}
 #endif    // SRC_FRONTEND_PARSER_AST_NODE_HPP_

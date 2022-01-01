@@ -20,9 +20,13 @@
 #ifndef SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_
 #define SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_
 
+#include <string>
 #include <string_view>
 
 #include "common/enum_range.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
 
 enum class ast_node_type
 {
@@ -89,4 +93,9 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
         "ast_node_type missing string representation");
     return arr;
 }();
+
+inline void to_json(json& j, const ast_node_type& node)
+{
+    j = LUT_AST_NODE_TYPE_TO_STRING[static_cast<size_t>(node)];
+}
 #endif    // SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_
