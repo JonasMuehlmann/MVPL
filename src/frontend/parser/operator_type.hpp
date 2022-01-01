@@ -19,6 +19,11 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_
 #define SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_
+#include "enum_range.hpp"
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
 
 enum class operator_type
 {
@@ -43,5 +48,60 @@ enum class operator_type
     MODULO,
     INCREMENT,
     DECREMENT
+};
+
+
+const int NUM_OPERATORS = []() {
+    EnumRange<operator_type, operator_type::DECREMENT> range;
+
+    return range.size();
+}();
+
+const auto ALL_OPERATORS = enum_to_array<operator_type, operator_type::DECREMENT>();
+
+const auto LUT_OPERATOR_TYPE_TO_STRING = []() {
+    using namespace std::literals::string_view_literals;
+
+    constexpr auto arr = []() {
+        std::array<std::string_view, NUM_OPERATORS> arr{};
+        arr.fill(""sv);
+        arr[static_cast<size_t>(operator_type::LESS)]           = "LESS"sv;
+        arr[static_cast<size_t>(operator_type::LESSEQ)]         = "LESSEQ"sv;
+        arr[static_cast<size_t>(operator_type::GREATER)]        = "GREATER"sv;
+        arr[static_cast<size_t>(operator_type::GREATEREQ)]      = "GREATEREQ"sv;
+        arr[static_cast<size_t>(operator_type::EQUAL)]          = "EQUAL"sv;
+        arr[static_cast<size_t>(operator_type::NEQUAL)]         = "NEQUAL"sv;
+        arr[static_cast<size_t>(operator_type::NOT)]            = "NOT"sv;
+        arr[static_cast<size_t>(operator_type::LOGICAL_AND)]    = "LOGICAL_AND"sv;
+        arr[static_cast<size_t>(operator_type::LOGICAL_OR)]     = "LOGICAL_OR"sv;
+        arr[static_cast<size_t>(operator_type::BINARY_AND)]     = "BINARY_AND"sv;
+        arr[static_cast<size_t>(operator_type::BINARY_OR)]      = "BINARY_OR"sv;
+        arr[static_cast<size_t>(operator_type::LSHIFT)]         = "LSHIFT"sv;
+        arr[static_cast<size_t>(operator_type::RSHIFT)]         = "RSHIFT"sv;
+        arr[static_cast<size_t>(operator_type::XOR)]            = "XOR"sv;
+        arr[static_cast<size_t>(operator_type::PLUS)]           = "PLUS"sv;
+        arr[static_cast<size_t>(operator_type::MINUS)]          = "MINUS"sv;
+        arr[static_cast<size_t>(operator_type::MULTIPLICATION)] = "MULTIPLICATION"sv;
+        arr[static_cast<size_t>(operator_type::DIVISION)]       = "DIVISION"sv;
+        arr[static_cast<size_t>(operator_type::MODULO)]         = "MODULO"sv;
+        arr[static_cast<size_t>(operator_type::INCREMENT)]      = "INCREMENT"sv;
+        arr[static_cast<size_t>(operator_type::DECREMENT)]      = "DECREMENT"sv;
+
+
+        return arr;
+    }();
+
+    static_assert(
+        std::ranges::count_if(arr, [](std::string_view str) { return str == ""sv; })
+            == 0,
+        "operator_type missing value");
+
+    return arr;
+}();
+
+
+inline void to_json(json& j, const operator_type& node)
+{
+    j = json{LUT_OPERATOR_TYPE_TO_STRING[static_cast<size_t>(node)]};
 };
 #endif    // SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_
