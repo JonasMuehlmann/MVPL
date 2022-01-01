@@ -32,5 +32,4 @@ std::unique_ptr<ast_node_t> parser::parse()
 }
 
 // Based on parser combinators
-parser::parser(const std::vector<token>& token_stream_) : token_stream_{token_stream_}
-{}
+parser::parser(std::span<token> token_stream_) : token_stream_{token_stream_} {}

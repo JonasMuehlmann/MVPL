@@ -21,7 +21,7 @@
 #define SRC_FRONTEND_PARSER_PARSER_HPP_
 
 #include <memory>
-#include <vector>
+#include <span>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
@@ -30,11 +30,11 @@
 class parser
 {
  private:
-    std::vector<token>          token_stream_;
+    std::span<token>            token_stream_;
     std::unique_ptr<ast_node_t> ast;
 
  public:
-    explicit parser(const std::vector<token>& token_stream_);
+    explicit parser(std::span<token> token_stream_);
     std::unique_ptr<ast_node_t> parse();
 };
 #endif    // SRC_FRONTEND_PARSER_PARSER_HPP_
