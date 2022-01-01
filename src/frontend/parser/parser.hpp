@@ -30,11 +30,11 @@
 class parser
 {
  private:
-    std::vector<token>        token_stream_;
-    std::unique_ptr<ast_node> ast;
+    std::vector<token>          token_stream_;
+    std::unique_ptr<ast_node_t> ast;
 
  public:
     explicit parser(const std::vector<token>& token_stream_);
-    std::unique_ptr<ast_node> parse();
+    std::unique_ptr<ast_node_t> parse();
 };
 #endif    // SRC_FRONTEND_PARSER_PARSER_HPP_

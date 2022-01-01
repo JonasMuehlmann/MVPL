@@ -26,7 +26,7 @@
 #include "ast_node.hpp"
 #include "ast_node_type.hpp"
 
-std::unique_ptr<ast_node> parser::parse()
+std::unique_ptr<ast_node_t> parser::parse()
 {
     return std::move(ast);
 }

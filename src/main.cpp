@@ -46,20 +46,10 @@ int main(int argc, char* argv[])
 
     lexer              lexer(source_code);
     std::vector<token> token_stream = lexer.lex();
-    print_token_stream(token_stream);
+    // print_token_stream(token_stream);
 
-    parser parser(token_stream);
-    // std::unique_ptr<ast_node> ast = parser.parse();
-    std::vector<std::unique_ptr<ast_node_t>> v1{};
-
-    std::vector<std::unique_ptr<ast_node_t>> v2{};
-
-    std::vector<std::unique_ptr<ast_node_t>> foo{};
-    foo.push_back(std::make_unique<ast_node_t>(program_node(v1, source_location())));
-    foo.push_back(std::make_unique<ast_node_t>(program_node(v2, source_location())));
-
-    auto ast = std::make_unique<program_node>(program_node(foo, source_location()));
-
+    parser                      parser(token_stream);
+    std::unique_ptr<ast_node_t> ast = parser.parse();
 
     print_ast(*ast);
 
