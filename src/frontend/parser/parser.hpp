@@ -22,16 +22,69 @@
 
 #include <memory>
 #include <span>
+#include <utility>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
+
+
+template <typename R, typename C, typename... Args>
+C function_pointer_class(R (C::*)(Args...));
+
+template <typename TFunction>
+concept nullary_predicate_function = requires(TFunction& function)
+{
+    {
+        std::forward<TFunction>(function)()
+        } -> std::convertible_to<bool>;
+};
+
+template <typename TFunction>
+concept nullary_predicate_member = requires(TFunction& function)
+{
+    {
+        std::invoke(function,
+                    std::declval<decltype(function_pointer_class(function))>())
+        } -> std::convertible_to<bool>;
+};
+
+template <typename TFunction>
+concept nullary_predicate =
+    nullary_predicate_member<TFunction> || nullary_predicate_function<TFunction>;
 
 // Recursive descent parser
 class parser
 {
  private:
+    // Members
     std::span<token>            token_stream_;
     std::unique_ptr<ast_node_t> ast;
+    // Methods
+    bool parse_program();
+    bool parse_binary_op();
+    bool parse_unary_op();
+    bool parse_func_def();
+    bool parse_procedure_def();
+    bool parse_signature();
+    bool parse_return_stmt();
+    bool parse_parameter_def();
+    bool parse_var_decl();
+    bool parse_var_init();
+    bool parse_var_assignment();
+    bool parse_call();
+    bool parse_parameter_pass();
+    bool parse_block();
+    bool parse_control_block();
+    bool parse_control_head();
+
+    bool parse_any(nullary_predicate auto&&... parser);
+    bool parse_all(nullary_predicate auto&&... parser);
+
+    bool parse_separated(nullary_predicate auto&& separator_parser,
+                         nullary_predicate auto&&... item_parser);
+
+    bool parse_surrounded(nullary_predicate auto&& surrounder_parser,
+                          nullary_predicate auto&&... inner_parser);
 
  public:
     explicit parser(std::span<token> token_stream_);

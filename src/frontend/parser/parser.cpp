@@ -19,6 +19,7 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "parser.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -33,3 +34,109 @@ std::unique_ptr<ast_node_t> parser::parse()
 
 // Based on parser combinators
 parser::parser(std::span<token> token_stream_) : token_stream_{token_stream_} {}
+
+bool parser::parse_program()
+{
+    while (!token_stream_.empty())
+    {
+        if (!parse_any(&parser::parse_procedure_def,
+                       &parser::parse_func_def,
+                       &parser::parse_var_decl,
+                       &parser::parse_var_init))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+bool parser::parse_binary_op()
+{
+    return true;
+}
+bool parser::parse_unary_op()
+{
+    return true;
+}
+bool parser::parse_func_def()
+{
+    return true;
+}
+bool parser::parse_procedure_def()
+{
+    return true;
+}
+bool parser::parse_signature()
+{
+    return true;
+}
+bool parser::parse_return_stmt()
+{
+    return true;
+}
+bool parser::parse_parameter_def()
+{
+    return true;
+}
+bool parser::parse_var_decl()
+{
+    return true;
+}
+bool parser::parse_var_init()
+{
+    return true;
+}
+bool parser::parse_var_assignment()
+{
+    return true;
+}
+bool parser::parse_call()
+{
+    return true;
+}
+bool parser::parse_parameter_pass()
+{
+    return true;
+}
+bool parser::parse_block()
+{
+    return true;
+}
+bool parser::parse_control_block()
+{
+    return true;
+}
+bool parser::parse_control_head()
+{
+    return true;
+}
+bool parser::parse_any(nullary_predicate auto&&... parser)
+{
+    return (std::invoke(parser, this) || ...);
+}
+bool parser::parse_all(nullary_predicate auto&&... parser)
+{
+    return (std::invoke(parser, this) && ...);
+}
+bool parser::parse_separated(nullary_predicate auto&& separator_parser,
+                             nullary_predicate auto&&... item_parser)
+{
+    auto item_parsers = {item_parser...};
+
+    for (auto parser : item_parsers)
+    {
+        if (!std::invoke(parser, this))
+        {
+            return false;
+        }
+        if (&parser != &item_parsers.back() && separator_parser())
+        {
+            return false;
+        }
+    }
+    return true;
+}
+bool parser::parse_surrounded(nullary_predicate auto&& surrounder_parser,
+                              nullary_predicate auto&&... inner_parser)
+{
+    return surrounder_parser() & parse_all(inner_parser...) & surrounder_parser();
+}

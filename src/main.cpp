@@ -46,12 +46,16 @@ int main(int argc, char* argv[])
 
     lexer              lexer(source_code);
     std::vector<token> token_stream = lexer.lex();
-    // print_token_stream(token_stream);
+
+    print_token_stream(token_stream);
 
     parser                      parser(token_stream);
     std::unique_ptr<ast_node_t> ast = parser.parse();
 
-    print_ast(*ast);
+    if (ast != nullptr)
+    {
+        print_ast(*ast);
+    }
 
     return 0;
 }
