@@ -240,11 +240,11 @@ struct control_head_node final : public ast_node
 };
 
 // Needed forawrd declaration
-inline void to_json(json& j, const ast_node_t& node);
+void to_json(json& j, const ast_node_t& node);
 
 // Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
 // json->T conversion functions
-inline void from_json(const json& j, ast_node_t& node) {}
+void from_json(const json& j, ast_node_t& node);
 
 inline void to_json(json& j, const std::unique_ptr<ast_node_t>& node)
 {
@@ -260,7 +260,7 @@ inline void to_json(json& j, const std::unique_ptr<ast_node_t>& node)
 
 // Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
 // json->T conversion functions
-inline void from_json(const json& j, std::unique_ptr<ast_node_t>& node) {}
+void from_json(const json& j, std::unique_ptr<ast_node_t>& node);
 
 // These must be declared after all structs are fully defined, because they are all part
 // of ast_node_t
