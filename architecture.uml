@@ -1,0 +1,33 @@
+@startuml
+actor User
+User -> Lexer : Provide source code
+
+
+alt success
+    Lexer -> Parser : Build token stream
+
+    Parser -> "Semantic Validator" : Build AST
+
+    alt success
+        "Semantic Validator" -> "Symbol Manager" : Validate AST(e.g.\nno assignment to function,\nno call to variable,\nno missing main function)
+
+        alt success
+            "Symbol Manager" -> "Optimizer": Build Symbol table\nincluding types, scope,\nplace of declaration/initalization
+
+            "Optimizer" -> "Code Generator": Optimize AST
+
+            "Code Generator" -> "Optimizer": Generate bytecode
+
+            "Optimizer" -> Interpreter: Optimize bytecode
+
+            "Interpreter" -> User: Interprete code and show result
+        else Semantic error
+            "Semantic Validator" -> User: Error: e.g. Unkown variable referenced
+        end
+    else Unexpected token
+        "Parser" -> User: Unexpected token at position ... 
+    end
+else Invalid token
+    Lexer -> User: Error: Invalid token at position ...
+end
+@enduml
