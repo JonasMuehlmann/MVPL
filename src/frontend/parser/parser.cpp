@@ -140,3 +140,15 @@ bool parser::parse_surrounded(nullary_predicate auto&& surrounder_parser,
 {
     return surrounder_parser() & parse_all(inner_parser...) & surrounder_parser();
 }
+
+parser::parse_token::parse_token(token_type wanted_type) : wanted_type(wanted_type) {}
+
+bool parser::parse_token::operator()()
+{
+    return true;
+}
+
+parser::parse_token parser::make_parse_token(token_type wanted_type)
+{
+    return parse_token(wanted_type);
+}

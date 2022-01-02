@@ -22,10 +22,12 @@
 
 #include <memory>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
+#include "token_type.hpp"
 
 
 template <typename R, typename C, typename... Args>
@@ -85,6 +87,26 @@ class parser
 
     bool parse_surrounded(nullary_predicate auto&& surrounder_parser,
                           nullary_predicate auto&&... inner_parser);
+
+    struct parse_token
+    {
+        token_type wanted_type;
+
+        explicit parse_token(token_type wanted_type);
+
+        bool operator()();
+    };
+
+    parse_token make_parse_token(token_type wanted_type);
+
+    bool parser_invoker(nullary_predicate_function auto&& parser_)
+    {
+        return std::invoke(parser_);
+    }
+    bool parser_invoker(nullary_predicate_member auto&& parser_)
+    {
+        return std::invoke(parser_, this);
+    };
 
  public:
     explicit parser(std::span<token> token_stream_);
