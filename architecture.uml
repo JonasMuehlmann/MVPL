@@ -6,13 +6,13 @@ User -> Lexer : Provide source code
 alt success
     Lexer -> Parser : Build token stream
 
-    Parser -> "Semantic Validator" : Build AST
+    Parser -> "Symbol Manager" : Build AST
 
     alt success
-        "Semantic Validator" -> "Symbol Manager" : Validate AST(e.g.\nno assignment to function,\nno call to variable,\nno missing main function)
+        "Symbol Manager" -> "Semantic Validator": Build Symbol table\nincluding types, scope,\nplace of declaration/initalization
 
         alt success
-            "Symbol Manager" -> "Optimizer": Build Symbol table\nincluding types, scope,\nplace of declaration/initalization
+            "Semantic Validator" -> "Optimizer" : Validate AST(e.g.\nno assignment to function,\nno call to variable,\nno missing main function)
 
             "Optimizer" -> "Code Generator": Optimize AST
 
