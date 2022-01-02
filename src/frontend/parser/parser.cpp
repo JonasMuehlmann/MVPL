@@ -26,6 +26,7 @@
 
 #include "ast_node.hpp"
 #include "ast_node_type.hpp"
+#include "token_type.hpp"
 
 std::unique_ptr<ast_node_t> parser::parse()
 {
@@ -59,43 +60,75 @@ bool parser::parse_unary_op()
 }
 bool parser::parse_func_def()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::FUNCTION),
+                     &parser::parse_signature,
+                     &parser::parse_block);
 }
 bool parser::parse_procedure_def()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::PROCEDURE),
+                     &parser::parse_signature,
+                     &parser::parse_block);
 }
 bool parser::parse_signature()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::IDENTIFIER),
+                     &parser::parse_parameter_def);
 }
+// TODO: differentiate between parse (consumes tokens) and expect (does not consume
+// tokens) functions
+// TODO: Make combinators functors
 bool parser::parse_return_stmt()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::RETURN),
+                     parse_any(&parser::parse_binary_op,
+                               &parser::parse_unary_op,
+                               &parser::parse_call,
+                               parser::parse_token(token_type::LITERAL),
+                               parser::parse_token(token_type::IDENTIFIER)));
 }
 bool parser::parse_parameter_def()
 {
-    return true;
+    return parse_surrounded(
+        parser::parse_token(token_type::LPAREN),
+        parser::parse_token(token_type::RPAREN),
+        parse_separated(parser::parse_token(token_type::COMMA),
+                        parser::parse_token(token_type::IDENTIFIER)));
 }
 bool parser::parse_var_decl()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::LET),
+                     parser::parse_token(token_type::IDENTIFIER),
+                     parser::parse_token(token_type::SEMICOLON));
 }
+// TODO: Add helper function to parse expression
 bool parser::parse_var_init()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::LET),
+                     parser::parse_token(token_type::IDENTIFIER),
+                     parser::parse_token(token_type::EQUAL),
+                     &parser::parse_expression,
+                     parser::parse_token(token_type::SEMICOLON));
 }
 bool parser::parse_var_assignment()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::IDENTIFIER),
+                     parser::parse_token(token_type::EQUAL),
+                     &parser::parse_expression,
+                     parser::parse_token(token_type::SEMICOLON));
 }
 bool parser::parse_call()
 {
-    return true;
+    return parse_all(parser::parse_token(token_type::IDENTIFIER),
+                     &parser::parse_parameter_pass);
 }
 bool parser::parse_parameter_pass()
 {
-    return true;
+    return parse_surrounded(
+        parser::parse_token(token_type::LPAREN),
+        parser::parse_token(token_type::RPAREN),
+        parse_separated(parser::parse_token(token_type::COMMA),
+                        parser::parse_token(token_type::IDENTIFIER)));
 }
 bool parser::parse_block()
 {
@@ -103,19 +136,21 @@ bool parser::parse_block()
 }
 bool parser::parse_control_block()
 {
-    return true;
+    return parse_all(&parser::parse_control_head, &parser::parse_block);
 }
 bool parser::parse_control_head()
 {
-    return true;
+    return parse_surrounded(parser::parse_token(token_type::LPAREN),
+                            parser::parse_token(token_type::RPAREN),
+                            &parser::parse_expression);
 }
 bool parser::parse_any(nullary_predicate auto&&... parser)
 {
-    return (std::invoke(parser, this) || ...);
+    return (parser_invoker(parser) || ...);
 }
 bool parser::parse_all(nullary_predicate auto&&... parser)
 {
-    return (std::invoke(parser, this) && ...);
+    return (parser_invoker(parser) && ...);
 }
 bool parser::parse_separated(nullary_predicate auto&& separator_parser,
                              nullary_predicate auto&&... item_parser)
@@ -124,7 +159,7 @@ bool parser::parse_separated(nullary_predicate auto&& separator_parser,
 
     for (auto parser : item_parsers)
     {
-        if (!std::invoke(parser, this))
+        if (!parser_invoker(parser))
         {
             return false;
         }
