@@ -28,22 +28,22 @@
 #include "ast_node_type.hpp"
 #include "token_type.hpp"
 
-std::unique_ptr<ast_node_t> parser::parse()
-{
-    return std::move(ast);
-}
-
 // Based on parser combinators
 parser::parser(std::span<token> token_stream_) : token_stream_{token_stream_} {}
 
+nullary_predicate auto parse_token(const std::span<token> ts, const token_type wanted)
+{
+    return [=]() -> bool { return ts[0].type == wanted; };
+}
+
 nullary_predicate auto parse_any(nullary_predicate auto&&... parser)
 {
-    return [=]() { return (parser() || ...); };
+    return [=]() -> bool { return (parser() || ...); };
 }
 
 nullary_predicate auto parse_all(nullary_predicate auto&&... parser)
 {
-    return [=]() { return (parser() && ...); };
+    return [=]() -> bool { return (parser() && ...); };
 }
 
 nullary_predicate auto parse_surrounded(nullary_predicate auto&& surrounder_parser,
@@ -55,7 +55,7 @@ nullary_predicate auto parse_surrounded(nullary_predicate auto&& surrounder_pars
 nullary_predicate auto parse_separated(nullary_predicate auto&& separator_parser,
                                        nullary_predicate auto&&... item_parser)
 {
-    return [=]() {
+    return [=]() -> bool {
         auto item_parsers = std::array{item_parser...};
 
         for (auto parser : item_parsers)
@@ -71,11 +71,6 @@ nullary_predicate auto parse_separated(nullary_predicate auto&& separator_parser
         }
         return true;
     };
-}
-
-nullary_predicate auto parse_token(const std::span<token> ts, const token_type wanted)
-{
-    return [=]() { return ts[0].type == wanted; };
 }
 
 nullary_predicate auto parse_parameter_def(const std::span<token> ts)
@@ -113,6 +108,28 @@ nullary_predicate auto parse_var_decl(const std::span<token> ts)
     return parse_all(parse_token(ts, token_type::LET),
                      parse_token(ts, token_type::IDENTIFIER),
                      parse_token(ts, token_type::SEMICOLON));
+}
+
+nullary_predicate auto parse_parameter_pass(const std::span<token> ts)
+{
+    return parse_surrounded(parse_token(ts, token_type::LPAREN),
+                            parse_token(ts, token_type::RPAREN),
+                            parse_separated(parse_token(ts, token_type::COMMA),
+                                            parse_token(ts, token_type::IDENTIFIER)));
+}
+
+nullary_predicate auto parse_call(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::IDENTIFIER), parse_parameter_pass(ts));
+}
+
+nullary_predicate auto parse_expression(const std::span<token> ts)
+{
+    return parse_any(parse_binary_op(ts),
+                     parse_unary_op(ts),
+                     parse_call(ts),
+                     parse_token(ts, token_type::LITERAL),
+                     parse_token(ts, token_type::IDENTIFIER));
 }
 
 nullary_predicate auto parse_binary_op(const std::span<token> ts)
@@ -153,28 +170,6 @@ nullary_predicate auto parse_var_assignment(const std::span<token> ts)
                      parse_token(ts, token_type::EQUAL),
                      parse_expression(ts),
                      parse_token(ts, token_type::SEMICOLON));
-}
-
-nullary_predicate auto parse_parameter_pass(const std::span<token> ts)
-{
-    return parse_surrounded(parse_token(ts, token_type::LPAREN),
-                            parse_token(ts, token_type::RPAREN),
-                            parse_separated(parse_token(ts, token_type::COMMA),
-                                            parse_token(ts, token_type::IDENTIFIER)));
-}
-
-nullary_predicate auto parse_call(const std::span<token> ts)
-{
-    return parse_all(parse_token(ts, token_type::IDENTIFIER), parse_parameter_pass(ts));
-}
-
-nullary_predicate auto parse_expression(const std::span<token> ts)
-{
-    return parse_any(parse_binary_op(ts),
-                     parse_unary_op(ts),
-                     parse_call(ts),
-                     parse_token(ts, token_type::LITERAL),
-                     parse_token(ts, token_type::IDENTIFIER));
 }
 
 nullary_predicate auto parse_var_init(const std::span<token> ts)
@@ -219,4 +214,13 @@ nullary_predicate auto parse_control_head(const std::span<token> ts)
 nullary_predicate auto parse_control_block(const std::span<token> ts)
 {
     return parse_all(parse_control_head(ts), parse_block(ts));
+}
+
+std::unique_ptr<ast_node_t> parser::parse()
+{
+    if (parse_program(token_stream_)())
+    {
+        return std::move(ast);
+    }
+    return std::unique_ptr<ast_node_t>{};
 }
