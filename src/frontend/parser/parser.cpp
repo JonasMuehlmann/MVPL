@@ -36,154 +36,187 @@ std::unique_ptr<ast_node_t> parser::parse()
 // Based on parser combinators
 parser::parser(std::span<token> token_stream_) : token_stream_{token_stream_} {}
 
-bool parser::parse_program()
+nullary_predicate auto parse_any(nullary_predicate auto&&... parser)
 {
-    while (!token_stream_.empty())
-    {
-        if (!parse_any(&parser::parse_procedure_def,
-                       &parser::parse_func_def,
-                       &parser::parse_var_decl,
-                       &parser::parse_var_init))
+    return [=]() { return (parser() || ...); };
+}
+
+nullary_predicate auto parse_all(nullary_predicate auto&&... parser)
+{
+    return [=]() { return (parser() && ...); };
+}
+
+nullary_predicate auto parse_surrounded(nullary_predicate auto&& surrounder_parser,
+                                        nullary_predicate auto&&... inner_parser)
+{
+    return parse_all(surrounder_parser, parse_all(inner_parser...), surrounder_parser);
+}
+
+nullary_predicate auto parse_separated(nullary_predicate auto&& separator_parser,
+                                       nullary_predicate auto&&... item_parser)
+{
+    return [=]() {
+        auto item_parsers = std::array{item_parser...};
+
+        for (auto parser : item_parsers)
         {
-            return false;
+            if (!parser())
+            {
+                return false;
+            }
+            if (&parser != &item_parsers.back() && separator_parser())
+            {
+                return false;
+            }
         }
-    }
-    return true;
+        return true;
+    };
 }
-bool parser::parse_binary_op()
-{
-    return true;
-}
-bool parser::parse_unary_op()
-{
-    return true;
-}
-bool parser::parse_func_def()
-{
-    return parse_all(parser::parse_token(token_type::FUNCTION),
-                     &parser::parse_signature,
-                     &parser::parse_block);
-}
-bool parser::parse_procedure_def()
-{
-    return parse_all(parser::parse_token(token_type::PROCEDURE),
-                     &parser::parse_signature,
-                     &parser::parse_block);
-}
-bool parser::parse_signature()
-{
-    return parse_all(parser::parse_token(token_type::IDENTIFIER),
-                     &parser::parse_parameter_def);
-}
-// TODO: differentiate between parse (consumes tokens) and expect (does not consume
-// tokens) functions
-// TODO: Make combinators functors
-bool parser::parse_return_stmt()
-{
-    return parse_all(parser::parse_token(token_type::RETURN),
-                     parse_any(&parser::parse_binary_op,
-                               &parser::parse_unary_op,
-                               &parser::parse_call,
-                               parser::parse_token(token_type::LITERAL),
-                               parser::parse_token(token_type::IDENTIFIER)));
-}
-bool parser::parse_parameter_def()
-{
-    return parse_surrounded(
-        parser::parse_token(token_type::LPAREN),
-        parser::parse_token(token_type::RPAREN),
-        parse_separated(parser::parse_token(token_type::COMMA),
-                        parser::parse_token(token_type::IDENTIFIER)));
-}
-bool parser::parse_var_decl()
-{
-    return parse_all(parser::parse_token(token_type::LET),
-                     parser::parse_token(token_type::IDENTIFIER),
-                     parser::parse_token(token_type::SEMICOLON));
-}
-// TODO: Add helper function to parse expression
-bool parser::parse_var_init()
-{
-    return parse_all(parser::parse_token(token_type::LET),
-                     parser::parse_token(token_type::IDENTIFIER),
-                     parser::parse_token(token_type::EQUAL),
-                     &parser::parse_expression,
-                     parser::parse_token(token_type::SEMICOLON));
-}
-bool parser::parse_var_assignment()
-{
-    return parse_all(parser::parse_token(token_type::IDENTIFIER),
-                     parser::parse_token(token_type::EQUAL),
-                     &parser::parse_expression,
-                     parser::parse_token(token_type::SEMICOLON));
-}
-bool parser::parse_call()
-{
-    return parse_all(parser::parse_token(token_type::IDENTIFIER),
-                     &parser::parse_parameter_pass);
-}
-bool parser::parse_parameter_pass()
-{
-    return parse_surrounded(
-        parser::parse_token(token_type::LPAREN),
-        parser::parse_token(token_type::RPAREN),
-        parse_separated(parser::parse_token(token_type::COMMA),
-                        parser::parse_token(token_type::IDENTIFIER)));
-}
-bool parser::parse_block()
-{
-    return true;
-}
-bool parser::parse_control_block()
-{
-    return parse_all(&parser::parse_control_head, &parser::parse_block);
-}
-bool parser::parse_control_head()
-{
-    return parse_surrounded(parser::parse_token(token_type::LPAREN),
-                            parser::parse_token(token_type::RPAREN),
-                            &parser::parse_expression);
-}
-bool parser::parse_any(nullary_predicate auto&&... parser)
-{
-    return (parser_invoker(parser) || ...);
-}
-bool parser::parse_all(nullary_predicate auto&&... parser)
-{
-    return (parser_invoker(parser) && ...);
-}
-bool parser::parse_separated(nullary_predicate auto&& separator_parser,
-                             nullary_predicate auto&&... item_parser)
-{
-    auto item_parsers = {item_parser...};
 
-    for (auto parser : item_parsers)
-    {
-        if (!parser_invoker(parser))
+nullary_predicate auto parse_token(const std::span<token> ts, const token_type wanted)
+{
+    return [=]() { return ts[0].type == wanted; };
+}
+
+nullary_predicate auto parse_parameter_def(const std::span<token> ts)
+{
+    return parse_surrounded(parse_token(ts, token_type::LPAREN),
+                            parse_token(ts, token_type::RPAREN),
+                            parse_separated(parse_token(ts, token_type::COMMA),
+                                            parse_token(ts, token_type::IDENTIFIER)));
+}
+
+nullary_predicate auto parse_signature(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::IDENTIFIER), parse_parameter_def(ts));
+}
+
+nullary_predicate auto parse_block(const std::span<token> ts)
+{
+    return [=]() { return true; };
+}
+
+nullary_predicate auto parse_procedure_def(const std::span<token> ts)
+{
+    return parse_all(
+        parse_token(ts, token_type::PROCEDURE), parse_signature(ts), parse_block(ts));
+}
+
+nullary_predicate auto parse_func_def(const std::span<token> ts)
+{
+    return parse_all(
+        parse_token(ts, token_type::FUNCTION), parse_signature(ts), parse_block(ts));
+}
+
+nullary_predicate auto parse_var_decl(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::LET),
+                     parse_token(ts, token_type::IDENTIFIER),
+                     parse_token(ts, token_type::SEMICOLON));
+}
+
+nullary_predicate auto parse_binary_op(const std::span<token> ts)
+{
+    return parse_all(parse_expression(ts),
+                     parse_any(parse_token(ts, token_type::PLUS),
+                               parse_token(ts, token_type::MINUS),
+                               parse_token(ts, token_type::MULTIPLICATION),
+                               parse_token(ts, token_type::DIVISION),
+                               parse_token(ts, token_type::MODULO),
+                               parse_token(ts, token_type::LESS),
+                               parse_token(ts, token_type::LESSEQ),
+                               parse_token(ts, token_type::GREATER),
+                               parse_token(ts, token_type::GREATEREQ),
+                               parse_token(ts, token_type::EQUAL),
+                               parse_token(ts, token_type::NEQUAL),
+                               parse_token(ts, token_type::LOGICAL_AND),
+                               parse_token(ts, token_type::LOGICAL_OR),
+                               parse_token(ts, token_type::BINARY_AND),
+                               parse_token(ts, token_type::BINARY_OR),
+                               parse_token(ts, token_type::XOR),
+                               parse_token(ts, token_type::LSHIFT),
+                               parse_token(ts, token_type::RSHIFT)),
+                     parse_expression(ts));
+}
+
+nullary_predicate auto parse_unary_op(const std::span<token> ts)
+{
+    return parse_all(parse_expression(ts),
+                     parse_any(parse_token(ts, token_type::NOT),
+                               parse_token(ts, token_type::INCREMENT),
+                               parse_token(ts, token_type::DECREMENT)));
+}
+
+nullary_predicate auto parse_var_assignment(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::IDENTIFIER),
+                     parse_token(ts, token_type::EQUAL),
+                     parse_expression(ts),
+                     parse_token(ts, token_type::SEMICOLON));
+}
+
+nullary_predicate auto parse_parameter_pass(const std::span<token> ts)
+{
+    return parse_surrounded(parse_token(ts, token_type::LPAREN),
+                            parse_token(ts, token_type::RPAREN),
+                            parse_separated(parse_token(ts, token_type::COMMA),
+                                            parse_token(ts, token_type::IDENTIFIER)));
+}
+
+nullary_predicate auto parse_call(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::IDENTIFIER), parse_parameter_pass(ts));
+}
+
+nullary_predicate auto parse_expression(const std::span<token> ts)
+{
+    return parse_any(parse_binary_op(ts),
+                     parse_unary_op(ts),
+                     parse_call(ts),
+                     parse_token(ts, token_type::LITERAL),
+                     parse_token(ts, token_type::IDENTIFIER));
+}
+
+nullary_predicate auto parse_var_init(const std::span<token> ts)
+{
+    return parse_all(parse_token(ts, token_type::LET),
+                     parse_token(ts, token_type::IDENTIFIER),
+                     parse_token(ts, token_type::EQUAL),
+                     parse_expression(ts),
+                     parse_token(ts, token_type::SEMICOLON));
+}
+
+nullary_predicate auto parse_program(const std::span<token> ts)
+{
+    return [=]() {
+        while (!ts.empty())
         {
-            return false;
+            if (!(parse_any(parse_procedure_def(ts),
+                            parse_func_def(ts),
+                            parse_var_decl(ts),
+                            parse_var_init(ts))()))
+            {
+                return false;
+            }
         }
-        if (&parser != &item_parsers.back() && separator_parser())
-        {
-            return false;
-        }
-    }
-    return true;
-}
-bool parser::parse_surrounded(nullary_predicate auto&& surrounder_parser,
-                              nullary_predicate auto&&... inner_parser)
-{
-    return surrounder_parser() & parse_all(inner_parser...) & surrounder_parser();
+        return true;
+    };
 }
 
-parser::parse_token::parse_token(token_type wanted_type) : wanted_type(wanted_type) {}
-
-bool parser::parse_token::operator()()
+nullary_predicate auto parse_return_stmt(const std::span<token> ts)
 {
-    return true;
+    return parse_all(parse_token(ts, token_type::RETURN), parse_expression(ts));
 }
 
-parser::parse_token parser::make_parse_token(token_type wanted_type)
+
+nullary_predicate auto parse_control_head(const std::span<token> ts)
 {
-    return parse_token(wanted_type);
+    return parse_surrounded(parse_token(ts, token_type::LPAREN),
+                            parse_token(ts, token_type::RPAREN),
+                            parse_expression(ts));
+}
+
+nullary_predicate auto parse_control_block(const std::span<token> ts)
+{
+    return parse_all(parse_control_head(ts), parse_block(ts));
 }

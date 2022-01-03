@@ -30,86 +30,69 @@
 #include "token_type.hpp"
 
 
-template <typename R, typename C, typename... Args>
-C function_pointer_class(R (C::*)(Args...));
-
 template <typename TFunction>
-concept nullary_predicate_function = requires(TFunction& function)
+concept nullary_predicate = requires(TFunction& function)
 {
     {
         std::forward<TFunction>(function)()
         } -> std::convertible_to<bool>;
 };
 
-template <typename TFunction>
-concept nullary_predicate_member = requires(TFunction& function)
-{
-    {
-        std::invoke(function,
-                    std::declval<decltype(function_pointer_class(function))>())
-        } -> std::convertible_to<bool>;
-};
-
-template <typename TFunction>
-concept nullary_predicate =
-    nullary_predicate_member<TFunction> || nullary_predicate_function<TFunction>;
-
-// Recursive descent parser
 class parser
 {
  private:
-    // Members
     std::span<token>            token_stream_;
     std::unique_ptr<ast_node_t> ast;
-    // Methods
-    bool parse_program();
-    bool parse_binary_op();
-    bool parse_unary_op();
-    bool parse_func_def();
-    bool parse_procedure_def();
-    bool parse_signature();
-    bool parse_return_stmt();
-    bool parse_parameter_def();
-    bool parse_var_decl();
-    bool parse_var_init();
-    bool parse_var_assignment();
-    bool parse_call();
-    bool parse_parameter_pass();
-    bool parse_block();
-    bool parse_control_block();
-    bool parse_control_head();
 
-    bool parse_any(nullary_predicate auto&&... parser);
-    bool parse_all(nullary_predicate auto&&... parser);
-
-    bool parse_separated(nullary_predicate auto&& separator_parser,
-                         nullary_predicate auto&&... item_parser);
-
-    bool parse_surrounded(nullary_predicate auto&& surrounder_parser,
-                          nullary_predicate auto&&... inner_parser);
-
-    struct parse_token
-    {
-        token_type wanted_type;
-
-        explicit parse_token(token_type wanted_type);
-
-        bool operator()();
-    };
-
-    parse_token make_parse_token(token_type wanted_type);
-
-    bool parser_invoker(nullary_predicate_function auto&& parser_)
-    {
-        return std::invoke(parser_);
-    }
-    bool parser_invoker(nullary_predicate_member auto&& parser_)
-    {
-        return std::invoke(parser_, this);
-    };
 
  public:
     explicit parser(std::span<token> token_stream_);
     std::unique_ptr<ast_node_t> parse();
 };
+
+nullary_predicate auto parse_program(const std::span<token> ts);
+
+nullary_predicate auto parse_binary_op(const std::span<token> ts);
+
+nullary_predicate auto parse_unary_op(const std::span<token> ts);
+
+nullary_predicate auto parse_func_def(const std::span<token> ts);
+
+nullary_predicate auto parse_procedure_def(const std::span<token> ts);
+
+nullary_predicate auto parse_signature(const std::span<token> ts);
+
+nullary_predicate auto parse_return_stmt(const std::span<token> ts);
+
+nullary_predicate auto parse_parameter_def(const std::span<token> ts);
+
+nullary_predicate auto parse_var_decl(const std::span<token> ts);
+
+nullary_predicate auto parse_var_init(const std::span<token> ts);
+
+nullary_predicate auto parse_var_assignment(const std::span<token> ts);
+
+nullary_predicate auto parse_call(const std::span<token> ts);
+
+nullary_predicate auto parse_parameter_pass(const std::span<token> ts);
+
+nullary_predicate auto parse_block(const std::span<token> ts);
+
+nullary_predicate auto parse_control_block(const std::span<token> ts);
+
+nullary_predicate auto parse_control_head(const std::span<token> ts);
+
+nullary_predicate auto parse_expression(const std::span<token> ts);
+
+nullary_predicate auto parse_any(nullary_predicate auto&&... parser);
+nullary_predicate auto parse_all(nullary_predicate auto&&... parser);
+
+nullary_predicate auto parse_separated(nullary_predicate auto&& separator_parser,
+                                       nullary_predicate auto&&... item_parser);
+
+nullary_predicate auto parse_surrounded(nullary_predicate auto&& surrounder_parser,
+                                        nullary_predicate auto&&... inner_parser);
+
+nullary_predicate auto parse_token(const std::span<token> ts, const token_type wanted);
+
 #endif    // SRC_FRONTEND_PARSER_PARSER_HPP_
