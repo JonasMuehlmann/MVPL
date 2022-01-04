@@ -49,8 +49,7 @@ int main(int argc, char* argv[])
 
     print_token_stream(token_stream);
 
-    parser                      parser(token_stream);
-    std::unique_ptr<ast_node_t> ast = parser.parse();
+    std::unique_ptr<ast_node_t> ast = parse(token_stream);
 
     if (ast != nullptr)
     {
