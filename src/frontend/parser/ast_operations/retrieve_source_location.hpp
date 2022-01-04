@@ -17,43 +17,26 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_COMMON_SOURCE_LOCATION_HPP_
-#define SRC_COMMON_SOURCE_LOCATION_HPP_
+#ifndef SRC_FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_
+#define SRC_FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_
+#include <concepts>
+#include <exception>
 
-#include <cstddef>
-
-#include "nlohmann/json.hpp"
-
-struct source_location
+#include "ast_node.hpp"
+#include "source_location.hpp"
+struct source_location_retriever_visitor
 {
-    size_t line_start{};
-    size_t col_start{};
+    template <typename T>
+    requires(!std::same_as<T, empty_node>) source_location operator()(
+        const T& node) const
+    {
+        return node.source_location;
+    }
 
-    size_t line_end{};
-    size_t col_end{};
-
-    source_location() = default;
-
-    source_location(size_t line_start,
-                    size_t col_start,
-                    size_t line_end,
-                    size_t col_end) :
-        line_start{line_start},
-        col_start{col_start},
-        line_end{line_end},
-        col_end{col_end}
-    {}
-    // source_location(size_t& line_start,
-    //                 size_t& col_start,
-    //                 size_t& line_end,
-    //                 size_t& col_end) :
-    //     line_start{line_start},
-    //     col_start{col_start},
-    //     line_end{line_end},
-    //     col_end{col_end}
-    // {}
+    source_location operator()(const empty_node& node) const
+    {
+        throw std::invalid_argument(
+            "Tried to retrieve source code location of empty AST node");
+    }
 };
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    source_location, line_start, col_start, line_end, col_end);
-#endif    // SRC_COMMON_SOURCE_LOCATION_HPP_
+#endif    // FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_
