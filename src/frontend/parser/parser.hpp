@@ -100,7 +100,7 @@ namespace
         template <typename... Parsers>
         struct any
         {
-            static parse_result parse(const std::span<token> ts)
+            static parse_result parse(std::span<token> ts)
             {
                 auto         parsers = std::array{Parsers::parse...};
                 parse_result result;
@@ -141,7 +141,7 @@ namespace
         template <typename... Parsers>
         struct all
         {
-            static parse_result parse(const std::span<token> ts)
+            static parse_result parse(std::span<token> ts)
             {
                 auto         parsers = std::array{Parsers::parse...};
                 parse_result result;
@@ -163,7 +163,7 @@ namespace
         template <typename SeparatorParser, typename... ItemParsers>
         struct separated
         {
-            static parse_result parse(const std::span<token> ts)
+            static parse_result parse(std::span<token> ts)
             {
                 auto item_parsers = std::array{ItemParsers::parse...};
 
@@ -185,7 +185,7 @@ namespace
         template <typename SurrounderParser, typename... InnerParsers>
         struct surrounded
         {
-            static parse_result parse(const std::span<token> ts)
+            static parse_result parse(std::span<token> ts)
             {
                 return combinators::all<SurrounderParser,
                                         combinators::all<InnerParsers...>,
@@ -200,7 +200,7 @@ namespace
     template <token_type wanted>
     struct token_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             if (ts[0].type == wanted)
             {
@@ -213,7 +213,7 @@ namespace
 
     struct program_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             while (!ts.empty())
             {
@@ -231,7 +231,7 @@ namespace
 
     struct binary_op_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<
                 expression_parser,
@@ -259,7 +259,7 @@ namespace
 
     struct unary_op_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<
                 expression_parser,
@@ -271,7 +271,7 @@ namespace
 
     struct func_def_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::FUNCTION>,
                                     signature_parser,
@@ -281,7 +281,7 @@ namespace
 
     struct procedure_def_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::PROCEDURE>,
                                     signature_parser,
@@ -291,7 +291,7 @@ namespace
 
     struct signature_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::IDENTIFIER>,
                                     parameter_def_parser>::parse(ts);
@@ -300,7 +300,7 @@ namespace
 
     struct return_stmt_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::RETURN>,
                                     expression_parser>::parse(ts);
@@ -309,7 +309,7 @@ namespace
 
     struct parameter_def_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::surrounded<
                 token_parser<token_type::LPAREN>,
@@ -322,7 +322,7 @@ namespace
 
     struct var_decl_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::LET>,
                                     token_parser<token_type::IDENTIFIER>,
@@ -332,7 +332,7 @@ namespace
 
     struct var_init_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::LET>,
                                     token_parser<token_type::IDENTIFIER>,
@@ -344,7 +344,7 @@ namespace
 
     struct var_assignment_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::IDENTIFIER>,
                                     token_parser<token_type::EQUAL>,
@@ -355,7 +355,7 @@ namespace
 
     struct call_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<token_parser<token_type::IDENTIFIER>,
                                     parameter_pass_parser>::parse(ts);
@@ -364,7 +364,7 @@ namespace
 
     struct parameter_pass_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::surrounded<
                 token_parser<token_type::LPAREN>,
@@ -377,9 +377,8 @@ namespace
 
     struct block_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
-            // TODO: Implement many_parser
             return combinators::any<combinators::any<var_decl_parser,
                                                      var_assignment_parser,
                                                      var_init_parser,
@@ -390,7 +389,7 @@ namespace
 
     struct control_block_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::all<control_block_parser, block_parser>::parse(ts);
         }
@@ -398,7 +397,7 @@ namespace
 
     struct control_head_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             {
                 return combinators::surrounded<token_parser<token_type::LPAREN>,
@@ -410,7 +409,7 @@ namespace
 
     struct expression_parser
     {
-        static parse_result parse(const std::span<token> ts)
+        static parse_result parse(std::span<token> ts)
         {
             return combinators::any<binary_op_parser,
                                     unary_op_parser,
@@ -423,7 +422,7 @@ namespace
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
-inline std::unique_ptr<ast_node_t> parse(const std::span<token> ts)
+inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
 {
     return {std::get<1>(program_parser::parse(ts).value())};
 }
