@@ -141,21 +141,25 @@ namespace
         template <typename... Parsers>
         struct all
         {
-            static parse_result parse(std::span<token> ts)
+            static std::vector<parse_result> parse(std::span<token> ts)
             {
-                auto         parsers = std::array{Parsers::parse...};
-                parse_result result;
+                auto                      parsers = std::array{Parsers::parse...};
+                std::vector<parse_result> results;
+                parse_result              cur_result;
 
                 for (auto parser : parsers)
                 {
-                    result = parser(ts);
+                    cur_result = parser(ts);
 
-                    if (!result)
+                    if (!cur_result)
                     {
-                        return result;
+                        return {};
                     }
+
+                    results.push_back(cur_result);
+                    ts = std::get<std::span<token>>(cur_result.value());
                 }
-                return {};
+                return results;
                 // return (Parsers::parse(ts) && ...);
             }
         };
