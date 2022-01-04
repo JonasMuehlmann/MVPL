@@ -76,6 +76,9 @@ namespace
     template <typename... Parsers>
     struct any;
 
+    template <typename Parsers>
+    struct many;
+
     template <typename... Parsers>
     struct all;
 
@@ -112,6 +115,25 @@ namespace
                     }
                 }
                 return {};
+                // return (Parsers::parse(ts) || ...);
+            }
+        };
+        template <typename Parser>
+        struct many
+        {
+            static std::vector<parse_result> parse(std::span<token> ts)
+            {
+                std::vector<parse_result> results;
+                parse_result              cur_result = Parser::parse(ts);
+
+                while (cur_result.has_value())
+                {
+                    ts = std::get<std::span<token>>(cur_result.value());
+                    results.push_back(cur_result);
+                    cur_result = Parser::parse(ts);
+                }
+
+                return results;
                 // return (Parsers::parse(ts) || ...);
             }
         };
