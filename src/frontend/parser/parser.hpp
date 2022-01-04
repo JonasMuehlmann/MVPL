@@ -167,22 +167,27 @@ namespace
         template <typename SeparatorParser, typename... ItemParsers>
         struct separated
         {
-            static parse_result parse(std::span<token> ts)
+            static std::vector<parse_result> parse(std::span<token> ts)
             {
                 auto item_parsers = std::array{ItemParsers::parse...};
+                std::vector<parse_result> results;
+                parse_result              cur_result;
 
                 for (auto parser : item_parsers)
                 {
-                    if (!parser(ts))
+                    cur_result = parser(ts);
+                    if (cur_result.has_value())
                     {
                         return {};
                     }
-                    if (&parser != &item_parsers.back() && SeparatorParser::parse(ts))
+
+                    cur_result = SeparatorParser::parse(ts);
+                    if (&parser != &item_parsers.back() && !cur_result.has_value())
                     {
                         return {};
                     }
                 }
-                return {};
+                return results;
             }
         };
 
