@@ -41,124 +41,126 @@ concept Parser = requires(TFunction& function)
         } -> std::convertible_to<bool>;
 };
 
-using parse_result_t =
+using parse_result =
     std::optional<std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>>;
 
-struct parse_program;
-struct parse_binary_op;
-struct parse_unary_op;
-struct parse_func_def;
-struct parse_procedure_def;
-struct parse_signature;
-struct parse_return_stmt;
-struct parse_parameter_def;
-struct parse_var_decl;
-struct parse_var_init;
-struct parse_var_assignment;
-struct parse_call;
-struct parse_parameter_pass;
-struct parse_block;
-struct parse_control_block;
-struct parse_control_head;
-struct parse_expression;
+struct program_parser;
+struct binary_op_parser;
+struct unary_op_parser;
+struct func_def_parser;
+struct procedure_def_parser;
+struct signature_parser;
+struct return_stmt_parser;
+struct parameter_def_parser;
+struct var_decl_parser;
+struct var_init_parser;
+struct var_assignment_parser;
+struct call_parser;
+struct parameter_pass_parser;
+struct block_parser;
+struct control_block_parser;
+struct control_head_parser;
+struct expression_parser;
 
 template <typename... Parsers>
-struct parse_any;
+struct any;
 
 template <typename... Parsers>
-struct parse_all;
+struct all;
 
 template <typename SeparatorParser, typename... ItemParsers>
-struct parse_separated;
+struct separated;
 
 template <typename SurrounderParser, typename... InnerParsers>
-struct parse_surrounded;
+struct surrounded;
 
 template <token_type wanted>
-struct parse_token;
+struct token_parser;
 
 
-template <typename... Parsers>
-struct parse_any
+namespace combinators
 {
-    static parse_result_t parse(const std::span<token> ts)
+    template <typename... Parsers>
+    struct any
     {
-        auto           parsers = std::array{Parsers::parse...};
-        parse_result_t result;
-
-        for (auto parser : parsers)
+        static parse_result parse(const std::span<token> ts)
         {
-            result = parser(ts);
+            auto         parsers = std::array{Parsers::parse...};
+            parse_result result;
 
-            if (result)
+            for (auto parser : parsers)
             {
-                return result;
+                result = parser(ts);
+
+                if (result)
+                {
+                    return result;
+                }
             }
+            return {};
+            // return (Parsers::parse(ts) || ...);
         }
-        return {};
-        // return (Parsers::parse(ts) || ...);
-    }
-};
+    };
 
-template <typename... Parsers>
-struct parse_all
-{
-    static parse_result_t parse(const std::span<token> ts)
+    template <typename... Parsers>
+    struct all
     {
-        auto           parsers = std::array{Parsers::parse...};
-        parse_result_t result;
-
-        for (auto parser : parsers)
+        static parse_result parse(const std::span<token> ts)
         {
-            result = parser(ts);
+            auto         parsers = std::array{Parsers::parse...};
+            parse_result result;
 
-            if (!result)
+            for (auto parser : parsers)
             {
-                return result;
+                result = parser(ts);
+
+                if (!result)
+                {
+                    return result;
+                }
             }
+            return {};
+            // return (Parsers::parse(ts) && ...);
         }
-        return {};
-        // return (Parsers::parse(ts) && ...);
-    }
-};
+    };
 
-template <typename SeparatorParser, typename... ItemParsers>
-struct parse_separated
-{
-    static parse_result_t parse(const std::span<token> ts)
+    template <typename SeparatorParser, typename... ItemParsers>
+    struct separated
     {
-        auto item_parsers = std::array{ItemParsers::parse...};
-
-        for (auto parser : item_parsers)
+        static parse_result parse(const std::span<token> ts)
         {
-            if (!parser(ts))
+            auto item_parsers = std::array{ItemParsers::parse...};
+
+            for (auto parser : item_parsers)
             {
-                return {};
+                if (!parser(ts))
+                {
+                    return {};
+                }
+                if (&parser != &item_parsers.back() && SeparatorParser::parse(ts))
+                {
+                    return {};
+                }
             }
-            if (&parser != &item_parsers.back() && SeparatorParser::parse(ts))
-            {
-                return {};
-            }
+            return {};
         }
-        return {};
-    }
-};
+    };
 
-template <typename SurrounderParser, typename... InnerParsers>
-struct parse_surrounded
-{
-    static parse_result_t parse(const std::span<token> ts)
+    template <typename SurrounderParser, typename... InnerParsers>
+    struct surrounded
     {
-        return parse_all<SurrounderParser,
-                         parse_all<InnerParsers...>,
-                         SurrounderParser>::parse(ts);
-    }
-};
-
+        static parse_result parse(const std::span<token> ts)
+        {
+            return combinators::all<SurrounderParser,
+                                    combinators::all<InnerParsers...>,
+                                    SurrounderParser>::parse(ts);
+        }
+    };
+}    // namespace combinators
 template <token_type wanted>
-struct parse_token
+struct token_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
         if (ts[0].type == wanted)
         {
@@ -169,16 +171,16 @@ struct parse_token
     }
 };
 
-struct parse_program
+struct program_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
         while (!ts.empty())
         {
-            if (!parse_any<parse_procedure_def,
-                           parse_func_def,
-                           parse_var_decl,
-                           parse_var_init>::parse(ts))
+            if (!combinators::any<procedure_def_parser,
+                                  func_def_parser,
+                                  var_decl_parser,
+                                  var_init_parser>::parse(ts))
             {
                 return {};
             }
@@ -187,194 +189,197 @@ struct parse_program
     };
 };
 
-struct parse_binary_op
+struct binary_op_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_expression,
-                         parse_any<parse_token<token_type::PLUS>,
-                                   parse_token<token_type::MINUS>,
-                                   parse_token<token_type::MULTIPLICATION>,
-                                   parse_token<token_type::DIVISION>,
-                                   parse_token<token_type::MODULO>,
-                                   parse_token<token_type::LESS>,
-                                   parse_token<token_type::LESSEQ>,
-                                   parse_token<token_type::GREATER>,
-                                   parse_token<token_type::GREATEREQ>,
-                                   parse_token<token_type::EQUAL>,
-                                   parse_token<token_type::NEQUAL>,
-                                   parse_token<token_type::LOGICAL_AND>,
-                                   parse_token<token_type::LOGICAL_OR>,
-                                   parse_token<token_type::BINARY_AND>,
-                                   parse_token<token_type::BINARY_OR>,
-                                   parse_token<token_type::XOR>,
-                                   parse_token<token_type::LSHIFT>,
-                                   parse_token<token_type::RSHIFT>>,
-                         parse_expression>::parse(ts);
+        return combinators::all<
+            expression_parser,
+            combinators::any<token_parser<token_type::PLUS>,
+                             token_parser<token_type::MINUS>,
+                             token_parser<token_type::MULTIPLICATION>,
+                             token_parser<token_type::DIVISION>,
+                             token_parser<token_type::MODULO>,
+                             token_parser<token_type::LESS>,
+                             token_parser<token_type::LESSEQ>,
+                             token_parser<token_type::GREATER>,
+                             token_parser<token_type::GREATEREQ>,
+                             token_parser<token_type::EQUAL>,
+                             token_parser<token_type::NEQUAL>,
+                             token_parser<token_type::LOGICAL_AND>,
+                             token_parser<token_type::LOGICAL_OR>,
+                             token_parser<token_type::BINARY_AND>,
+                             token_parser<token_type::BINARY_OR>,
+                             token_parser<token_type::XOR>,
+                             token_parser<token_type::LSHIFT>,
+                             token_parser<token_type::RSHIFT>>,
+            expression_parser>::parse(ts);
     }
 };
 
-struct parse_unary_op
+struct unary_op_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_expression,
-                         parse_any<parse_token<token_type::NOT>,
-                                   parse_token<token_type::INCREMENT>,
-                                   parse_token<token_type::DECREMENT>>>::parse(ts);
+        return combinators::all<
+            expression_parser,
+            combinators::any<token_parser<token_type::NOT>,
+                             token_parser<token_type::INCREMENT>,
+                             token_parser<token_type::DECREMENT>>>::parse(ts);
     }
 };
 
-struct parse_func_def
+struct func_def_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::FUNCTION>,
-                         parse_signature,
-                         parse_block>::parse(ts);
+        return combinators::all<token_parser<token_type::FUNCTION>,
+                                signature_parser,
+                                block_parser>::parse(ts);
     }
 };
 
-struct parse_procedure_def
+struct procedure_def_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::PROCEDURE>,
-                         parse_signature,
-                         parse_block>::parse(ts);
+        return combinators::all<token_parser<token_type::PROCEDURE>,
+                                signature_parser,
+                                block_parser>::parse(ts);
     }
 };
 
-struct parse_signature
+struct signature_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::IDENTIFIER>,
-                         parse_parameter_def>::parse(ts);
+        return combinators::all<token_parser<token_type::IDENTIFIER>,
+                                parameter_def_parser>::parse(ts);
     }
 };
 
-struct parse_return_stmt
+struct return_stmt_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::RETURN>, parse_expression>::parse(ts);
+        return combinators::all<token_parser<token_type::RETURN>,
+                                expression_parser>::parse(ts);
     }
 };
 
-struct parse_parameter_def
+struct parameter_def_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_surrounded<
-            parse_token<token_type::LPAREN>,
-            parse_token<token_type::RPAREN>,
-            parse_separated<parse_token<token_type::COMMA>,
-                            parse_token<token_type::IDENTIFIER>>>::parse(ts);
+        return combinators::surrounded<
+            token_parser<token_type::LPAREN>,
+            token_parser<token_type::RPAREN>,
+            combinators::separated<token_parser<token_type::COMMA>,
+                                   token_parser<token_type::IDENTIFIER>>>::parse(ts);
     }
 };
 
-struct parse_var_decl
+struct var_decl_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::LET>,
-                         parse_token<token_type::IDENTIFIER>,
-                         parse_token<token_type::SEMICOLON>>::parse(ts);
+        return combinators::all<token_parser<token_type::LET>,
+                                token_parser<token_type::IDENTIFIER>,
+                                token_parser<token_type::SEMICOLON>>::parse(ts);
     }
 };
 
-struct parse_var_init
+struct var_init_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::LET>,
-                         parse_token<token_type::IDENTIFIER>,
-                         parse_token<token_type::EQUAL>,
-                         parse_expression,
-                         parse_token<token_type::SEMICOLON>>::parse(ts);
+        return combinators::all<token_parser<token_type::LET>,
+                                token_parser<token_type::IDENTIFIER>,
+                                token_parser<token_type::EQUAL>,
+                                expression_parser,
+                                token_parser<token_type::SEMICOLON>>::parse(ts);
     }
 };
 
-struct parse_var_assignment
+struct var_assignment_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::IDENTIFIER>,
-                         parse_token<token_type::EQUAL>,
-                         parse_expression,
-                         parse_token<token_type::SEMICOLON>>::parse(ts);
+        return combinators::all<token_parser<token_type::IDENTIFIER>,
+                                token_parser<token_type::EQUAL>,
+                                expression_parser,
+                                token_parser<token_type::SEMICOLON>>::parse(ts);
     }
 };
 
-struct parse_call
+struct call_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_token<token_type::IDENTIFIER>,
-                         parse_parameter_pass>::parse(ts);
+        return combinators::all<token_parser<token_type::IDENTIFIER>,
+                                parameter_pass_parser>::parse(ts);
     }
 };
 
-struct parse_parameter_pass
+struct parameter_pass_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_surrounded<
-            parse_token<token_type::LPAREN>,
-            parse_token<token_type::RPAREN>,
-            parse_separated<parse_token<token_type::COMMA>,
-                            parse_token<token_type::IDENTIFIER>>>::parse(ts);
+        return combinators::surrounded<
+            token_parser<token_type::LPAREN>,
+            token_parser<token_type::RPAREN>,
+            combinators::separated<token_parser<token_type::COMMA>,
+                                   token_parser<token_type::IDENTIFIER>>>::parse(ts);
     }
 };
 
-struct parse_block
+struct block_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        // TODO: Implement parse_many
-        return parse_any<parse_any<parse_var_decl,
-                                   parse_var_assignment,
-                                   parse_var_init,
-                                   parse_expression,
-                                   parse_control_block>>::parse(ts);
+        // TODO: Implement many_parser
+        return combinators::any<combinators::any<var_decl_parser,
+                                                 var_assignment_parser,
+                                                 var_init_parser,
+                                                 expression_parser,
+                                                 control_block_parser>>::parse(ts);
     }
 };
 
-struct parse_control_block
+struct control_block_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_all<parse_control_block, parse_block>::parse(ts);
+        return combinators::all<control_block_parser, block_parser>::parse(ts);
     }
 };
 
-struct parse_control_head
+struct control_head_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
         {
-            return parse_surrounded<parse_token<token_type::LPAREN>,
-                                    parse_token<token_type::RPAREN>,
-                                    parse_expression>::parse(ts);
+            return combinators::surrounded<token_parser<token_type::LPAREN>,
+                                           token_parser<token_type::RPAREN>,
+                                           expression_parser>::parse(ts);
         }
     }
 };
 
-struct parse_expression
+struct expression_parser
 {
-    static parse_result_t parse(const std::span<token> ts)
+    static parse_result parse(const std::span<token> ts)
     {
-        return parse_any<parse_binary_op,
-                         parse_unary_op,
-                         parse_call,
-                         parse_token<token_type::LITERAL>,
-                         parse_token<token_type::IDENTIFIER>>::parse(ts);
+        return combinators::any<binary_op_parser,
+                                unary_op_parser,
+                                call_parser,
+                                token_parser<token_type::LITERAL>,
+                                token_parser<token_type::IDENTIFIER>>::parse(ts);
     }
 };
 
 std::unique_ptr<ast_node_t> parse(const std::span<token> ts)
 {
-    return {std::get<1>(parse_program::parse(ts).value())};
+    return {std::get<1>(program_parser::parse(ts).value())};
 }
 #endif    // SRC_FRONTEND_PARSER_PARSER_HPP_
