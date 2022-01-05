@@ -21,7 +21,7 @@ Checks: '*,
 
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^((?!nlohmann).)*$'
 AnalyzeTemporaryDtors: false
 FormatStyle: file
 User: jonas
