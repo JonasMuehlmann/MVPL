@@ -205,6 +205,34 @@ namespace
         };
     }    // namespace combinators
 
+
+    //****************************************************************************//
+    //                              Helper functions                              //
+    //****************************************************************************//
+    std::span<token>& get_token_stream(parse_result& result)
+    {
+        return std::get<0>(result.value());
+    }
+    std::unique_ptr<ast_node_t>& get_node(parse_result& result)
+    {
+        return std::get<1>(result.value());
+    }
+    source_location get_source_location_from_compound(std::vector<parse_result> nodes)
+    {
+        auto first_node = get_node(nodes.front()).get();
+        auto last_node  = get_node(nodes.back()).get();
+
+        auto start_location =
+            std::visit(source_location_retriever_visitor{}, *first_node);
+        auto end_location = std::visit(source_location_retriever_visitor{}, *last_node);
+
+        return {start_location.line_start,
+                start_location.col_start,
+                end_location.line_end,
+                end_location.col_end};
+    }
+
+
     //****************************************************************************//
     //                                   Parsers                                  //
     //****************************************************************************//
@@ -277,24 +305,15 @@ namespace
                 return {};
             }
 
-            auto first_node = std::get<1>(bin_op.front().value()).get();
-            auto last_node  = std::get<1>(bin_op.back().value()).get();
-            auto start_location =
-                std::visit(source_location_retriever_visitor{}, *first_node);
-            auto end_location =
-                std::visit(source_location_retriever_visitor{}, *last_node);
 
-            auto node =
+            auto new_node =
                 std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
-                                             std::get<1>(bin_op[0].value()),
-                                             std::get<1>(bin_op[2].value()),
-                                             std::get<1>(bin_op[1].value()),
-                                             source_location(start_location.line_start,
-                                                             start_location.col_start,
-                                                             end_location.line_end,
-                                                             end_location.col_end));
+                                             get_node(bin_op[0]),
+                                             get_node(bin_op[2]),
+                                             get_node(bin_op[1]),
+                                             get_source_location_from_compound(bin_op));
 
-            return {{std::get<0>(bin_op.back().value()), std::move(node)}};
+            return {{get_token_stream(bin_op.back()), std::move(new_node)}};
         }
     };
 
