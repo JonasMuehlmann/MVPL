@@ -26,10 +26,12 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
 #include "frontend/parser/ast_node.hpp"
+#include "frontend/parser/ast_operations/retrieve_source_location.hpp"
 #include "token_type.hpp"
 
 
@@ -214,7 +216,13 @@ namespace
             if (ts[0].type == wanted)
             {
                 // return {ts.subspan(1), ast_node_t{empty_node{}}};
-                return {{ts.subspan(1), std::make_unique<ast_node_t>(empty_node{})}};
+                return {
+                    {ts.subspan(1),
+                     std::make_unique<ast_node_t>(leaf_node{
+                         ts[0].type,
+                         ts[0].value,
+                         source_location(
+                             ts[0].line, ts[0].col, ts[0].line + 1, ts[0].col + 1)})}};
             }
             return {};
         }
@@ -242,7 +250,7 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
-            return combinators::all<
+            auto bin_op = combinators::all<
                 expression_parser,
                 combinators::any<token_parser<token_type::PLUS>,
                                  token_parser<token_type::MINUS>,
@@ -263,6 +271,30 @@ namespace
                                  token_parser<token_type::LSHIFT>,
                                  token_parser<token_type::RSHIFT>>,
                 expression_parser>::parse(ts);
+
+            if (!bin_op.empty())
+            {
+                return {};
+            }
+
+            auto first_node = std::get<1>(bin_op.front().value()).get();
+            auto last_node  = std::get<1>(bin_op.back().value()).get();
+            auto start_location =
+                std::visit(source_location_retriever_visitor{}, *first_node);
+            auto end_location =
+                std::visit(source_location_retriever_visitor{}, *last_node);
+
+            auto node =
+                std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
+                                             std::get<1>(bin_op[0].value()),
+                                             std::get<1>(bin_op[2].value()),
+                                             std::get<1>(bin_op[1].value()),
+                                             source_location(start_location.line_start,
+                                                             start_location.col_start,
+                                                             end_location.line_end,
+                                                             end_location.col_end));
+
+            return {{std::get<0>(bin_op.back().value()), std::move(node)}};
         }
     };
 
