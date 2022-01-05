@@ -33,7 +33,7 @@ struct source_location_retriever_visitor
         return node.source_location;
     }
 
-    source_location operator()(const empty_node& node) const
+    source_location operator()([[maybe_unused]] const empty_node& node) const
     {
         throw std::invalid_argument(
             "Tried to retrieve source code location of empty AST node");
