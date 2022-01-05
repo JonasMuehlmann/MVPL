@@ -151,10 +151,10 @@ struct procedure_def_node final : public ast_node
 
 struct signature_node final : public ast_node
 {
-    std::string&                identifier;
+    std::string_view            identifier;
     std::unique_ptr<ast_node_t> parameter_list;
 
-    signature_node(std::string&                 identifier,
+    signature_node(std::string_view             identifier,
                    std::unique_ptr<ast_node_t>& parameter_list,
                    source_location              location);
 };
@@ -179,18 +179,18 @@ struct parameter_def_node final : public ast_node
 
 struct var_decl_node final : public ast_node
 {
-    std::string& identifier;
+    std::string_view identifier;
 
-    var_decl_node(std::string& identifier, source_location location);
+    var_decl_node(std::string_view identifier, source_location location);
 };
 
 
 struct var_init_node final : public ast_node
 {
-    std::string&                identifier;
+    std::string_view            identifier;
     std::unique_ptr<ast_node_t> value;
 
-    var_init_node(std::string&                 identifier,
+    var_init_node(std::string_view             identifier,
                   std::unique_ptr<ast_node_t>& value,
                   source_location              location);
 };
@@ -198,10 +198,10 @@ struct var_init_node final : public ast_node
 
 struct var_assignment_node final : public ast_node
 {
-    std::string&                identifier;
+    std::string_view            identifier;
     std::unique_ptr<ast_node_t> value;
 
-    var_assignment_node(std::string&                 identifier,
+    var_assignment_node(std::string_view             identifier,
                         std::unique_ptr<ast_node_t>& value,
                         source_location              location);
 };
@@ -209,10 +209,10 @@ struct var_assignment_node final : public ast_node
 
 struct call_node final : public ast_node
 {
-    std::string&                identifier;
+    std::string_view            identifier;
     std::unique_ptr<ast_node_t> parameter_pass;
 
-    call_node(std::string&                 identifier,
+    call_node(std::string_view             identifier,
               std::unique_ptr<ast_node_t>& parameter_pass,
               source_location              location);
 };
