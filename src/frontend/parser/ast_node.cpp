@@ -46,20 +46,20 @@ program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>& globals,
 
 binary_op_node::binary_op_node(std::unique_ptr<ast_node_t>& lhs_,
                                std::unique_ptr<ast_node_t>& rhs_,
-                               operator_type                operator_,
+                               std::unique_ptr<ast_node_t>& operator_,
                                source_location              location) :
     ast_node(ast_node_type::BINARY_OP, location),
     lhs{std::move(lhs_)},
     rhs{std::move(rhs_)},
-    operator_{operator_}
+    operator_{std::move(operator_)}
 {}
 
 unary_op_node::unary_op_node(std::unique_ptr<ast_node_t>& operand,
-                             operator_type                operator_,
+                             std::unique_ptr<ast_node_t>& operator_,
                              source_location              location) :
     ast_node(ast_node_type::UNARY_OP, location),
     operand{std::move(operand)},
-    operator_{operator_}
+    operator_{std::move(operator_)}
 {}
 
 func_def_node::func_def_node(std::unique_ptr<ast_node_t>& signature,

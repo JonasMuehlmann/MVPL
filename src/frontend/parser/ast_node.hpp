@@ -28,7 +28,6 @@
 #include "common/source_location.hpp"
 #include "frontend/lexer/token.hpp"
 #include "nlohmann/json.hpp"
-#include "operator_type.hpp"
 #include "token_type.hpp"
 
 struct program_node;
@@ -92,6 +91,8 @@ struct leaf_node final : public ast_node
     std::string_view value;
 
     leaf_node(token_type token, std::string_view value, source_location location);
+    // TODO:  add token based constructor
+    // leaf_node(token token_);
 };
 
 struct program_node final : public ast_node
@@ -106,25 +107,25 @@ struct binary_op_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> lhs;
     std::unique_ptr<ast_node_t> rhs;
-    operator_type               operator_;
+    std::unique_ptr<ast_node_t> operator_;
 
     binary_op_node(std::unique_ptr<ast_node_t>& lhs_,
                    std::unique_ptr<ast_node_t>& rhs_,
 
-                   operator_type   operator_,
-                   source_location location);
+                   std::unique_ptr<ast_node_t>& operator_,
+                   source_location              location);
 };
 
 
 struct unary_op_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> operand;
-    operator_type               operator_;
+    std::unique_ptr<ast_node_t> operator_;
 
     unary_op_node(std::unique_ptr<ast_node_t>& operand,
 
-                  operator_type   operator_,
-                  source_location location);
+                  std::unique_ptr<ast_node_t>& operator_,
+                  source_location              location);
 };
 
 
@@ -259,11 +260,15 @@ struct control_head_node final : public ast_node
 // Needed forawrd declaration
 void to_json(json& j, const ast_node_t& node);
 
+// Needed forawrd declaration
+void to_json(json& j, const leaf_node& node);
+
 // Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
 // json->T conversion functions
 void from_json(const json& j, ast_node_t& node);
 
-inline void to_json(json& j, const std::unique_ptr<ast_node_t>& node)
+template <typename T>
+inline void to_json(json& j, const std::unique_ptr<T>& node)
 {
     if (node != nullptr)
     {
@@ -277,13 +282,16 @@ inline void to_json(json& j, const std::unique_ptr<ast_node_t>& node)
 
 // Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE also generates
 // json->T conversion functions
-void from_json(const json& j, std::unique_ptr<ast_node_t>& node);
+template <typename T>
+void from_json(const json& j, std::unique_ptr<T>& node);
 
 // These must be declared after all structs are fully defined, because they are all part
 // of ast_node_t
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(program_node, globals, type, source_location_);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ast_node, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(leaf_node, token, value);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     binary_op_node, lhs, rhs, operator_, type, source_location_);
