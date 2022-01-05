@@ -302,7 +302,7 @@ namespace
                                  token_parser<token_type::RSHIFT>>,
                 expression_parser>::parse(ts);
 
-            if (!bin_op.empty())
+            if (bin_op.empty())
             {
                 return {};
             }
@@ -323,11 +323,25 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
-            return combinators::all<
+            auto unary_op = combinators::all<
                 expression_parser,
                 combinators::any<token_parser<token_type::NOT>,
                                  token_parser<token_type::INCREMENT>,
                                  token_parser<token_type::DECREMENT>>>::parse(ts);
+
+            if (unary_op.empty())
+            {
+                return {};
+            }
+
+
+            auto new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<unary_op_node>,
+                get_node(unary_op[0]),
+                get_node(unary_op[1]),
+                get_source_location_from_compound(unary_op));
+
+            return {{get_token_stream(unary_op.back()), std::move(new_node)}};
         }
     };
 

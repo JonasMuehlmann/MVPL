@@ -111,7 +111,6 @@ struct binary_op_node final : public ast_node
 
     binary_op_node(std::unique_ptr<ast_node_t>& lhs_,
                    std::unique_ptr<ast_node_t>& rhs_,
-
                    std::unique_ptr<ast_node_t>& operator_,
                    source_location              location);
 };
@@ -123,7 +122,6 @@ struct unary_op_node final : public ast_node
     std::unique_ptr<ast_node_t> operator_;
 
     unary_op_node(std::unique_ptr<ast_node_t>& operand,
-
                   std::unique_ptr<ast_node_t>& operator_,
                   source_location              location);
 };
