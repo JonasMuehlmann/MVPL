@@ -46,7 +46,8 @@ enum class ast_node_type
     BLOCK,             // { x = 5; y = x;}//
     CONTROL_BLOCK,     // while(x){x--;}
     CONTROL_HEAD,      // while(x)
-    PROGRAM            // Root node
+    LEAF,
+    PROGRAM    // Root node
 };
 
 const int NUM_AST_NODE_TYPES = []() {
@@ -82,6 +83,7 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
         arr[static_cast<size_t>(ast_node_type::BLOCK)]          = "BLOCK"sv;
         arr[static_cast<size_t>(ast_node_type::CONTROL_BLOCK)]  = "CONTROL_BLOCK"sv;
         arr[static_cast<size_t>(ast_node_type::CONTROL_HEAD)]   = "CONTROL_HEAD"sv;
+        arr[static_cast<size_t>(ast_node_type::LEAF)]           = "LEAF"sv;
         arr[static_cast<size_t>(ast_node_type::PROGRAM)]        = "PROGRAM"sv;
 
         return arr;

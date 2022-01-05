@@ -33,6 +33,11 @@ ast_node::ast_node(const ast_node_type type, source_location location) :
 {}
 
 
+leaf_node::leaf_node(token_type       token,
+                     std::string_view value,
+                     source_location  location) :
+    ast_node(ast_node_type::LEAF, location), token(token), value(value)
+{}
 program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>& globals,
                            source_location                           location) :
     ast_node(ast_node_type::PROGRAM, location), globals{globals}

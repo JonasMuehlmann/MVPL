@@ -29,6 +29,7 @@
 #include "frontend/lexer/token.hpp"
 #include "nlohmann/json.hpp"
 #include "operator_type.hpp"
+#include "token_type.hpp"
 
 struct program_node;
 struct binary_op_node;
@@ -47,6 +48,7 @@ struct block_node;
 struct control_block_node;
 struct control_head_node;
 struct empty_node;
+struct leaf_node;
 
 using json = nlohmann::json;
 
@@ -66,11 +68,13 @@ using ast_node_t = std::variant<program_node,
                                 block_node,
                                 control_block_node,
                                 control_head_node,
-                                empty_node>;
+                                empty_node,
+                                leaf_node>;
 
 
 struct ast_node
 {
+    // TODO: Is  this parameter any useful or just redundant with the struct's types?
     ast_node_type   type;
     source_location source_location_;
 
@@ -80,6 +84,15 @@ struct ast_node
 
 struct empty_node
 {};
+
+struct leaf_node final : public ast_node
+{
+    token_type token;
+
+    std::string_view value;
+
+    leaf_node(token_type token, std::string_view value, source_location location);
+};
 
 struct program_node final : public ast_node
 {
