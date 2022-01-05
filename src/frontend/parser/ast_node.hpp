@@ -170,10 +170,10 @@ struct return_stmt_node final : public ast_node
 
 struct parameter_def_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> parameter_list;
+    std::vector<std::string_view> parameter_list;
 
-    parameter_def_node(std::unique_ptr<ast_node_t>& parameter_list,
-                       source_location              location);
+    parameter_def_node(std::vector<std::string_view> parameter_list,
+                       source_location               location);
 };
 
 
