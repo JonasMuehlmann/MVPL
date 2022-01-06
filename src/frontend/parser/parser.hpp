@@ -20,6 +20,7 @@
 #ifndef SRC_FRONTEND_PARSER_PARSER_HPP_
 #define SRC_FRONTEND_PARSER_PARSER_HPP_
 
+#include <algorithm>
 #include <memory>
 #include <optional>
 #include <span>
@@ -27,6 +28,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "ast_node.hpp"
 #include "frontend/lexer/token.hpp"
@@ -93,6 +95,15 @@ namespace
     template <token_type wanted>
     struct token_parser;
 
+    std::span<token>& get_token_stream(parse_result& result);
+
+    bool try_add_parse_result(parse_result&&             cur_result,
+                              std::vector<parse_result>& results,
+                              std::span<token>&          ts);
+
+    bool try_add_parse_result(std::vector<parse_result>&& cur_result,
+                              std::vector<parse_result>&  results,
+                              std::span<token>&           ts);
 
     //****************************************************************************//
     //                             Parser combinators                             //
@@ -126,7 +137,8 @@ namespace
             static std::vector<parse_result> parse(std::span<token> ts)
             {
                 std::vector<parse_result> results;
-                parse_result              cur_result = Parser::parse(ts);
+                results.reserve(10);
+                parse_result cur_result = Parser::parse(ts);
 
                 while (cur_result.has_value())
                 {
@@ -136,7 +148,6 @@ namespace
                 }
 
                 return results;
-                // return (Parsers::parse(ts) || ...);
             }
         };
 
@@ -145,24 +156,19 @@ namespace
         {
             static std::vector<parse_result> parse(std::span<token> ts)
             {
-                auto                      parsers = std::array{Parsers::parse...};
                 std::vector<parse_result> results;
-                parse_result              cur_result;
+                results.reserve(sizeof...(Parsers));
 
-                for (auto parser : parsers)
+
+                bool parsed_all =
+                    (try_add_parse_result(Parsers::parse(ts), results, ts) && ...);
+
+
+                if (parsed_all)
                 {
-                    cur_result = parser(ts);
-
-                    if (!cur_result)
-                    {
-                        return {};
-                    }
-
-                    results.push_back(cur_result);
-                    ts = std::get<std::span<token>>(cur_result.value());
+                    return results;
                 }
-                return results;
-                // return (Parsers::parse(ts) && ...);
+                return {};
             }
         };
 
@@ -171,25 +177,21 @@ namespace
         {
             static std::vector<parse_result> parse(std::span<token> ts)
             {
-                auto item_parsers = std::array{ItemParsers::parse...};
                 std::vector<parse_result> results;
-                parse_result              cur_result;
+                results.reserve((2 * sizeof...(ItemParsers)) - 1);
 
-                for (auto parser : item_parsers)
+
+                bool parsed_all =
+                    ((try_add_parse_result(ItemParsers::parse(ts), results, ts)
+                      && try_add_parse_result(SeparatorParser::parse(ts), results, ts))
+                     && ...);
+
+
+                if (parsed_all)
                 {
-                    cur_result = parser(ts);
-                    if (cur_result.has_value())
-                    {
-                        return {};
-                    }
-
-                    cur_result = SeparatorParser::parse(ts);
-                    if (&parser != &item_parsers.back() && !cur_result.has_value())
-                    {
-                        return {};
-                    }
+                    return results;
                 }
-                return results;
+                return {};
             }
         };
 
@@ -198,9 +200,36 @@ namespace
         {
             static std::vector<parse_result> parse(std::span<token> ts)
             {
-                return combinators::all<SurrounderParser,
-                                        combinators::all<InnerParsers...>,
-                                        SurrounderParser>::parse(ts);
+                std::vector<parse_result> results;
+                // 2 stands for the two surrounder parsers
+                results.reserve(2 + sizeof...(InnerParsers));
+
+
+                bool parsed_all =
+                    try_add_parse_result(SurrounderParser::parse(ts), results, ts);
+
+                if (!parsed_all)
+                {
+                    return {};
+                }
+
+                parsed_all &=
+                    (try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...);
+
+                if (!parsed_all)
+                {
+                    return {};
+                }
+
+                parsed_all &=
+                    try_add_parse_result(SurrounderParser::parse(ts), results, ts);
+
+                if (!parsed_all)
+                {
+                    return {};
+                }
+
+                return results;
             }
         };
     }    // namespace combinators
@@ -232,6 +261,33 @@ namespace
                 start_location.col_start,
                 end_location.line_end,
                 end_location.col_end};
+    }
+    bool try_add_parse_result(parse_result&&             cur_result,
+                              std::vector<parse_result>& results,
+                              std::span<token>&          ts)
+    {
+        if (cur_result.has_value())
+        {
+            results.push_back(cur_result);
+            ts = std::get<std::span<token>>(cur_result.value());
+
+            return true;
+        }
+        return false;
+    }
+
+    bool try_add_parse_result(std::vector<parse_result>&& cur_result,
+                              std::vector<parse_result>&  results,
+                              std::span<token>&           ts)
+    {
+        if (!cur_result.empty())
+        {
+            std::ranges::move(cur_result, std::back_inserter(results));
+            ts = std::get<std::span<token>>(cur_result.back().value());
+
+            return true;
+        }
+        return false;
     }
 
 
@@ -458,7 +514,8 @@ namespace
             // Drop surrounder and separators
             parameters.reserve((parameter_def.size() - 2) / 2 + 1);
 
-            for (std::vector.size_type i = 1; i < parameter_def.size(); i += 2)
+            for (decltype(parameter_def)::size_type i = 1; i < parameter_def.size();
+                 i += 2)
             {
                 parameters.emplace_back(std::move(parameter_def[i]));
             }
@@ -489,7 +546,7 @@ namespace
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<var_decl_node>,
-                std::get<leaf_node>(get_node(var_decl[1])).value,
+                std::get<leaf_node>(*get_node(var_decl[1])).value,
                 get_source_location_from_compound(var_decl));
 
             return {{get_token_stream(var_decl.back()), std::move(new_node)}};
@@ -515,7 +572,7 @@ namespace
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<var_init_node>,
-                std::get<leaf_node>(get_node(var_init[1])).value,
+                std::get<leaf_node>(*get_node(var_init[1])).value,
                 get_node(var_init[2]),
                 get_source_location_from_compound(var_init));
 
@@ -527,10 +584,11 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
-            return combinators::all<token_parser<token_type::IDENTIFIER>,
-                                    token_parser<token_type::EQUAL>,
-                                    expression_parser,
-                                    token_parser<token_type::SEMICOLON>>::parse(ts);
+            auto var_assignment =
+                combinators::all<token_parser<token_type::IDENTIFIER>,
+                                 token_parser<token_type::EQUAL>,
+                                 expression_parser,
+                                 token_parser<token_type::SEMICOLON>>::parse(ts);
 
             if (var_assignment.empty())
             {
@@ -540,7 +598,7 @@ namespace
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<var_assignment_node>,
-                std::get<leaf_node>(get_node(var_assignment[1])).value,
+                std::get<leaf_node>(*get_node(var_assignment[1])).value,
                 get_node(var_assignment[2]),
                 get_source_location_from_compound(var_assignment));
 
@@ -563,7 +621,7 @@ namespace
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<call_node>,
-                std::get<leaf_node>(get_node(call[0])).value,
+                std::get<leaf_node>(*get_node(call[0])).value,
                 get_node(call[1]),
                 get_source_location_from_compound(call));
 
@@ -579,8 +637,7 @@ namespace
                 token_parser<token_type::LPAREN>,
                 token_parser<token_type::RPAREN>,
                 combinators::separated<token_parser<token_type::COMMA>,
-                                       token_parser<token_type::EXPRESSION>>>::
-                parse(ts);
+                                       expression_parser>>::parse(ts);
 
             if (parameter_pass.empty())
             {
@@ -591,7 +648,8 @@ namespace
             // Drop surrounder and separators
             parameters.reserve((parameter_pass.size() - 2) / 2 + 1);
 
-            for (std::vector.size_type i = 1; i < parameter_pass.size(); i += 2)
+            for (decltype(parameter_pass)::size_type i = 1; i < parameter_pass.size();
+                 i += 2)
             {
                 parameters.emplace_back(std::move(parameter_pass[i]));
             }
@@ -637,18 +695,18 @@ namespace
             auto control_block =
                 combinators::all<control_block_parser, block_parser>::parse(ts);
 
-            if (block.empty())
+            if (control_block.empty())
             {
                 return {};
             }
 
-            auto new_node =
-                std::make_unique<ast_node_t>(std::in_place_type<block_node>,
-                                             get_node(block[0]),
-                                             get_node(block[1]),
-                                             get_source_location_from_compound(block));
+            auto new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<control_block_node>,
+                get_node(control_block[0]),
+                get_node(control_block[1]),
+                get_source_location_from_compound(control_block));
 
-            return {{get_token_stream(block.back()), std::move(new_node)}};
+            return {{get_token_stream(control_block.back()), std::move(new_node)}};
         }
     };
 
@@ -688,17 +746,13 @@ namespace
                                  token_parser<token_type::LITERAL>,
                                  token_parser<token_type::IDENTIFIER>>::parse(ts);
 
-            if (expression.empty())
+            if (!expression.has_value())
             {
                 return {};
             }
 
-            auto new_node = std::make_unique<ast_node_t>(
-                std::in_place_type<expression_node>,
-                get_node(expression),
-                get_source_location_from_compound(expression));
-
-            return {{get_token_stream(expression.back()), std::move(new_node)}};
+            return {{get_token_stream(expression),
+                     std::move(std::get<1>(expression.value()))}};
         }
     };
 }    // namespace

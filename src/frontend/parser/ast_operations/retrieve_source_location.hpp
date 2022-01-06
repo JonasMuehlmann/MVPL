@@ -30,7 +30,7 @@ struct source_location_retriever_visitor
     requires(!std::same_as<T, empty_node>) source_location operator()(
         const T& node) const
     {
-        return node.source_location;
+        return node.source_location_;
     }
 
     source_location operator()([[maybe_unused]] const empty_node& node) const

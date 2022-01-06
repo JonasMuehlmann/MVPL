@@ -78,7 +78,7 @@ procedure_def_node::procedure_def_node(std::unique_ptr<ast_node_t>& signature,
     body{std::move(body)}
 {}
 
-signature_node::signature_node(std::string&                 identifier,
+signature_node::signature_node(std::string_view             identifier,
                                std::unique_ptr<ast_node_t>& parameter_list,
                                source_location              location) :
 
@@ -92,19 +92,19 @@ return_stmt_node::return_stmt_node(std::unique_ptr<ast_node_t>& value,
     ast_node(ast_node_type::RETURN_STMT, location), value{std::move(value)}
 {}
 
-parameter_def_node::parameter_def_node(std::unique_ptr<ast_node_t>& parameter_list,
-                                       source_location              location) :
+parameter_def_node::parameter_def_node(std::vector<std::string_view> parameter_list,
+                                       source_location               location) :
 
     ast_node(ast_node_type::PARAMETER_DEF, location),
     parameter_list{std::move(parameter_list)}
 {}
 
-var_decl_node::var_decl_node(std::string& identifier, source_location location) :
+var_decl_node::var_decl_node(std::string_view identifier, source_location location) :
 
     ast_node(ast_node_type::VAR_DEF, location), identifier{identifier}
 {}
 
-var_init_node::var_init_node(std::string&                 identifier,
+var_init_node::var_init_node(std::string_view             identifier,
                              std::unique_ptr<ast_node_t>& value,
                              source_location              location) :
 
@@ -113,7 +113,7 @@ var_init_node::var_init_node(std::string&                 identifier,
     value{std::move(value)}
 {}
 
-var_assignment_node::var_assignment_node(std::string&                 identifier,
+var_assignment_node::var_assignment_node(std::string_view             identifier,
                                          std::unique_ptr<ast_node_t>& value,
                                          source_location              location) :
 
@@ -122,7 +122,7 @@ var_assignment_node::var_assignment_node(std::string&                 identifier
     value{std::move(value)}
 {}
 
-call_node::call_node(std::string&                 identifier,
+call_node::call_node(std::string_view             identifier,
                      std::unique_ptr<ast_node_t>& parameter_pass,
                      source_location              location) :
 
@@ -131,8 +131,8 @@ call_node::call_node(std::string&                 identifier,
     parameter_pass{std::move(parameter_pass)}
 {}
 
-parameter_pass_node::parameter_pass_node(std::unique_ptr<ast_node_t>& parameter_list,
-                                         source_location              location) :
+parameter_pass_node::parameter_pass_node(std::vector<std::string_view>& parameter_list,
+                                         source_location                location) :
 
     ast_node(ast_node_type::PARAMETER_PASS, location),
     parameter_list{std::move(parameter_list)}
