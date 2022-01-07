@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
-project(MVPL CXX)
+#project(MVPL_tests CXX)
+project(MVPL_tests C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -8,10 +9,17 @@ add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address -fsanitiz
 add_link_options(-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-cast-overflow -fstack-protector-strong)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(src src/frontend/ src/frontend/lexer/ src/frontend/parser/ src/frontend/parser/ast_operations/ src/backend/ src/backend/code_generator/ src/backend/interpreter/ src/common/)
-add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(benchmarks)
 
-add_executable(MVPL src/main.cpp)
-target_link_libraries(MVPL PRIVATE MVPL_lib)
+find_package(Threads REQUIRED)
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+include_directories(../src ../src/frontend ../src/frontend/lexer/ ../src/frontend/parser ../src/frontend/parser/ast_operations ../src/backend .../src/backend/code_generator ../src/backend/interpreter ../src/common)
+
+add_executable(MVPL_tests parser_tests.cpp)
+
+target_link_libraries(MVPL_tests PUBLIC Threads::Threads gtest gtest_main MVPL_lib)
