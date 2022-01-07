@@ -101,6 +101,10 @@ namespace
                               std::vector<parse_result>& results,
                               std::span<token>&          ts);
 
+    bool try_add_parse_result(parse_result&&    cur_result,
+                              parse_result&     result,
+                              std::span<token>& ts);
+
     bool try_add_parse_result(std::vector<parse_result>&& cur_result,
                               std::vector<parse_result>&  results,
                               std::span<token>&           ts);
@@ -115,20 +119,18 @@ namespace
         {
             static parse_result parse(std::span<token> ts)
             {
-                auto         parsers = std::array{Parsers::parse...};
                 parse_result result;
 
-                for (auto parser : parsers)
-                {
-                    result = parser(ts);
 
-                    if (result)
-                    {
-                        return result;
-                    }
+                bool success =
+                    (try_add_parse_result(Parsers::parse(ts), result, ts) || ...);
+
+
+                if (success)
+                {
+                    return result;
                 }
                 return {};
-                // return (Parsers::parse(ts) || ...);
             }
         };
         template <typename Parser>
@@ -262,6 +264,7 @@ namespace
                 end_location.line_end,
                 end_location.col_end};
     }
+
     bool try_add_parse_result(parse_result&&             cur_result,
                               std::vector<parse_result>& results,
                               std::span<token>&          ts)
@@ -270,6 +273,20 @@ namespace
         {
             results.push_back(std::move(cur_result));
             ts = std::get<std::span<token>>(results.back().value());
+
+            return true;
+        }
+        return false;
+    }
+
+    bool try_add_parse_result(parse_result&&    cur_result,
+                              parse_result&     result,
+                              std::span<token>& ts)
+    {
+        if (cur_result.has_value())
+        {
+            result = std::move(cur_result);
+            ts     = std::get<std::span<token>>(result.value());
 
             return true;
         }
@@ -318,18 +335,34 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
-            while (!ts.empty())
+            auto program =
+                combinators::many<combinators::any<procedure_def_parser,
+                                                   func_def_parser,
+                                                   var_decl_parser,
+                                                   var_init_parser>>::parse(ts);
+
+
+            if (program.empty())
             {
-                if (!combinators::any<procedure_def_parser,
-                                      func_def_parser,
-                                      var_decl_parser,
-                                      var_init_parser>::parse(ts))
-                {
-                    return {};
-                }
+                return {};
             }
-            return {};
-        };
+
+
+            std::vector<std::unique_ptr<ast_node_t>> globals;
+            globals.reserve(program.size());
+
+            std::ranges::for_each(program, [&globals](auto&& element) {
+                globals.push_back(
+                    std::move(get_node(std::forward<decltype(element)>(element))));
+            });
+
+            auto new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<program_node>,
+                std::move(globals),
+                get_source_location_from_compound(program));
+
+            return {{get_token_stream(program.back()), std::move(new_node)}};
+        }
     };
 
     struct binary_op_parser
