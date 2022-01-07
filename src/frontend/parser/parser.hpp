@@ -40,8 +40,7 @@
 //****************************************************************************//
 //                                 Private API                                //
 //****************************************************************************//
-namespace
-{
+    using namespace std::literals::string_literals;
     //****************************************************************************//
     //                                    Types                                   //
     //****************************************************************************//
@@ -130,6 +129,7 @@ namespace
                 {
                     return result;
                 }
+
                 return {};
             }
         };
@@ -183,9 +183,12 @@ namespace
                 results.reserve((2 * sizeof...(ItemParsers)) - 1);
 
 
+                // FIX: This probably does not identify trailing commas as errors
                 bool parsed_all =
                     ((try_add_parse_result(ItemParsers::parse(ts), results, ts)
-                      && try_add_parse_result(SeparatorParser::parse(ts), results, ts))
+                      && (results.size() == (2 * sizeof...(ItemParsers)) - 1
+                          || try_add_parse_result(
+                              SeparatorParser::parse(ts), results, ts)))
                      && ...);
 
 
@@ -531,6 +534,7 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
+            // TODO: Handle empty parameter list
             auto parameter_def = combinators::surrounded<
                 token_parser<token_type::LPAREN>,
                 token_parser<token_type::RPAREN>,
@@ -667,6 +671,7 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
+            // TODO: Handle empty parameter list
             auto parameter_pass = combinators::surrounded<
                 token_parser<token_type::LPAREN>,
                 token_parser<token_type::RPAREN>,
@@ -702,6 +707,7 @@ namespace
     {
         static parse_result parse(std::span<token> ts)
         {
+            // TODO: Handle empty block
             auto block =
                 combinators::many<combinators::any<var_decl_parser,
                                                    var_assignment_parser,
@@ -799,7 +805,6 @@ namespace
                      std::move(std::get<1>(expression.value()))}};
         }
     };
-}    // namespace
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
