@@ -143,7 +143,7 @@ namespace
                 while (cur_result.has_value())
                 {
                     ts = std::get<std::span<token>>(cur_result.value());
-                    results.push_back(cur_result);
+                    results.push_back(std::move(cur_result));
                     cur_result = Parser::parse(ts);
                 }
 
@@ -248,7 +248,7 @@ namespace
         return std::get<1>(result.value());
     }
 
-    source_location get_source_location_from_compound(std::vector<parse_result> nodes)
+    source_location get_source_location_from_compound(std::vector<parse_result>& nodes)
     {
         auto first_node = get_node(nodes.front()).get();
         auto last_node  = get_node(nodes.back()).get();
@@ -268,8 +268,8 @@ namespace
     {
         if (cur_result.has_value())
         {
-            results.push_back(cur_result);
-            ts = std::get<std::span<token>>(cur_result.value());
+            results.push_back(std::move(cur_result));
+            ts = std::get<std::span<token>>(results.back().value());
 
             return true;
         }
@@ -517,12 +517,13 @@ namespace
             for (decltype(parameter_def)::size_type i = 1; i < parameter_def.size();
                  i += 2)
             {
-                parameters.emplace_back(std::move(parameter_def[i]));
+                parameters.push_back(
+                    std::move(std::get<leaf_node>(*get_node(parameter_def[i]))).value);
             }
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<parameter_def_node>,
-                parameters,
+                std::move(parameters),
                 get_source_location_from_compound(parameter_def));
 
             return {{get_token_stream(parameter_def.back()), std::move(new_node)}};
@@ -651,12 +652,13 @@ namespace
             for (decltype(parameter_pass)::size_type i = 1; i < parameter_pass.size();
                  i += 2)
             {
-                parameters.emplace_back(std::move(parameter_pass[i]));
+                parameters.push_back(
+                    std::move(std::get<leaf_node>(*get_node(parameter_pass[i]))).value);
             }
 
             auto new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<parameter_pass_node>,
-                parameters,
+                std::move(parameters),
                 get_source_location_from_compound(parameter_pass));
 
             return {{get_token_stream(parameter_pass.back()), std::move(new_node)}};
@@ -679,9 +681,18 @@ namespace
                 return {};
             }
 
+
+            std::vector<std::unique_ptr<ast_node_t>> statements;
+            statements.reserve(block.size());
+
+            std::ranges::for_each(block, [&statements](auto&& element) {
+                statements.push_back(
+                    std::move(get_node(std::forward<decltype(element)>(element))));
+            });
+
             auto new_node =
                 std::make_unique<ast_node_t>(std::in_place_type<block_node>,
-                                             std::move(block),
+                                             std::move(statements),
                                              get_source_location_from_compound(block));
 
             return {{get_token_stream(block.back()), std::move(new_node)}};

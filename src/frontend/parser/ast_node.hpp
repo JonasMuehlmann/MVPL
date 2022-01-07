@@ -97,10 +97,10 @@ struct leaf_node final : public ast_node
 
 struct program_node final : public ast_node
 {
-    std::vector<std::unique_ptr<ast_node_t>>& globals;
+    std::vector<std::unique_ptr<ast_node_t>> globals;
 
-    program_node(std::vector<std::unique_ptr<ast_node_t>>& globals,
-                 source_location                           location);
+    program_node(std::vector<std::unique_ptr<ast_node_t>>&& globals,
+                 source_location                            location);
 };
 
 struct binary_op_node final : public ast_node
@@ -172,8 +172,8 @@ struct parameter_def_node final : public ast_node
 {
     std::vector<std::string_view> parameter_list;
 
-    parameter_def_node(std::vector<std::string_view> parameter_list,
-                       source_location               location);
+    parameter_def_node(std::vector<std::string_view>&& parameter_list,
+                       source_location                 location);
 };
 
 
@@ -222,8 +222,8 @@ struct parameter_pass_node final : public ast_node
 {
     std::vector<std::string_view> parameter_list;
 
-    parameter_pass_node(std::vector<std::string_view>& parameter_list,
-                        source_location                location);
+    parameter_pass_node(std::vector<std::string_view>&& parameter_list,
+                        source_location                 location);
 };
 
 
@@ -231,8 +231,8 @@ struct block_node final : public ast_node
 {
     std::vector<std::unique_ptr<ast_node_t>> statements;
 
-    block_node(std::vector<std::unique_ptr<ast_node_t>>& statements,
-               source_location                           location);
+    block_node(std::vector<std::unique_ptr<ast_node_t>>&& statements,
+               source_location                            location);
 };
 
 

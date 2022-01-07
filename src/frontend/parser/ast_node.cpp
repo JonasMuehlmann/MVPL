@@ -38,9 +38,10 @@ leaf_node::leaf_node(token_type       token,
                      source_location  location) :
     ast_node(ast_node_type::LEAF, location), token(token), value(value)
 {}
-program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>& globals,
-                           source_location                           location) :
-    ast_node(ast_node_type::PROGRAM, location), globals{globals}
+
+program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>&& globals,
+                           source_location                            location) :
+    ast_node(ast_node_type::PROGRAM, location), globals{std::move(globals)}
 {}
 
 
@@ -92,8 +93,8 @@ return_stmt_node::return_stmt_node(std::unique_ptr<ast_node_t>& value,
     ast_node(ast_node_type::RETURN_STMT, location), value{std::move(value)}
 {}
 
-parameter_def_node::parameter_def_node(std::vector<std::string_view> parameter_list,
-                                       source_location               location) :
+parameter_def_node::parameter_def_node(std::vector<std::string_view>&& parameter_list,
+                                       source_location                 location) :
 
     ast_node(ast_node_type::PARAMETER_DEF, location),
     parameter_list{std::move(parameter_list)}
@@ -131,15 +132,15 @@ call_node::call_node(std::string_view             identifier,
     parameter_pass{std::move(parameter_pass)}
 {}
 
-parameter_pass_node::parameter_pass_node(std::vector<std::string_view>& parameter_list,
-                                         source_location                location) :
+parameter_pass_node::parameter_pass_node(std::vector<std::string_view>&& parameter_list,
+                                         source_location                 location) :
 
     ast_node(ast_node_type::PARAMETER_PASS, location),
     parameter_list{std::move(parameter_list)}
 {}
 
-block_node::block_node(std::vector<std::unique_ptr<ast_node_t>>& statements,
-                       source_location                           location) :
+block_node::block_node(std::vector<std::unique_ptr<ast_node_t>>&& statements,
+                       source_location                            location) :
 
     ast_node(ast_node_type::BLOCK, location), statements{std::move(statements)}
 {}
