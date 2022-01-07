@@ -4,9 +4,37 @@ project(MVPL_tests C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fstack-protector-strong -fstack-clash-protection -Wnull-dereference -Wstack-protector)
+add_compile_options(-g
+                    -O0
+                    -Wall
+                    -Wextra
+                    -Wpedantic
 
-add_link_options(-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-cast-overflow -fstack-protector-strong)
+                    -fsanitize=address
+                    -fsanitize=pointer-compare
+                    -fsanitize=pointer-subtract
+                    -fsanitize=leak
+                    -fsanitize=undefined
+                    -fsanitize=float-divide-by-zero
+                    -fsanitize=float-cast-overflow
+                    -fstack-protector-strong
+                    -fstack-clash-protection
+
+                    -fno-omit-frame-pointer
+                    -Wnull-dereference
+                    -Wstack-protector)
+
+add_link_options(-fsanitize=address
+                 -fsanitize=pointer-compare
+                 -fsanitize=pointer-subtract
+                 -fsanitize=leak
+                 -fsanitize=undefined
+                 -fsanitize=float-cast-overflow
+
+                 -fstack-protector-strong
+                 -fno-omit-frame-pointer
+                 )
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
@@ -18,8 +46,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-include_directories(../src ../src/frontend ../src/frontend/lexer/ ../src/frontend/parser ../src/frontend/parser/ast_operations ../src/backend .../src/backend/code_generator ../src/backend/interpreter ../src/common)
+include_directories(../src
+                    ../src/frontend
+                    ../src/frontend/lexer/
+                    ../src/frontend/parser
+                    ../src/frontend/parser/ast_operations
 
-add_executable(MVPL_tests parser_tests.cpp)
+                    ../src/backend
+                    ../src/backend/code_generator
+                    ../src/backend/interpreter
+
+                    ../src/common
+                    )
+
+add_executable(MVPL_tests frontend/parser/parser_tests.cpp)
 
 target_link_libraries(MVPL_tests PUBLIC Threads::Threads gtest gtest_main MVPL_lib)
