@@ -4,6 +4,12 @@ project(MVPL_tests C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
+execute_process(COMMAND nproc --all OUTPUT_VARIABLE N_CORES)
+
+set({CMAKE_BUILD_PARALLEL_LEVEL} N_CORES)
+
+message(STATUS "Using ${N_CORES} cores.")
+
 add_compile_options(-g
                     -O0
                     -Wall

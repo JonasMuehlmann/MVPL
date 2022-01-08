@@ -3,6 +3,12 @@ project(MVPL_lib CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
+execute_process(COMMAND nproc --all OUTPUT_VARIABLE N_CORES)
+
+set({CMAKE_BUILD_PARALLEL_LEVEL} N_CORES)
+
+message(STATUS "Using ${N_CORES} cores.")
+
 add_compile_options(-g -O0 -Wall -Wextra -Wpedantic -fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fstack-protector-strong -fstack-clash-protection -Wnull-dereference -Wstack-protector)
 
 add_link_options(-fsanitize=address -fsanitize=pointer-compare -fsanitize=pointer-subtract -fsanitize=leak -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=float-cast-overflow -fstack-protector-strong)
