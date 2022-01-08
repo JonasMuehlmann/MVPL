@@ -46,7 +46,6 @@ bool lexer::is_word(char c)
 
 std::string_view lexer::peek_next_word()
 {
-    // FIX: This seems to be buggy, it substrings until the end of the file
     return source_code.substr(
         0,
         std::distance(begin(source_code),
@@ -60,7 +59,6 @@ void lexer::skip_whitespace()
         auto n_whitespace_chars = std::distance(
             begin(source_code), std::ranges::find_if_not(source_code, is_whitespace));
 
-        // FIX: This probably does not handle whitespaces after line breaks
         auto n_line_breaks = std::distance(
             begin(source_code),
             std::ranges::find_if_not(source_code, [](char c) { return c == '\n'; }));
@@ -180,8 +178,11 @@ std::vector<token> lexer::lex()
         // Handle keywords
         if (LUT_LEXEME_TO_TOKEN.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(
-                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
+            token_stream.emplace_back(
+                token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
+                      next_lexeme,
+                      source_location(
+                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
         }
         // Handle literals
         else if ((next_lexeme.length() != 0U)
@@ -190,28 +191,40 @@ std::vector<token> lexer::lex()
                     }))
         {
             token_stream.emplace_back(
-                token(token_type::LITERAL, next_lexeme, cur_line, cur_col));
+                token(token_type::LITERAL,
+                      next_lexeme,
+                      source_location(
+                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
         }
         // Handle identifiers
         else if (next_lexeme.length() != 0U
                  && std::ranges::all_of(next_lexeme, is_word))
         {
             token_stream.emplace_back(
-                token(token_type::IDENTIFIER, next_lexeme, cur_line, cur_col));
+                token(token_type::IDENTIFIER,
+                      next_lexeme,
+                      source_location(
+                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
         }
         // Handle double char operators
         else if (next_lexeme = source_code.substr(0, 2);
                  OPERATOR_LEXEMES.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(
-                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
+            token_stream.emplace_back(
+                token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
+                      next_lexeme,
+                      source_location(
+                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
         }
         // Handle single char operators
         else if (next_lexeme = source_code.substr(0, 1);
                  OPERATOR_LEXEMES.contains(next_lexeme))
         {
-            token_stream.emplace_back(token(
-                LUT_LEXEME_TO_TOKEN.at(next_lexeme), next_lexeme, cur_line, cur_col));
+            token_stream.emplace_back(
+                token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
+                      next_lexeme,
+                      source_location(
+                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
         }
         else
         {

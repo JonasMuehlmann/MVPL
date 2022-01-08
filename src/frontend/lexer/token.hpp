@@ -25,23 +25,21 @@
 #include <string_view>
 
 #include "nlohmann/json.hpp"
+#include "source_location.hpp"
 #include "token_type.hpp"
 
 using json = nlohmann::json;
 
-// TODO: This should be refactored to use a source_location struct
 struct token
 {
     std::string_view value;
     token_type       type;
-    // TODO: Add col and line end in addition to start
-    size_t line;
-    size_t col;
+    source_location  source_location_;
 
-    token(enum token_type type, std::string_view value, size_t line, size_t col) :
-        value{value}, type{type}, line{line}, col{col}
+    token(enum token_type type, std::string_view value, source_location location) :
+        value{value}, type{type}, source_location_(location)
     {}
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(token, value, type, line, col);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(token, value, type, source_location_);
 #endif    // SRC_FRONTEND_LEXER_TOKEN_HPP_
