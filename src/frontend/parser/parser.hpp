@@ -140,13 +140,16 @@ namespace combinators
         {
             std::vector<parse_result> results;
             results.reserve(10);
-            parse_result cur_result = Parser::parse(ts);
+            bool success = try_add_parse_result(Parser::parse(ts), results, ts);
 
-            while (cur_result.has_value())
+            if (!success)
             {
-                ts = std::get<std::span<token>>(cur_result.value());
-                results.push_back(std::move(cur_result));
-                cur_result = Parser::parse(ts);
+                return {};
+            }
+
+            while (try_add_parse_result(Parser::parse(ts), results, ts))
+            {
+                ;
             }
 
             return results;
@@ -174,32 +177,39 @@ namespace combinators
         }
     };
 
-    template <typename SeparatorParser, typename... ItemParsers>
+    template <typename SeparatorParser, typename ItemParser>
     struct separated
     {
         static std::vector<parse_result> parse(std::span<token> ts)
         {
             std::vector<parse_result> results;
-            results.reserve((2 * sizeof...(ItemParsers)) - 1);
+            results.reserve(10);
 
 
-            // FIX: This probably does not identify trailing commas as errors
-            bool parsed_all =
-                ((try_add_parse_result(ItemParsers::parse(ts), results, ts)
-                  && (results.size() == (2 * sizeof...(ItemParsers)) - 1
-                      || try_add_parse_result(SeparatorParser::parse(ts), results, ts)))
-                 && ...);
+            bool success = try_add_parse_result(
+                combinators::many<combinators::all<ItemParser, SeparatorParser>>::parse(
+                    ts),
+                results,
+                ts);
 
-
-            if (parsed_all)
+            if (!success)
             {
-                return results;
+                return {};
             }
-            return {};
+
+            success = try_add_parse_result(ItemParser::parse(ts), results, ts);
+
+            if (!success)
+            {
+                return {};
+            }
+
+
+            return results;
         }
     };
 
-    template <typename SurrounderParser, typename... InnerParsers>
+    template <typename OpeningParser, typename ClosingParser, typename... InnerParsers>
     struct surrounded
     {
         static std::vector<parse_result> parse(std::span<token> ts)
@@ -210,7 +220,7 @@ namespace combinators
 
 
             bool parsed_all =
-                try_add_parse_result(SurrounderParser::parse(ts), results, ts);
+                try_add_parse_result(OpeningParser::parse(ts), results, ts);
 
             if (!parsed_all)
             {
@@ -225,8 +235,7 @@ namespace combinators
                 return {};
             }
 
-            parsed_all &=
-                try_add_parse_result(SurrounderParser::parse(ts), results, ts);
+            parsed_all &= try_add_parse_result(ClosingParser::parse(ts), results, ts);
 
             if (!parsed_all)
             {
