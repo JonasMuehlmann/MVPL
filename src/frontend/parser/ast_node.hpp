@@ -91,8 +91,7 @@ struct leaf_node final : public ast_node
     std::string_view value;
 
     leaf_node(token_type token, std::string_view value, source_location location);
-    // TODO:  add token based constructor
-    // leaf_node(token token_);
+    explicit leaf_node(struct token token_);
 };
 
 struct program_node final : public ast_node

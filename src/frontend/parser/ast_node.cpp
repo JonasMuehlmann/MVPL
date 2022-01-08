@@ -39,6 +39,12 @@ leaf_node::leaf_node(token_type       token,
     ast_node(ast_node_type::LEAF, location), token(token), value(value)
 {}
 
+leaf_node::leaf_node(struct token token_) :
+    ast_node(ast_node_type::LEAF, token_.source_location_),
+    token(token_.type),
+    value(token_.value)
+{}
+
 program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>&& globals,
                            source_location                            location) :
     ast_node(ast_node_type::PROGRAM, location), globals{std::move(globals)}
