@@ -26,7 +26,7 @@
 #include "common/enum_range.hpp"
 #include "nlohmann/json.hpp"
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 enum class ast_node_type
 {

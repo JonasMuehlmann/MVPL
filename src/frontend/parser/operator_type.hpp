@@ -22,7 +22,7 @@
 #include "enum_range.hpp"
 #include "nlohmann/json.hpp"
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 
 enum class operator_type

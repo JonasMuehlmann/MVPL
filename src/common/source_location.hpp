@@ -22,7 +22,10 @@
 
 #include <cstddef>
 
+#include "common/macros.hpp"
 #include "nlohmann/json.hpp"
+
+using json = nlohmann::ordered_json;
 
 struct source_location
 {
@@ -54,6 +57,6 @@ struct source_location
     // {}
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
     source_location, line_start, col_start, line_end, col_end);
 #endif    // SRC_COMMON_SOURCE_LOCATION_HPP_

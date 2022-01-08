@@ -24,11 +24,12 @@
 #include <string>
 #include <string_view>
 
+#include "common/macros.hpp"
 #include "nlohmann/json.hpp"
 #include "source_location.hpp"
 #include "token_type.hpp"
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 struct token
 {
@@ -41,5 +42,5 @@ struct token
     {}
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(token, value, type, source_location_);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(token, value, type, source_location_);
 #endif    // SRC_FRONTEND_LEXER_TOKEN_HPP_
