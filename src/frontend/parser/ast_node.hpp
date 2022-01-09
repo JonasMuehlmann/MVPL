@@ -47,7 +47,7 @@ struct parameter_pass_node;
 struct block_node;
 struct control_block_node;
 struct control_head_node;
-struct empty_node;
+struct missing_optional_node;
 struct leaf_node;
 
 using json = nlohmann::ordered_json;
@@ -68,7 +68,7 @@ using ast_node_t = std::variant<program_node,
                                 block_node,
                                 control_block_node,
                                 control_head_node,
-                                empty_node,
+                                missing_optional_node,
                                 leaf_node>;
 
 
@@ -82,7 +82,7 @@ struct ast_node
     virtual ~ast_node() = default;
 };
 
-struct empty_node
+struct missing_optional_node
 {};
 
 struct leaf_node final : public ast_node

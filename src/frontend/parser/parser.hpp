@@ -21,6 +21,7 @@
 #define SRC_FRONTEND_PARSER_PARSER_HPP_
 
 #include <algorithm>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <span>
@@ -54,6 +55,14 @@ concept Parser = requires(TFunction& function)
 
 using parse_result =
     std::optional<std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>>;
+
+template <typename Function>
+using ReturnTypeOfFunction = typename decltype(std::function{
+    std::declval<Function>()})::result_type;
+
+template <typename ReturnType, typename... Pack>
+concept PackContainsFunctionWithReturnType =
+    ((std::is_same<ReturnTypeOfFunction<Pack>, ReturnType>::value) || ...);
 
 //****************************************************************************//
 //                            Forward declarations                            //
@@ -113,21 +122,37 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 //****************************************************************************//
 namespace combinators
 {
+    template <typename Parser>
+    struct optional
+    {
+        static std::vector<parse_result> parse(std::span<token> ts)
+        {
+            auto results = Parser::parse(ts);
+
+            if (!results.empty())
+            {
+                return results;
+            }
+            return {};
+        }
+    };
+
+
     template <typename... Parsers>
     struct any
     {
-        static parse_result parse(std::span<token> ts)
+        static std::vector<parse_result> parse(std::span<token> ts)
         {
-            parse_result result;
+            std::vector<parse_result> results;
 
 
             bool success =
-                (try_add_parse_result(Parsers::parse(ts), result, ts) || ...);
+                (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
 
 
             if (success)
             {
-                return result;
+                return results;
             }
 
             return {};
@@ -538,8 +563,11 @@ struct parameter_def_parser
         auto parameter_def = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
-            combinators::separated<token_parser<token_type::COMMA>,
-                                   token_parser<token_type::IDENTIFIER>>>::parse(ts);
+            combinators::optional<combinators::any<
+                token_parser<token_type::IDENTIFIER>,
+                combinators::separated<token_parser<token_type::COMMA>,
+                                       token_parser<token_type::IDENTIFIER>>>>>::
+            parse(ts);
 
         if (parameter_def.empty())
         {
@@ -550,16 +578,31 @@ struct parameter_def_parser
         // Drop surrounder and separators
         parameters.reserve((parameter_def.size() - 2) / 2 + 1);
 
-        for (decltype(parameter_def)::size_type i = 1; i < parameter_def.size(); i += 2)
-        {
-            parameters.push_back(
-                std::move(std::get<leaf_node>(*get_node(parameter_def[i]))).value);
-        }
+        std::unique_ptr<ast_node_t> new_node;
 
-        auto new_node = std::make_unique<ast_node_t>(
-            std::in_place_type<parameter_def_node>,
-            std::move(parameters),
-            get_source_location_from_compound(parameter_def));
+        if (parameter_def.size() == 3
+            && std::holds_alternative<missing_optional_node>(
+                (*get_node(parameter_def[2]))))
+        {
+            new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<parameter_def_node>,
+                std::move(parameters),
+                get_source_location_from_compound(parameter_def));
+        }
+        else
+        {
+            for (decltype(parameter_def)::size_type i = 1; i < parameter_def.size();
+                 i += 2)
+            {
+                parameters.push_back(
+                    std::move(std::get<leaf_node>(*get_node(parameter_def[i]))).value);
+            }
+
+            new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<parameter_def_node>,
+                std::move(parameters),
+                get_source_location_from_compound(parameter_def));
+        }
 
         return {{get_token_stream(parameter_def.back()), std::move(new_node)}};
     }
@@ -794,13 +837,13 @@ struct expression_parser
                              token_parser<token_type::LITERAL>,
                              token_parser<token_type::IDENTIFIER>>::parse(ts);
 
-        if (!expression.has_value())
+        if (expression.empty())
         {
             return {};
         }
 
-        return {
-            {get_token_stream(expression), std::move(std::get<1>(expression.value()))}};
+        return {{get_token_stream(expression[0]),
+                 std::move(std::get<1>(expression[0].value()))}};
     }
 };
 //****************************************************************************//

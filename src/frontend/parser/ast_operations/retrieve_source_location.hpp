@@ -27,13 +27,13 @@
 struct source_location_retriever_visitor
 {
     template <typename T>
-    requires(!std::same_as<T, empty_node>) source_location operator()(
+    requires(!std::same_as<T, missing_optional_node>) source_location operator()(
         const T& node) const
     {
         return node.source_location_;
     }
 
-    source_location operator()([[maybe_unused]] const empty_node& node) const
+    source_location operator()([[maybe_unused]] const missing_optional_node& node) const
     {
         throw std::invalid_argument(
             "Tried to retrieve source code location of empty AST node");
