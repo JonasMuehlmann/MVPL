@@ -298,19 +298,16 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
     binary_op_node, type, source_location_, lhs, rhs, operator_);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    unary_op_node, type,
-                                             source_location_, operand, operator_);
+    unary_op_node, type, source_location_, operand, operator_);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    func_def_node, type,
-                                             source_location_,signature
-                                             , body);
+    func_def_node, type, source_location_, signature, body);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    procedure_def_node, type,source_location_, signature, body);
+    procedure_def_node, type, source_location_, signature, body);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    signature_node, type, source_location_ ,identifier, parameter_list);
+    signature_node, type, source_location_, identifier, parameter_list);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(return_stmt_node,
                                              type,
@@ -328,17 +325,13 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(var_decl_node,
                                              identifier);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    var_init_node,  type, source_location_, identifier, value);
+    var_init_node, type, source_location_, identifier, value);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    var_assignment_node,
-                                             type,
-                                             source_location_, identifier, value );
+    var_assignment_node, type, source_location_, identifier, value);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    call_node,
-                                             type,
-                                             source_location_, identifier, parameter_pass );
+    call_node, type, source_location_, identifier, parameter_pass);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(parameter_pass_node,
                                              type,
@@ -351,7 +344,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(block_node,
                                              statements);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    control_block_node,  type, source_location_, head, body);
+    control_block_node, type, source_location_, head, body);
 
 inline void to_json(json& j, const ast_node_t& node)
 {
