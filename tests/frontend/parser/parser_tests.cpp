@@ -12,15 +12,20 @@
 
 using namespace std::string_view_literals;
 
-// FIX: Passing empty token streams to a parser causes a segfault
-// TEST(TestParameterDefParser, Empty)
-// {
-//     std::array<token, 0> token_stream_raw{};
+TEST(TestParameterDefParser, NoParameter)
+{
+    std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location())};
 
-//     std::span<token> token_stream(token_stream_raw);
+    std::span<token> token_stream(token_stream_raw);
 
-//     auto result = parameter_def_parser::parse(token_stream);
-// }
+    auto result = parameter_def_parser::parse(token_stream);
+
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_EQ(std::get<parameter_def_node>((*get_node(result))).parameter_list.size(),
+              0);
+}
 
 TEST(TestParameterDefParser, OneParameter)
 {
