@@ -140,8 +140,9 @@ void lexer::skip_block_comment()
 
 void lexer::skip_line_comment()
 {
+    // + 1 to also remove line break
     auto comment_length =
-        std::distance(begin(source_code), std::ranges::find(source_code, '\n'));
+        std::distance(begin(source_code), std::ranges::find(source_code, '\n')) + 1;
 
     cur_col += comment_length;
     source_code.remove_prefix(comment_length);
