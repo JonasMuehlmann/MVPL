@@ -182,7 +182,7 @@ std::vector<token> lexer::lex()
                 token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
                       next_lexeme,
                       source_location(
-                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
+                          cur_line, cur_col, cur_line, cur_col + next_lexeme.size())));
         }
         // Handle literals
         else if ((next_lexeme.length() != 0U)
@@ -194,7 +194,7 @@ std::vector<token> lexer::lex()
                 token(token_type::LITERAL,
                       next_lexeme,
                       source_location(
-                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
+                          cur_line, cur_col, cur_line, cur_col + next_lexeme.size())));
         }
         // Handle identifiers
         else if (next_lexeme.length() != 0U
@@ -204,7 +204,7 @@ std::vector<token> lexer::lex()
                 token(token_type::IDENTIFIER,
                       next_lexeme,
                       source_location(
-                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
+                          cur_line, cur_col, cur_line, cur_col + next_lexeme.size())));
         }
         // Handle double char operators
         else if (next_lexeme = source_code.substr(0, 2);
@@ -214,7 +214,7 @@ std::vector<token> lexer::lex()
                 token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
                       next_lexeme,
                       source_location(
-                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
+                          cur_line, cur_col, cur_line, cur_col + next_lexeme.size())));
         }
         // Handle single char operators
         else if (next_lexeme = source_code.substr(0, 1);
@@ -224,7 +224,7 @@ std::vector<token> lexer::lex()
                 token(LUT_LEXEME_TO_TOKEN.at(next_lexeme),
                       next_lexeme,
                       source_location(
-                          cur_line, cur_col, cur_line + next_lexeme.size(), cur_col)));
+                          cur_line, cur_col, cur_line, cur_col + next_lexeme.size())));
         }
         else
         {
