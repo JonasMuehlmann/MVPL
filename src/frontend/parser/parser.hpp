@@ -187,7 +187,7 @@ namespace combinators
                 return {};
             }
 
-            while (try_add_parse_result(Parser::parse(ts), results, ts))
+            while (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
             {
                 ;
             }
@@ -379,17 +379,18 @@ struct program_parser
 {
     static parse_result parse(std::span<token> ts)
     {
-        auto program = combinators::many<combinators::any<procedure_def_parser,
-                                                          func_def_parser,
-                                                          var_decl_parser,
-                                                          var_init_parser>>::parse(ts);
+        auto program = combinators::many<combinators::any<var_decl_parser,
+                                                          var_init_parser,
+                                                          procedure_def_parser,
+                                                          func_def_parser>>::parse(ts);
 
 
         if (program.empty())
         {
             return {};
         }
-
+        
+        auto new_location = get_source_location_from_compound(program);
 
         std::vector<std::unique_ptr<ast_node_t>> globals;
         globals.reserve(program.size());
@@ -399,10 +400,8 @@ struct program_parser
                 std::move(get_node(std::forward<decltype(element)>(element))));
         });
 
-        auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<program_node>,
-                                         std::move(globals),
-                                         get_source_location_from_compound(program));
+        auto new_node = std::make_unique<ast_node_t>(
+            std::in_place_type<program_node>, std::move(globals), new_location);
 
         return {{get_token_stream(program.back()), std::move(new_node)}};
     }
@@ -578,16 +577,10 @@ struct parameter_def_parser
         auto parameter_def = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
-            combinators::optional<
-                combinators::any<
-                    combinators::separated<
-                        token_parser<token_type::COMMA>,
-                        token_parser<token_type::IDENTIFIER>
-                    >,
-                    token_parser<token_type::IDENTIFIER>
-                >
-            >
-        >::parse(ts);
+            combinators::optional<combinators::any<
+                combinators::separated<token_parser<token_type::COMMA>,
+                                       token_parser<token_type::IDENTIFIER>>,
+                token_parser<token_type::IDENTIFIER>>>>::parse(ts);
 
         if (parameter_def.empty())
         {
@@ -618,10 +611,12 @@ struct parameter_def_parser
                     std::move(std::get<leaf_node>(*get_node(parameter_def[i]))).value);
             }
 
+            auto source_location = get_source_location_from_compound(parameter_def);
+            
             new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<parameter_def_node>,
                 std::move(parameters),
-                get_source_location_from_compound(parameter_def));
+                source_location);
         }
 
         return {{get_token_stream(parameter_def.back()), std::move(new_node)}};
@@ -743,6 +738,8 @@ struct parameter_pass_parser
         {
             return {};
         }
+        
+        auto new_location = get_source_location_from_compound(parameter_pass);
 
         auto parameters = std::vector<std::string_view>();
         // Drop surrounder and separators
@@ -758,7 +755,7 @@ struct parameter_pass_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<parameter_pass_node>,
             std::move(parameters),
-            get_source_location_from_compound(parameter_pass));
+            new_location);
 
         return {{get_token_stream(parameter_pass.back()), std::move(new_node)}};
     }
@@ -769,32 +766,46 @@ struct block_parser
     static parse_result parse(std::span<token> ts)
     {
         // TODO: Handle empty block
-        auto block =
-            combinators::many<combinators::any<var_decl_parser,
-                                               var_assignment_parser,
-                                               var_init_parser,
-                                               expression_parser,
-                                               control_block_parser>>::parse(ts);
+        auto block = combinators::all<token_parser<token_type::LBRACAE>,
+                                      combinators::optional<combinators::many<
+                                          combinators::any<var_decl_parser,
+                                                           var_assignment_parser,
+                                                           var_init_parser,
+                                                           expression_parser,
+                                                           control_block_parser>>>,
+                                      token_parser<token_type::RBRACE>>::parse(ts);
 
         if (block.empty())
         {
             return {};
         }
+        
+        auto new_location = get_source_location_from_compound(block);
 
-
+        std::unique_ptr<ast_node_t>              new_node;
         std::vector<std::unique_ptr<ast_node_t>> statements;
         statements.reserve(block.size());
 
-        std::ranges::for_each(block, [&statements](auto&& element) {
-            statements.push_back(
-                std::move(get_node(std::forward<decltype(element)>(element))));
-        });
+        if (block.size() == 3
+            && std::holds_alternative<missing_optional_node>((*get_node(block[1]))))
+        {
+            new_node =
+                std::make_unique<ast_node_t>(std::in_place_type<block_node>,
+                                             std::move(statements),
+                                             get_source_location_from_compound(block));
+        }
+        else
+        {
+            std::ranges::for_each(block, [&statements](auto&& element) {
+                statements.push_back(
+                    std::move(get_node(std::forward<decltype(element)>(element))));
+            });
 
-        auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<block_node>,
-                                         std::move(statements),
-                                         get_source_location_from_compound(block));
-
+            new_node =
+                std::make_unique<ast_node_t>(std::in_place_type<block_node>,
+                                             std::move(statements),
+                                             new_location);
+        }
         return {{get_token_stream(block.back()), std::move(new_node)}};
     }
 };
@@ -850,12 +861,11 @@ struct expression_parser
 {
     static parse_result parse(std::span<token> ts)
     {
-        auto expression =
-            combinators::any<binary_op_parser,
-                             unary_op_parser,
-                             call_parser,
-                             token_parser<token_type::LITERAL>,
-                             token_parser<token_type::IDENTIFIER>>::parse(ts);
+        auto expression = combinators::any<token_parser<token_type::LITERAL>,
+                                           token_parser<token_type::IDENTIFIER>,
+                                           binary_op_parser,
+                                           unary_op_parser,
+                                           call_parser>::parse(ts);
 
         if (expression.empty())
         {
