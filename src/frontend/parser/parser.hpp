@@ -725,11 +725,9 @@ struct parameter_pass_parser
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
             combinators::optional<
-                combinators::any<
-                    combinators::separated<
-                        token_parser<token_type::COMMA>,
-                        expression_parser>,
-                    expression_parser>>>::parse(ts);
+                combinators::any<combinators::separated<token_parser<token_type::COMMA>,
+                                                        expression_parser>,
+                                 expression_parser>>>::parse(ts);
 
         if (parameter_pass.empty())
         {
@@ -881,8 +879,7 @@ struct expression_parser
             return {};
         }
 
-        return {{get_token_stream(expression[0]),
-                 std::move(std::get<1>(expression[0].value()))}};
+        return {{get_token_stream(expression[0]), std::move(get_node(expression[0]))}};
     }
 };
 //****************************************************************************//

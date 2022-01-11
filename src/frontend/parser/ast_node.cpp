@@ -108,7 +108,7 @@ parameter_def_node::parameter_def_node(std::vector<std::string_view>&& parameter
 
 var_decl_node::var_decl_node(std::string_view identifier, source_location location) :
 
-    ast_node(ast_node_type::VAR_DEF, location), identifier{identifier}
+    ast_node(ast_node_type::VAR_DECL, location), identifier{identifier}
 {}
 
 var_init_node::var_init_node(std::string_view             identifier,

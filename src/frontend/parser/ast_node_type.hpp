@@ -38,7 +38,7 @@ enum class ast_node_type
     FUNC_SIGNATURE,    // function x(a,b,c)
     RETURN_STMT,       // return x;
     PARAMETER_DEF,     // a,b,c
-    VAR_DEF,           // x
+    VAR_DECL,          // x
     VAR_INIT,          // let x = 5;
     VAR_ASSIGNMENT,    // x = 5;
     CALL,              // f(2, 5)
@@ -75,7 +75,7 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
         arr[static_cast<size_t>(ast_node_type::FUNC_SIGNATURE)] = "FUNC_SIGNATURE"sv;
         arr[static_cast<size_t>(ast_node_type::RETURN_STMT)]    = "RETURN_STMT"sv;
         arr[static_cast<size_t>(ast_node_type::PARAMETER_DEF)]  = "PARAMETER_DEF"sv;
-        arr[static_cast<size_t>(ast_node_type::VAR_DEF)]        = "VAR_DEF"sv;
+        arr[static_cast<size_t>(ast_node_type::VAR_DECL)]       = "VAR_DECL"sv;
         arr[static_cast<size_t>(ast_node_type::VAR_INIT)]       = "VAR_INIT"sv;
         arr[static_cast<size_t>(ast_node_type::VAR_ASSIGNMENT)] = "VAR_ASSIGNMENT"sv;
         arr[static_cast<size_t>(ast_node_type::CALL)]           = "CALL"sv;
