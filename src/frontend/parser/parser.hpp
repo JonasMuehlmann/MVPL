@@ -87,23 +87,23 @@ struct expression_parser;
 
 namespace combinators
 {
-    template <typename Parser>
-    struct optional;
+template <typename Parser>
+struct optional;
 
-    template <typename... Parsers>
-    struct any;
+template <typename... Parsers>
+struct any;
 
-    template <typename Parser>
-    struct many;
+template <typename Parser>
+struct many;
 
-    template <typename... Parsers>
-    struct all;
+template <typename... Parsers>
+struct all;
 
-    template <typename SeparatorParser, typename ItemParser>
-    struct separated;
+template <typename SeparatorParser, typename ItemParser>
+struct separated;
 
-    template <typename OpeningParser, typename ClosingParser, typename... InnerParsers>
-    struct surrounded;
+template <typename OpeningParser, typename ClosingParser, typename... InnerParsers>
+struct surrounded;
 }    // namespace combinators
 
 template <token_type wanted>
@@ -128,163 +128,158 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 //****************************************************************************//
 namespace combinators
 {
-    template <typename Parser>
-    struct optional
+template <typename Parser>
+struct optional
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
     {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        std::vector<parse_result> results{};
+
+
+        if (try_add_parse_result(Parser::parse(ts), results, ts))
         {
-            std::vector<parse_result> results{};
-
-
-            if (try_add_parse_result(Parser::parse(ts), results, ts))
-            {
-                return results;
-            }
-
-            parse_result new_node = {{ts,
-                                      std::make_unique<ast_node_t>(
-                                          std::in_place_type<missing_optional_node>)}};
-
-            results.push_back(std::move(new_node));
-
             return results;
         }
-    };
+
+        parse_result new_node = {
+            {ts,
+             std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)}};
+
+        results.push_back(std::move(new_node));
+
+        return results;
+    }
+};
 
 
-    template <typename... Parsers>
-    struct any
+template <typename... Parsers>
+struct any
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
     {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        std::vector<parse_result> results;
+
+
+        bool success = (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
+
+
+        if (success)
         {
-            std::vector<parse_result> results;
+            return results;
+        }
 
+        return {};
+    }
+};
 
-            bool success =
-                (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
+template <typename Parser>
+struct many
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
+    {
+        std::vector<parse_result> results;
+        results.reserve(10);
+        bool success = try_add_parse_result(Parser::parse(ts), results, ts);
 
-
-            if (success)
-            {
-                return results;
-            }
-
+        if (!success)
+        {
             return {};
         }
-    };
 
-    template <typename Parser>
-    struct many
+        while (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
+        {}
+
+        return results;
+    }
+};
+
+template <typename... Parsers>
+struct all
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
     {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        std::vector<parse_result> results;
+        results.reserve(sizeof...(Parsers));
+
+
+        bool parsed_all =
+            (try_add_parse_result(Parsers::parse(ts), results, ts) && ...);
+
+
+        if (parsed_all)
         {
-            std::vector<parse_result> results;
-            results.reserve(10);
-            bool success = try_add_parse_result(Parser::parse(ts), results, ts);
-
-            if (!success)
-            {
-                return {};
-            }
-
-            while (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
-            {
-                ;
-            }
-
             return results;
         }
-    };
+        return {};
+    }
+};
 
-    template <typename... Parsers>
-    struct all
+template <typename SeparatorParser, typename ItemParser>
+struct separated
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
     {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        std::vector<parse_result> results;
+        results.reserve(10);
+
+
+        bool success = try_add_parse_result(
+            combinators::many<combinators::all<ItemParser, SeparatorParser>>::parse(ts),
+            results,
+            ts);
+
+        if (!success)
         {
-            std::vector<parse_result> results;
-            results.reserve(sizeof...(Parsers));
-
-
-            bool parsed_all =
-                (try_add_parse_result(Parsers::parse(ts), results, ts) && ...);
-
-
-            if (parsed_all)
-            {
-                return results;
-            }
             return {};
         }
-    };
 
-    template <typename SeparatorParser, typename ItemParser>
-    struct separated
-    {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        success = try_add_parse_result(ItemParser::parse(ts), results, ts);
+
+        if (!success)
         {
-            std::vector<parse_result> results;
-            results.reserve(10);
-
-
-            bool success = try_add_parse_result(
-                combinators::many<combinators::all<ItemParser, SeparatorParser>>::parse(
-                    ts),
-                results,
-                ts);
-
-            if (!success)
-            {
-                return {};
-            }
-
-            success = try_add_parse_result(ItemParser::parse(ts), results, ts);
-
-            if (!success)
-            {
-                return {};
-            }
-
-
-            return results;
+            return {};
         }
-    };
 
-    template <typename OpeningParser, typename ClosingParser, typename... InnerParsers>
-    struct surrounded
+
+        return results;
+    }
+};
+
+template <typename OpeningParser, typename ClosingParser, typename... InnerParsers>
+struct surrounded
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
     {
-        static std::vector<parse_result> parse(std::span<token> ts)
+        std::vector<parse_result> results;
+        // 2 stands for the two surrounder parsers
+        results.reserve(2 + sizeof...(InnerParsers));
+
+
+        bool parsed_all = try_add_parse_result(OpeningParser::parse(ts), results, ts);
+
+        if (!parsed_all)
         {
-            std::vector<parse_result> results;
-            // 2 stands for the two surrounder parsers
-            results.reserve(2 + sizeof...(InnerParsers));
-
-
-            bool parsed_all =
-                try_add_parse_result(OpeningParser::parse(ts), results, ts);
-
-            if (!parsed_all)
-            {
-                return {};
-            }
-
-            parsed_all &=
-                (try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...);
-
-            if (!parsed_all)
-            {
-                return {};
-            }
-
-            parsed_all &= try_add_parse_result(ClosingParser::parse(ts), results, ts);
-
-            if (!parsed_all)
-            {
-                return {};
-            }
-
-            return results;
+            return {};
         }
-    };
+
+        parsed_all &=
+            (try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...);
+
+        if (!parsed_all)
+        {
+            return {};
+        }
+
+        parsed_all &= try_add_parse_result(ClosingParser::parse(ts), results, ts);
+
+        if (!parsed_all)
+        {
+            return {};
+        }
+
+        return results;
+    }
+};
 }    // namespace combinators
 
 
@@ -389,7 +384,7 @@ struct program_parser
         {
             return {};
         }
-        
+
         auto new_location = get_source_location_from_compound(program);
 
         std::vector<std::unique_ptr<ast_node_t>> globals;
@@ -612,11 +607,11 @@ struct parameter_def_parser
             }
 
             auto source_location = get_source_location_from_compound(parameter_def);
-            
-            new_node = std::make_unique<ast_node_t>(
-                std::in_place_type<parameter_def_node>,
-                std::move(parameters),
-                source_location);
+
+            new_node =
+                std::make_unique<ast_node_t>(std::in_place_type<parameter_def_node>,
+                                             std::move(parameters),
+                                             source_location);
         }
 
         return {{get_token_stream(parameter_def.back()), std::move(new_node)}};
@@ -738,7 +733,7 @@ struct parameter_pass_parser
         {
             return {};
         }
-        
+
         auto new_location = get_source_location_from_compound(parameter_pass);
 
         auto parameters = std::vector<std::string_view>();
@@ -752,10 +747,10 @@ struct parameter_pass_parser
                 std::move(std::get<leaf_node>(*get_node(parameter_pass[i]))).value);
         }
 
-        auto new_node = std::make_unique<ast_node_t>(
-            std::in_place_type<parameter_pass_node>,
-            std::move(parameters),
-            new_location);
+        auto new_node =
+            std::make_unique<ast_node_t>(std::in_place_type<parameter_pass_node>,
+                                         std::move(parameters),
+                                         new_location);
 
         return {{get_token_stream(parameter_pass.back()), std::move(new_node)}};
     }
@@ -779,7 +774,7 @@ struct block_parser
         {
             return {};
         }
-        
+
         auto new_location = get_source_location_from_compound(block);
 
         std::unique_ptr<ast_node_t>              new_node;
@@ -801,10 +796,8 @@ struct block_parser
                     std::move(get_node(std::forward<decltype(element)>(element))));
             });
 
-            new_node =
-                std::make_unique<ast_node_t>(std::in_place_type<block_node>,
-                                             std::move(statements),
-                                             new_location);
+            new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<block_node>, std::move(statements), new_location);
         }
         return {{get_token_stream(block.back()), std::move(new_node)}};
     }

@@ -18,6 +18,7 @@ Checks: '*,
 -google-build-using-namespace,
 -cppcoreguidelines-special-member-functions,
 -hicpp-special-member-functions'
+-misc-no-recursion
 
 
 WarningsAsErrors: '*'

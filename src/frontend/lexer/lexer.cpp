@@ -136,7 +136,7 @@ void lexer::skip_block_comment()
         source_code.remove_prefix(n_commented_out_chars);
         cur_col += n_commented_out_chars;
     }
-    
+
     source_code.remove_prefix(block_comment_end.size());
 }
 
