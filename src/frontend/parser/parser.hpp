@@ -568,7 +568,6 @@ struct parameter_def_parser
 {
     static parse_result parse(std::span<token> ts)
     {
-        // TODO: Handle empty parameter list
         auto parameter_def = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
@@ -722,35 +721,52 @@ struct parameter_pass_parser
 {
     static parse_result parse(std::span<token> ts)
     {
-        // TODO: Handle empty parameter list
         auto parameter_pass = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
-            combinators::separated<token_parser<token_type::COMMA>,
-                                   expression_parser>>::parse(ts);
+            combinators::optional<
+                combinators::any<
+                    combinators::separated<
+                        token_parser<token_type::COMMA>,
+                        expression_parser>,
+                    expression_parser>>>::parse(ts);
 
         if (parameter_pass.empty())
         {
             return {};
         }
 
-        auto new_location = get_source_location_from_compound(parameter_pass);
-
         auto parameters = std::vector<std::string_view>();
         // Drop surrounder and separators
         parameters.reserve((parameter_pass.size() - 2) / 2 + 1);
 
-        for (decltype(parameter_pass)::size_type i = 1; i < parameter_pass.size();
-             i += 2)
-        {
-            parameters.push_back(
-                std::move(std::get<leaf_node>(*get_node(parameter_pass[i]))).value);
-        }
+        std::unique_ptr<ast_node_t> new_node;
 
-        auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<parameter_pass_node>,
-                                         std::move(parameters),
-                                         new_location);
+        if (parameter_pass.size() == 3
+            && std::holds_alternative<missing_optional_node>(
+                (*get_node(parameter_pass[1]))))
+        {
+            new_node = std::make_unique<ast_node_t>(
+                std::in_place_type<parameter_pass_node>,
+                std::move(parameters),
+                get_source_location_from_compound(parameter_pass));
+        }
+        else
+        {
+            for (decltype(parameter_pass)::size_type i = 1; i < parameter_pass.size();
+                 i += 2)
+            {
+                parameters.push_back(
+                    std::move(std::get<leaf_node>(*get_node(parameter_pass[i]))).value);
+            }
+
+            auto source_location = get_source_location_from_compound(parameter_pass);
+
+            new_node =
+                std::make_unique<ast_node_t>(std::in_place_type<parameter_pass_node>,
+                                             std::move(parameters),
+                                             source_location);
+        }
 
         return {{get_token_stream(parameter_pass.back()), std::move(new_node)}};
     }
