@@ -1,5 +1,5 @@
 {
   "~/CLionProjects/MVPL": {
-    "command": "export ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_invalid_pointer_pairs=2; export CXX=clang++ && cmake -S . -B cmake-build-debug/ && cd cmake-build-debug && make && echo $(tput setaf 2)Command output:$(tput sgr0) && ./MVPL ../data/main.mvpl"
+    "command": "export ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_invalid_pointer_pairs=2:check_initialization_order=1; export CXX=clang++ && cmake -S . -B cmake-build-debug/ && cd cmake-build-debug && make && echo $(tput setaf 2)Command output:$(tput sgr0) && ./MVPL ../data/main.mvpl"
   }
 }
