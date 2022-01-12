@@ -284,7 +284,7 @@ TEST(TestVarInitParser, Literal)
 {
     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "x"sv, source_location()),
-                                token(token_type::EQUAL, "="sv, source_location()),
+                                token(token_type::ASSIGN, "="sv, source_location()),
                                 token(token_type::LITERAL, "5"sv, source_location()),
                                 token(token_type::SEMICOLON, ";"sv, source_location())};
 
@@ -312,7 +312,7 @@ TEST(TestVarInitParser, Identifier)
 {
     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "x"sv, source_location()),
-                                token(token_type::EQUAL, "="sv, source_location()),
+                                token(token_type::ASSIGN, "="sv, source_location()),
                                 token(token_type::IDENTIFIER, "y"sv, source_location()),
                                 token(token_type::SEMICOLON, ";"sv, source_location())};
 

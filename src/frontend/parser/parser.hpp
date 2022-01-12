@@ -732,7 +732,7 @@ struct var_init_parser
         auto var_init =
             combinators::all<token_parser<token_type::LET>,
                              token_parser<token_type::IDENTIFIER>,
-                             token_parser<token_type::EQUAL>,
+                             token_parser<token_type::ASSIGN>,
                              expression_parser,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
@@ -763,7 +763,7 @@ struct var_assignment_parser
 
         auto var_assignment =
             combinators::all<token_parser<token_type::IDENTIFIER>,
-                             token_parser<token_type::EQUAL>,
+                             token_parser<token_type::ASSIGN>,
                              expression_parser,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
