@@ -745,7 +745,7 @@ struct var_init_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<var_init_node>,
             std::get<leaf_node>(*get_node(var_init[1])).value,
-            get_node(var_init[2]),
+            get_node(var_init[3]),
             get_source_location_from_compound(var_init));
 
         return {{get_token_stream(var_init.back()), std::move(new_node)}};
@@ -775,7 +775,7 @@ struct var_assignment_parser
 
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<var_assignment_node>,
-            std::get<leaf_node>(*get_node(var_assignment[1])).value,
+            std::get<leaf_node>(*get_node(var_assignment[0])).value,
             get_node(var_assignment[2]),
             get_source_location_from_compound(var_assignment));
 
@@ -931,7 +931,7 @@ struct control_block_parser
         }
 
         auto control_block =
-            combinators::all<control_block_parser, block_parser>::parse(ts);
+            combinators::all<control_head_parser, block_parser>::parse(ts);
 
         if (control_block.empty())
         {
