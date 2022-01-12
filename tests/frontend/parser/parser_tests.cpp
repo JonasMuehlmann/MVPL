@@ -280,7 +280,7 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               var_init_parser                              //
 //****************************************************************************//
-TEST(TestVarInitParser, Identifier)
+TEST(TestVarInitParser, Literal)
 {
     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "x"sv, source_location()),
@@ -306,4 +306,37 @@ TEST(TestVarInitParser, Identifier)
         (std::get<leaf_node>(*(std::get<var_init_node>((*get_node(result))).value)))
             .token,
         token_type::LITERAL);
+}
+
+TEST(TestVarInitParser, Identifier)
+{
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::EQUAL, "="sv, source_location()),
+                                token(token_type::IDENTIFIER, "y"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = var_init_parser::parse(token_stream);
+
+    ASSERT_TRUE(result.has_value());
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<var_init_node>((*get_node(result))));
+    ASSERT_EQ(std::get<var_init_node>((*get_node(result))).identifier, "x"sv);
+    ASSERT_NE(std::get<var_init_node>((*get_node(result))).value, nullptr);
+
+    ASSERT_TRUE((std::holds_alternative<leaf_node>(
+        *(std::get<var_init_node>((*get_node(result))).value))));
+
+    ASSERT_EQ(
+        (std::get<leaf_node>(*(std::get<var_init_node>((*get_node(result))).value)))
+            .token,
+        token_type::IDENTIFIER);
+
+    ASSERT_EQ(
+        (std::get<leaf_node>(*(std::get<var_init_node>((*get_node(result))).value)))
+            .value,
+        "y"sv);
 }
