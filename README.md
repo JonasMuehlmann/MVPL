@@ -111,7 +111,7 @@ int a *token stream* like this:
 ```
 
 # Roadmap
-- [ ] Functional lexer
+- [x] Functional lexer
 - [ ] [Functional parser](https://github.com/JonasMuehlmann/MVPL/milestone/1)
 - [ ] [Functional semantic analyser](https://github.com/JonasMuehlmann/MVPL/milestone/8)
 - [ ] [Functional code generator](https://github.com/JonasMuehlmann/MVPL/milestone/2)
