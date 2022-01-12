@@ -410,8 +410,8 @@ struct program_parser
             return {};
         }
 
-        auto program = combinators::many<combinators::any<var_decl_parser,
-                                                          var_init_parser,
+        auto program = combinators::many<combinators::any<var_init_parser,
+                                                          var_decl_parser,
                                                           procedure_def_parser,
                                                           func_def_parser>>::parse(ts);
 
@@ -881,9 +881,9 @@ struct block_parser
         // TODO: Handle empty block
         auto block = combinators::all<token_parser<token_type::LBRACAE>,
                                       combinators::optional<combinators::many<
-                                          combinators::any<var_decl_parser,
-                                                           var_assignment_parser,
+                                          combinators::any<var_assignment_parser,
                                                            var_init_parser,
+                                                           var_decl_parser,
                                                            expression_parser,
                                                            control_block_parser>>>,
                                       token_parser<token_type::RBRACE>>::parse(ts);
@@ -984,11 +984,12 @@ struct expression_parser
             return {};
         }
 
-        auto expression = combinators::any<token_parser<token_type::LITERAL>,
-                                           token_parser<token_type::IDENTIFIER>,
-                                           binary_op_parser,
-                                           unary_op_parser,
-                                           call_parser>::parse(ts);
+        auto expression =
+            combinators::any<binary_op_parser,
+                             unary_op_parser,
+                             call_parser,
+                             token_parser<token_type::LITERAL>,
+                             token_parser<token_type::IDENTIFIER>>::parse(ts);
 
         if (expression.empty())
         {
