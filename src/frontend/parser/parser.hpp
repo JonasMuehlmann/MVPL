@@ -25,6 +25,7 @@
 #include <memory>
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -136,7 +137,7 @@ struct optional
         std::vector<parse_result> results{};
 
 
-        if (try_add_parse_result(Parser::parse(ts), results, ts))
+        if (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
         {
             return results;
         }
@@ -157,8 +158,12 @@ struct any
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        std::vector<parse_result> results;
+        if (ts.empty())
+        {
+            return {};
+        }
 
+        std::vector<parse_result> results;
 
         bool success = (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
 
@@ -177,7 +182,13 @@ struct many
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         std::vector<parse_result> results;
+
         results.reserve(10);
         bool success = try_add_parse_result(Parser::parse(ts), results, ts);
 
@@ -198,6 +209,11 @@ struct all
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         std::vector<parse_result> results;
         results.reserve(sizeof...(Parsers));
 
@@ -219,6 +235,11 @@ struct separated
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         std::vector<parse_result> results;
         results.reserve(10);
 
@@ -250,6 +271,11 @@ struct surrounded
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         std::vector<parse_result> results;
         // 2 stands for the two surrounder parsers
         results.reserve(2 + sizeof...(InnerParsers));
@@ -361,6 +387,11 @@ struct token_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         if (ts[0].type == wanted)
         {
             // return {ts.subspan(1), ast_node_t{empty_node{}}};
@@ -374,6 +405,11 @@ struct program_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto program = combinators::many<combinators::any<var_decl_parser,
                                                           var_init_parser,
                                                           procedure_def_parser,
@@ -382,7 +418,9 @@ struct program_parser
 
         if (program.empty())
         {
-            return {};
+            throw std::runtime_error(
+                "Source file does not contain any function/procedure defininitions or "
+                "global variable declarations/initializations.");
         }
 
         auto new_location = get_source_location_from_compound(program);
@@ -406,6 +444,11 @@ struct binary_op_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto bin_op =
             combinators::all<expression_parser,
                              combinators::any<token_parser<token_type::PLUS>,
@@ -449,11 +492,17 @@ struct unary_op_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto unary_op = combinators::all<
-            expression_parser,
+
             combinators::any<token_parser<token_type::NOT>,
                              token_parser<token_type::INCREMENT>,
-                             token_parser<token_type::DECREMENT>>>::parse(ts);
+                             token_parser<token_type::DECREMENT>>,
+            expression_parser>::parse(ts);
 
         if (unary_op.empty())
         {
@@ -475,6 +524,11 @@ struct func_def_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto func_def = combinators::all<token_parser<token_type::FUNCTION>,
                                          signature_parser,
                                          block_parser>::parse(ts);
@@ -499,6 +553,11 @@ struct procedure_def_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto procedure_def = combinators::all<token_parser<token_type::PROCEDURE>,
                                               signature_parser,
                                               block_parser>::parse(ts);
@@ -523,6 +582,11 @@ struct signature_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto signature = combinators::all<token_parser<token_type::IDENTIFIER>,
                                           parameter_def_parser>::parse(ts);
 
@@ -546,6 +610,11 @@ struct return_stmt_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto return_stmt = combinators::all<token_parser<token_type::RETURN>,
                                             expression_parser>::parse(ts);
 
@@ -568,6 +637,11 @@ struct parameter_def_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto parameter_def = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
@@ -621,6 +695,11 @@ struct var_decl_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto var_decl =
             combinators::all<token_parser<token_type::LET>,
                              token_parser<token_type::IDENTIFIER>,
@@ -645,6 +724,11 @@ struct var_init_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto var_init =
             combinators::all<token_parser<token_type::LET>,
                              token_parser<token_type::IDENTIFIER>,
@@ -672,6 +756,11 @@ struct var_assignment_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto var_assignment =
             combinators::all<token_parser<token_type::IDENTIFIER>,
                              token_parser<token_type::EQUAL>,
@@ -698,6 +787,11 @@ struct call_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto call = combinators::all<token_parser<token_type::IDENTIFIER>,
                                      parameter_pass_parser>::parse(ts);
 
@@ -721,6 +815,11 @@ struct parameter_pass_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto parameter_pass = combinators::surrounded<
             token_parser<token_type::LPAREN>,
             token_parser<token_type::RPAREN>,
@@ -774,6 +873,11 @@ struct block_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         // TODO: Handle empty block
         auto block = combinators::all<token_parser<token_type::LBRACAE>,
                                       combinators::optional<combinators::many<
@@ -821,6 +925,11 @@ struct control_block_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto control_block =
             combinators::all<control_block_parser, block_parser>::parse(ts);
 
@@ -843,24 +952,26 @@ struct control_head_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
         {
-            auto control_head =
-                combinators::surrounded<token_parser<token_type::LPAREN>,
-                                        token_parser<token_type::RPAREN>,
-                                        expression_parser>::parse(ts);
-
-            if (control_head.empty())
-            {
-                return {};
-            }
-
-            auto new_node = std::make_unique<ast_node_t>(
-                std::in_place_type<control_head_node>,
-                get_node(control_head[1]),
-                get_source_location_from_compound(control_head));
-
-            return {{get_token_stream(control_head.back()), std::move(new_node)}};
+            return {};
         }
+
+        auto control_head = combinators::surrounded<token_parser<token_type::LPAREN>,
+                                                    token_parser<token_type::RPAREN>,
+                                                    expression_parser>::parse(ts);
+
+        if (control_head.empty())
+        {
+            return {};
+        }
+
+        auto new_node = std::make_unique<ast_node_t>(
+            std::in_place_type<control_head_node>,
+            get_node(control_head[1]),
+            get_source_location_from_compound(control_head));
+
+        return {{get_token_stream(control_head.back()), std::move(new_node)}};
     }
 };
 
@@ -868,6 +979,11 @@ struct expression_parser
 {
     static parse_result parse(std::span<token> ts)
     {
+        if (ts.empty())
+        {
+            return {};
+        }
+
         auto expression = combinators::any<token_parser<token_type::LITERAL>,
                                            token_parser<token_type::IDENTIFIER>,
                                            binary_op_parser,

@@ -22,7 +22,7 @@ Checks: '*,
 
 
 WarningsAsErrors: '*'
-HeaderFilterRegex: '^((?!nlohmann).)*$'
+HeaderFilterRegex: '^((?!cmake-build).)*$'
 AnalyzeTemporaryDtors: false
 FormatStyle: file
 User: jonas
