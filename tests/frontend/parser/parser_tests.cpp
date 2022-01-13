@@ -25,7 +25,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_EQ(std::get<parameter_def_node>((*get_node(result))).parameter_list.size(),
 //               0);
@@ -42,7 +42,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_NE(get_node(result), nullptr);
 //     ASSERT_TRUE(std::holds_alternative<parameter_def_node>((*get_node(result))));
@@ -65,7 +65,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_NE(get_node(result), nullptr);
 //     ASSERT_TRUE(std::holds_alternative<parameter_def_node>((*get_node(result))));
@@ -91,7 +91,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_NE(get_node(result), nullptr);
 //     ASSERT_TRUE(std::holds_alternative<parameter_def_node>((*get_node(result))));
@@ -119,7 +119,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_NE(get_node(result), nullptr);
 //     ASSERT_TRUE(std::holds_alternative<parameter_def_node>((*get_node(result))));
@@ -142,7 +142,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_def_parser::parse(token_stream);
 
-//     ASSERT_FALSE(result.has_value());
+//     ASSERT_FALSE(std::holds_alternative<parse_content>(result));
 // }
 
 //****************************************************************************//
@@ -157,7 +157,7 @@ using namespace std::string_view_literals;
 
 //     auto result = parameter_pass_parser::parse(token_stream);
 
-//     ASSERT_TRUE(result.has_value());
+//     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //     ASSERT_EQ(get_token_stream(result).size(), 0);
 //     ASSERT_EQ(std::get<parameter_pass_node>((*get_node(result))).parameter_list.size(),
 //               0);
@@ -174,7 +174,7 @@ using namespace std::string_view_literals;
 
 //    auto result = parameter_pass_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<parameter_pass_node>((*get_node(result))));
@@ -197,7 +197,7 @@ using namespace std::string_view_literals;
 
 //    auto result = parameter_pass_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<parameter_pass_node>((*get_node(result))));
@@ -223,7 +223,7 @@ using namespace std::string_view_literals;
 
 //    auto result = parameter_pass_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<parameter_pass_node>((*get_node(result))));
@@ -251,7 +251,7 @@ using namespace std::string_view_literals;
 
 //    auto result = parameter_pass_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<parameter_pass_node>((*get_node(result))));
@@ -274,7 +274,7 @@ using namespace std::string_view_literals;
 
 //    auto result = parameter_pass_parser::parse(token_stream);
 
-//    ASSERT_FALSE(result.has_value());
+//    ASSERT_FALSE(std::holds_alternative<parse_content>(result));
 //}
 
 ////****************************************************************************//
@@ -293,7 +293,7 @@ using namespace std::string_view_literals;
 
 //    auto result = var_init_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<var_init_node>((*get_node(result))));
@@ -323,7 +323,7 @@ using namespace std::string_view_literals;
 
 //    auto result = var_init_parser::parse(token_stream);
 
-//    ASSERT_TRUE(result.has_value());
+//    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
 //    ASSERT_EQ(get_token_stream(result).size(), 0);
 //    ASSERT_NE(get_node(result), nullptr);
 //    ASSERT_TRUE(std::holds_alternative<var_init_node>((*get_node(result))));
@@ -356,7 +356,7 @@ TEST(TestExpressionParser, Identifier)
 
     auto result = expression_parser::parse(token_stream);
 
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
@@ -372,7 +372,7 @@ TEST(TestExpressionParser, Literal)
 
     auto result = expression_parser::parse(token_stream);
 
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
@@ -390,7 +390,7 @@ TEST(TestExpressionParser, BinaryOp)
 
     auto result = expression_parser::parse(token_stream);
 
-    ASSERT_TRUE(result.has_value());
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
