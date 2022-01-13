@@ -217,8 +217,6 @@ into an *absract syntax tree* (AST) like this:
 {
 }
 ```
-```
-```
 
 # Roadmap
 - [x] Functional lexer
