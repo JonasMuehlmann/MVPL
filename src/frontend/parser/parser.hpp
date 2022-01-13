@@ -35,6 +35,7 @@
 #include "frontend/lexer/token.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_operations/retrieve_source_location.hpp"
+#include "nlohmann/json.hpp"
 #include "token_type.hpp"
 
 
@@ -42,6 +43,7 @@
 //                                 Private API                                //
 //****************************************************************************//
 using namespace std::literals::string_literals;
+using json = nlohmann::ordered_json;
 //****************************************************************************//
 //                                    Types                                   //
 //****************************************************************************//
@@ -53,8 +55,27 @@ concept Parser = requires(TFunction& function)
         } -> std::convertible_to<bool>;
 };
 
-using parse_result =
-    std::optional<std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>>;
+struct parse_error
+{
+    std::string parsed_structure;
+    token       token_;
+
+    explicit parse_error(std::string& parsed_structure, token token_) :
+        parsed_structure(parsed_structure), token_(token_)
+    {}
+
+    void throw_()
+    {
+        json j;
+        to_json(j, token_);
+
+        throw std::runtime_error("Could not parse " + parsed_structure + " at token "
+                                 + j.dump(4));
+    }
+};
+
+using parse_content = std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>;
+using parse_result  = std::variant<parse_content, parse_error>;
 
 template <typename Function>
 using ReturnTypeOfFunction = typename decltype(std::function{
@@ -141,9 +162,9 @@ struct optional
             return results;
         }
 
-        parse_result new_node = {
-            {ts,
-             std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)}};
+        parse_result new_node = parse_content{
+            ts,
+            std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)};
 
         results.push_back(std::move(new_node));
 
@@ -280,7 +301,7 @@ struct surrounded
         return results;
     }
 };
-}    // namespace combinators
+};    // namespace combinators
 
 
 //****************************************************************************//
@@ -288,12 +309,12 @@ struct surrounded
 //****************************************************************************//
 std::span<token>& get_token_stream(parse_result& result)
 {
-    return std::get<0>(result.value());
+    return std::get<0>(std::get<parse_content>(result));
 }
 
 std::unique_ptr<ast_node_t>& get_node(parse_result& result)
 {
-    return std::get<1>(result.value());
+    return std::get<1>(std::get<parse_content>(result));
 }
 
 source_location get_source_location_from_compound(std::vector<parse_result>& nodes)
@@ -314,11 +335,11 @@ bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
                           std::span<token>&          ts)
 {
-    if (cur_result.has_value())
-    {
-        results.push_back(std::move(cur_result));
-        ts = std::get<std::span<token>>(results.back().value());
+    results.push_back(std::move(cur_result));
+    ts = std::get<std::span<token>>(results.back().value());
 
+        if (std::holds_alternative<parse_content>(results.back())
+    {
         return true;
     }
     return false;
