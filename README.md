@@ -109,3 +109,14 @@ int a *token stream* like this:
   ]
 }
 ```
+
+# Roadmap
+- [x] Functional lexer
+- [ ] [Functional parser](https://github.com/JonasMuehlmann/MVPL/milestone/1)
+- [ ] [Functional semantic analyser](https://github.com/JonasMuehlmann/MVPL/milestone/8)
+- [ ] [Functional code generator](https://github.com/JonasMuehlmann/MVPL/milestone/2)
+- [ ] [Functional interpreter](https://github.com/JonasMuehlmann/MVPL/milestone/3)
+- [ ] [Pointer support](https://github.com/JonasMuehlmann/MVPL/milestone/7)
+- [ ] [Struct support](https://github.com/JonasMuehlmann/MVPL/milestone/5)
+- [ ] [Array support](https://github.com/JonasMuehlmann/MVPL/milestone/6)
+- [ ] [Functional Optimizer](https://github.com/JonasMuehlmann/MVPL/milestone/4)

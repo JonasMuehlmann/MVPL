@@ -30,7 +30,6 @@ using json = nlohmann::ordered_json;
 
 enum class ast_node_type
 {
-    // EXPRESSION,        // x + 1
     BINARY_OP,         // 1 + 1
     UNARY_OP,          // i--
     FUNC_DEF,          // function x(a,b,c){return 1;}
