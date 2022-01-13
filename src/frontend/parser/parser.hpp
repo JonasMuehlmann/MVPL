@@ -26,6 +26,7 @@
 #include <optional>
 #include <span>
 #include <stdexcept>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -179,22 +180,11 @@ struct any
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        if (ts.empty())
-        {
-            return {};
-        }
-
         std::vector<parse_result> results;
 
-        bool success = (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
+        (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
 
-
-        if (success)
-        {
-            return results;
-        }
-
-        return {};
+        return results;
     }
 };
 
@@ -203,20 +193,14 @@ struct many
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        if (ts.empty())
-        {
-            return {};
-        }
-
         std::vector<parse_result> results;
 
         results.reserve(10);
-        bool success = try_add_parse_result(Parser::parse(ts), results, ts);
-
-        if (!success)
+        if (!try_add_parse_result(Parser::parse(ts), results, ts))
         {
-            return {};
+            return results;
         }
+
 
         while (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
         {}
@@ -230,24 +214,14 @@ struct all
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        if (ts.empty())
-        {
-            return {};
-        }
-
         std::vector<parse_result> results;
         results.reserve(sizeof...(Parsers));
 
 
-        bool parsed_all =
-            (try_add_parse_result(Parsers::parse(ts), results, ts) && ...);
+        (try_add_parse_result(Parsers::parse(ts), results, ts) && ...);
 
 
-        if (parsed_all)
-        {
-            return results;
-        }
-        return {};
+        return results;
     }
 };
 
@@ -256,32 +230,20 @@ struct separated
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        if (ts.empty())
-        {
-            return {};
-        }
-
         std::vector<parse_result> results;
         results.reserve(10);
 
 
-        bool success = try_add_parse_result(
-            combinators::many<combinators::all<ItemParser, SeparatorParser>>::parse(ts),
-            results,
-            ts);
-
-        if (!success)
+        if (!try_add_parse_result(
+                combinators::many<combinators::all<ItemParser, SeparatorParser>>::parse(
+                    ts),
+                results,
+                ts))
         {
-            return {};
+            return results;
         }
 
-        success = try_add_parse_result(ItemParser::parse(ts), results, ts);
-
-        if (!success)
-        {
-            return {};
-        }
-
+        try_add_parse_result(ItemParser::parse(ts), results, ts);
 
         return results;
     }
@@ -292,37 +254,25 @@ struct surrounded
 {
     static std::vector<parse_result> parse(std::span<token> ts)
     {
-        if (ts.empty())
-        {
-            return {};
-        }
-
         std::vector<parse_result> results;
         // 2 stands for the two surrounder parsers
         results.reserve(2 + sizeof...(InnerParsers));
 
 
-        bool parsed_all = try_add_parse_result(OpeningParser::parse(ts), results, ts);
+        if (!try_add_parse_result(OpeningParser::parse(ts), results, ts))
 
-        if (!parsed_all)
         {
-            return {};
+            return results;
         }
 
-        parsed_all &=
-            (try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...);
 
-        if (!parsed_all)
+        if (!(try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...))
+
         {
-            return {};
+            return results;
         }
 
-        parsed_all &= try_add_parse_result(ClosingParser::parse(ts), results, ts);
-
-        if (!parsed_all)
-        {
-            return {};
-        }
+        try_add_parse_result(ClosingParser::parse(ts), results, ts);
 
         return results;
     }
@@ -362,10 +312,10 @@ bool try_add_parse_result(parse_result&&             cur_result,
                           std::span<token>&          ts)
 {
     results.push_back(std::move(cur_result));
-    ts = std::get<std::span<token>>(results.back().value());
 
-        if (std::holds_alternative<parse_content>(results.back())
+    if (std::holds_alternative<parse_content>(results.back()))
     {
+        ts = get_token_stream(results.back());
         return true;
     }
     return false;
@@ -375,10 +325,11 @@ bool try_add_parse_result(parse_result&&    cur_result,
                           parse_result&     result,
                           std::span<token>& ts)
 {
-    if (cur_result.has_value())
+    result = std::move(cur_result);
+
+    if (std::holds_alternative<parse_content>(result))
     {
-        result = std::move(cur_result);
-        ts     = std::get<std::span<token>>(result.value());
+        ts = get_token_stream(result);
 
         return true;
     }
@@ -389,10 +340,12 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
                           std::vector<parse_result>&  results,
                           std::span<token>&           ts)
 {
-    if (!cur_result.empty())
+    std::ranges::move(cur_result, std::back_inserter(results));
+    if (std::ranges::all_of(results, [](auto& results) {
+            return std::holds_alternative<parse_content>(results);
+        }))
     {
-        std::ranges::move(cur_result, std::back_inserter(results));
-        ts = std::get<std::span<token>>(cur_result.back().value());
+        ts = get_token_stream(results.back());
 
         return true;
     }
@@ -406,29 +359,35 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 template <token_type wanted>
 struct token_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         if (ts[0].type == wanted)
         {
             // return {ts.subspan(1), ast_node_t{empty_node{}}};
-            return {{ts.subspan(1), std::make_unique<ast_node_t>(leaf_node{ts[0]})}};
+            return parse_result(std::in_place_type<parse_content>,
+                                ts.subspan(1),
+                                std::make_unique<ast_node_t>(leaf_node{ts[0]}));
         }
-        return {};
-    }
+        return parse_error(parsed_structure, ts[0]);
+    };
 };
 
 struct program_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto program = combinators::many<combinators::any<var_init_parser,
@@ -439,9 +398,7 @@ struct program_parser
 
         if (program.empty())
         {
-            throw std::runtime_error(
-                "Source file does not contain any function/procedure defininitions or "
-                "global variable declarations/initializations.");
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto new_location = get_source_location_from_compound(program);
@@ -457,17 +414,21 @@ struct program_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<program_node>, std::move(globals), new_location);
 
-        return {{get_token_stream(program.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(program.back()),
+                            std::move(new_node));
     }
 };
 
 struct binary_op_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto bin_op =
@@ -494,7 +455,7 @@ struct binary_op_parser
 
         if (bin_op.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -505,17 +466,22 @@ struct binary_op_parser
                                          get_node(bin_op[1]),
                                          get_source_location_from_compound(bin_op));
 
-        return {{get_token_stream(bin_op.back()), std::move(new_node)}};
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(bin_op.back()),
+                            std::move(new_node));
     }
 };
 
 struct unary_op_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto unary_op = combinators::all<
@@ -527,7 +493,7 @@ struct unary_op_parser
 
         if (unary_op.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -537,17 +503,22 @@ struct unary_op_parser
                                          get_node(unary_op[1]),
                                          get_source_location_from_compound(unary_op));
 
-        return {{get_token_stream(unary_op.back()), std::move(new_node)}};
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(unary_op.back()),
+                            std::move(new_node));
     }
 };
 
 struct func_def_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto func_def = combinators::all<token_parser<token_type::FUNCTION>,
@@ -556,7 +527,7 @@ struct func_def_parser
 
         if (func_def.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -566,17 +537,22 @@ struct func_def_parser
                                          get_node(func_def[1]),
                                          get_source_location_from_compound(func_def));
 
-        return {{get_token_stream(func_def.back()), std::move(new_node)}};
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(func_def.back()),
+                            std::move(new_node));
     }
 };
 
 struct procedure_def_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto procedure_def = combinators::all<token_parser<token_type::PROCEDURE>,
@@ -585,7 +561,7 @@ struct procedure_def_parser
 
         if (procedure_def.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -595,17 +571,22 @@ struct procedure_def_parser
             get_node(procedure_def[1]),
             get_source_location_from_compound(procedure_def));
 
-        return {{get_token_stream(procedure_def.back()), std::move(new_node)}};
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(procedure_def.back()),
+                            std::move(new_node));
     }
 };
 
 struct signature_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto signature = combinators::all<token_parser<token_type::IDENTIFIER>,
@@ -613,7 +594,7 @@ struct signature_parser
 
         if (signature.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -623,17 +604,21 @@ struct signature_parser
             get_node(signature[1]),
             get_source_location_from_compound(signature));
 
-        return {{get_token_stream(signature.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(signature.back()),
+                            std::move(new_node));
     }
 };
 
 struct return_stmt_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto return_stmt = combinators::all<token_parser<token_type::RETURN>,
@@ -641,7 +626,7 @@ struct return_stmt_parser
 
         if (return_stmt.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -650,17 +635,21 @@ struct return_stmt_parser
             get_node(return_stmt[0]),
             get_source_location_from_compound(return_stmt));
 
-        return {{get_token_stream(return_stmt.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(return_stmt.back()),
+                            std::move(new_node));
     }
 };
 
 struct parameter_def_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto parameter_def = combinators::surrounded<
@@ -673,7 +662,7 @@ struct parameter_def_parser
 
         if (parameter_def.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -708,17 +697,21 @@ struct parameter_def_parser
                                              source_location);
         }
 
-        return {{get_token_stream(parameter_def.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(parameter_def.back()),
+                            std::move(new_node));
     }
 };
 
 struct var_decl_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto var_decl =
@@ -728,7 +721,7 @@ struct var_decl_parser
 
         if (var_decl.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -737,17 +730,21 @@ struct var_decl_parser
             std::get<leaf_node>(*get_node(var_decl[1])).value,
             get_source_location_from_compound(var_decl));
 
-        return {{get_token_stream(var_decl.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(var_decl.back()),
+                            std::move(new_node));
     }
 };
 
 struct var_init_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto var_init =
@@ -759,7 +756,7 @@ struct var_init_parser
 
         if (var_init.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -769,17 +766,21 @@ struct var_init_parser
             get_node(var_init[3]),
             get_source_location_from_compound(var_init));
 
-        return {{get_token_stream(var_init.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(var_init.back()),
+                            std::move(new_node));
     }
 };
 
 struct var_assignment_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto var_assignment =
@@ -790,7 +791,7 @@ struct var_assignment_parser
 
         if (var_assignment.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -800,17 +801,21 @@ struct var_assignment_parser
             get_node(var_assignment[2]),
             get_source_location_from_compound(var_assignment));
 
-        return {{get_token_stream(var_assignment.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(var_assignment.back()),
+                            std::move(new_node));
     }
 };
 
 struct call_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto call = combinators::all<token_parser<token_type::IDENTIFIER>,
@@ -818,7 +823,7 @@ struct call_parser
 
         if (call.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
 
@@ -828,17 +833,21 @@ struct call_parser
                                          get_node(call[1]),
                                          get_source_location_from_compound(call));
 
-        return {{get_token_stream(call.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(call.back()),
+                            std::move(new_node));
     }
 };
 
 struct parameter_pass_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto parameter_pass = combinators::surrounded<
@@ -851,7 +860,7 @@ struct parameter_pass_parser
 
         if (parameter_pass.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -886,17 +895,21 @@ struct parameter_pass_parser
                                              source_location);
         }
 
-        return {{get_token_stream(parameter_pass.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(parameter_pass.back()),
+                            std::move(new_node));
     }
 };
 
 struct block_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         // TODO: Handle empty block
@@ -911,7 +924,7 @@ struct block_parser
 
         if (block.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto new_location = get_source_location_from_compound(block);
@@ -938,17 +951,21 @@ struct block_parser
             new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<block_node>, std::move(statements), new_location);
         }
-        return {{get_token_stream(block.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(block.back()),
+                            std::move(new_node));
     }
 };
 
 struct control_block_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto control_block =
@@ -956,7 +973,7 @@ struct control_block_parser
 
         if (control_block.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto new_node = std::make_unique<ast_node_t>(
@@ -965,17 +982,21 @@ struct control_block_parser
             get_node(control_block[1]),
             get_source_location_from_compound(control_block));
 
-        return {{get_token_stream(control_block.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(control_block.back()),
+                            std::move(new_node));
     }
 };
 
 struct control_head_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto control_head = combinators::surrounded<token_parser<token_type::LPAREN>,
@@ -984,7 +1005,7 @@ struct control_head_parser
 
         if (control_head.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto new_node = std::make_unique<ast_node_t>(
@@ -992,17 +1013,21 @@ struct control_head_parser
             get_node(control_head[1]),
             get_source_location_from_compound(control_head));
 
-        return {{get_token_stream(control_head.back()), std::move(new_node)}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(control_head.back()),
+                            std::move(new_node));
     }
 };
 
 struct expression_parser
 {
+    static inline std::string parsed_structure = "";
+
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
         auto expression =
@@ -1014,10 +1039,12 @@ struct expression_parser
 
         if (expression.empty())
         {
-            return {};
+            return parse_error(parsed_structure, ts[0]);
         }
 
-        return {{get_token_stream(expression[0]), std::move(get_node(expression[0]))}};
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(expression[0]),
+                            std::move(get_node(expression[0])));
     }
 };
 //****************************************************************************//
@@ -1025,6 +1052,13 @@ struct expression_parser
 //****************************************************************************//
 inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
 {
-    return {std::get<1>(program_parser::parse(ts).value())};
+    auto result = program_parser::parse(ts);
+
+    if (std::holds_alternative<parse_error>(result))
+    {
+        std::get<parse_error>(result).throw_();
+    }
+    // return get_node(std::get<parse_content>(result));
+    return std::get<1>(std::get<parse_content>(program_parser::parse(ts)));
 }
 #endif    // SRC_FRONTEND_PARSER_PARSER_HPP_
