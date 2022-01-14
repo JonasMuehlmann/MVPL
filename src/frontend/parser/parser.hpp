@@ -44,11 +44,14 @@
 //****************************************************************************//
 //                                 Private API                                //
 //****************************************************************************//
+
 using namespace std::literals::string_literals;
 using json = nlohmann::ordered_json;
+
 //****************************************************************************//
 //                                    Types                                   //
 //****************************************************************************//
+
 template <typename TFunction>
 concept Parser = requires(TFunction& function)
 {
@@ -87,9 +90,45 @@ template <typename ReturnType, typename... Pack>
 concept PackContainsFunctionWithReturnType =
     ((std::is_same<ReturnTypeOfFunction<Pack>, ReturnType>::value) || ...);
 
+const auto LUT_TOKEN_TO_PRECEDENCE = []() {
+    constexpr auto arr = []() {
+        std::array<int, NUM_TOKENS> arr{};
+        arr.fill(0);
+
+
+        arr[static_cast<size_t>(token_type::LPAREN)]         = 100;
+        arr[static_cast<size_t>(token_type::LESS)]           = 50;
+        arr[static_cast<size_t>(token_type::LESSEQ)]         = 50;
+        arr[static_cast<size_t>(token_type::GREATER)]        = 50;
+        arr[static_cast<size_t>(token_type::GREATEREQ)]      = 50;
+        arr[static_cast<size_t>(token_type::EQUAL)]          = 50;
+        arr[static_cast<size_t>(token_type::NEQUAL)]         = 50;
+        arr[static_cast<size_t>(token_type::NOT)]            = 90;
+        arr[static_cast<size_t>(token_type::LOGICAL_AND)]    = 50;
+        arr[static_cast<size_t>(token_type::LOGICAL_OR)]     = 50;
+        arr[static_cast<size_t>(token_type::BINARY_AND)]     = 60;
+        arr[static_cast<size_t>(token_type::BINARY_OR)]      = 60;
+        arr[static_cast<size_t>(token_type::LSHIFT)]         = 60;
+        arr[static_cast<size_t>(token_type::RSHIFT)]         = 60;
+        arr[static_cast<size_t>(token_type::XOR)]            = 60;
+        arr[static_cast<size_t>(token_type::PLUS)]           = 70;
+        arr[static_cast<size_t>(token_type::MINUS)]          = 70;
+        arr[static_cast<size_t>(token_type::MULTIPLICATION)] = 80;
+        arr[static_cast<size_t>(token_type::DIVISION)]       = 80;
+        arr[static_cast<size_t>(token_type::MODULO)]         = 80;
+        arr[static_cast<size_t>(token_type::INCREMENT)]      = 90;
+        arr[static_cast<size_t>(token_type::DECREMENT)]      = 90;
+
+        return arr;
+    }();
+
+    return arr;
+}();
+
 //****************************************************************************//
 //                            Forward declarations                            //
 //****************************************************************************//
+
 struct program_parser;
 struct binary_op_parser;
 struct unary_op_parser;
@@ -149,6 +188,7 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 //****************************************************************************//
 //                             Parser combinators                             //
 //****************************************************************************//
+
 namespace combinators
 {
 template <typename Parser>
