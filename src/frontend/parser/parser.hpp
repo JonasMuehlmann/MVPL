@@ -129,7 +129,10 @@ const auto LUT_TOKEN_TO_PRECEDENCE = []() {
 //****************************************************************************//
 
 struct program_parser;
+
+template <ast_node_t& lhs>
 struct binary_op_parser;
+
 struct unary_op_parser;
 struct func_def_parser;
 struct procedure_def_parser;
@@ -196,30 +199,6 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 
 namespace combinators
 {
-
-template <typename Parser>
-struct expect
-{
-    static bool parse(std::span<token> ts)
-    {
-        return std::holds_alternative<parse_content>(Parser::parse(ts));
-    }
-};
-
-template <typename Expector, typename Parser>
-struct if_expect
-{
-    static std::vector<parse_result> parse(std::span<token> ts)
-    {
-        if (Expector::parse(ts))
-        {
-            return Parser::parse(ts);
-        }
-
-        return {};
-    }
-};
-
 template <typename Parser>
 struct optional
 {
@@ -500,6 +479,10 @@ struct expression_parser
             return parse_error(parsed_structure, ts[0]);
         }
 
+        // TODO: Handle parenthesesed expressions
+        // NOTE: Maybe we cann try parsing any of the below structutes EXCEPT for the
+        // binary op, afterwards we could try constructing the binary op with the
+        // previously parsed structure as the LHS
         auto expression =
             combinators::any<binary_op_parser,
                              unary_op_parser,
@@ -518,6 +501,8 @@ struct expression_parser
     }
 };
 
+// NOTE: Passing the lhs avoids indirect left-recursion
+template <ast_node_t& lhs>
 struct binary_op_parser
 {
     static inline std::string parsed_structure = "";
@@ -530,8 +515,7 @@ struct binary_op_parser
         }
 
         auto bin_op =
-            combinators::all<expression_parser,
-                             combinators::any<token_parser<token_type::PLUS>,
+            combinators::all<combinators::any<token_parser<token_type::PLUS>,
                                               token_parser<token_type::MINUS>,
                                               token_parser<token_type::MULTIPLICATION>,
                                               token_parser<token_type::DIVISION>,
@@ -559,9 +543,9 @@ struct binary_op_parser
 
         auto new_node =
             std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
-                                         get_node(bin_op[0]),
-                                         get_node(bin_op[2]),
+                                         lhs,
                                          get_node(bin_op[1]),
+                                         get_node(bin_op[0]),
                                          get_source_location_from_compound(bin_op));
 
 
