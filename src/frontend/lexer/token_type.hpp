@@ -86,6 +86,8 @@ enum class token_type
     END_TOKEN
 };
 
+// TODO: Make all of this constepxr
+// TODO: try building a  static hash map with an std::array and a hash function
 const std::array DYNAMIC_TOKENS{token_type::IDENTIFIER, token_type::LITERAL};
 const std::array NON_VALUE_TOKENS{token_type::END_TOKEN};
 
