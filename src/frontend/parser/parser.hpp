@@ -51,7 +51,6 @@ using json = nlohmann::ordered_json;
 //****************************************************************************//
 //                                    Types                                   //
 //****************************************************************************//
-
 template <typename TFunction>
 concept Parser = requires(TFunction& function)
 {
@@ -150,6 +149,12 @@ struct expression_parser;
 namespace combinators
 {
 template <typename Parser>
+struct expect;
+
+template <typename Expector, typename Parser>
+struct if_expect;
+
+template <typename Parser>
 struct optional;
 
 template <typename... Parsers>
@@ -191,6 +196,30 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
 
 namespace combinators
 {
+
+template <typename Parser>
+struct expect
+{
+    static bool parse(std::span<token> ts)
+    {
+        return std::holds_alternative<parse_content>(Parser::parse(ts));
+    }
+};
+
+template <typename Expector, typename Parser>
+struct if_expect
+{
+    static std::vector<parse_result> parse(std::span<token> ts)
+    {
+        if (Expector::parse(ts))
+        {
+            return Parser::parse(ts);
+        }
+
+        return {};
+    }
+};
+
 template <typename Parser>
 struct optional
 {
@@ -457,6 +486,35 @@ struct program_parser
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(program.back()),
                             std::move(new_node));
+    }
+};
+
+struct expression_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto expression =
+            combinators::any<binary_op_parser,
+                             unary_op_parser,
+                             call_parser,
+                             token_parser<token_type::LITERAL>,
+                             token_parser<token_type::IDENTIFIER>>::parse(ts);
+
+        if (expression.empty())
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(expression[0]),
+                            std::move(get_node(expression[0])));
     }
 };
 
@@ -1059,34 +1117,6 @@ struct control_head_parser
     }
 };
 
-struct expression_parser
-{
-    static inline std::string parsed_structure = "";
-
-    static parse_result parse(std::span<token> ts)
-    {
-        if (ts.empty())
-        {
-            return parse_error(parsed_structure, ts[0]);
-        }
-
-        auto expression =
-            combinators::any<binary_op_parser,
-                             unary_op_parser,
-                             call_parser,
-                             token_parser<token_type::LITERAL>,
-                             token_parser<token_type::IDENTIFIER>>::parse(ts);
-
-        if (expression.empty())
-        {
-            return parse_error(parsed_structure, ts[0]);
-        }
-
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(expression[0]),
-                            std::move(get_node(expression[0])));
-    }
-};
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
