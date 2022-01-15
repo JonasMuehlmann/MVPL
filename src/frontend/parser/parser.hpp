@@ -613,8 +613,8 @@ struct unary_op_parser
 
         auto new_node =
             std::make_unique<ast_node_t>(std::in_place_type<unary_op_node>,
-                                         get_node(unary_op[0]),
                                          get_node(unary_op[1]),
+                                         get_node(unary_op[0]),
                                          get_source_location_from_compound(unary_op));
 
 
