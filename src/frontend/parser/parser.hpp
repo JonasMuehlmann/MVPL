@@ -45,7 +45,7 @@
 //                                 Private API                                //
 //****************************************************************************//
 
-using namespace std::literals::string_literals;
+using namespace std::literals::string_view_literals;
 using json = nlohmann::ordered_json;
 
 //****************************************************************************//
@@ -134,10 +134,7 @@ const auto LUT_TOKEN_TO_PRECEDENCE = []() {
 //****************************************************************************//
 
 struct program_parser;
-
-template <ast_node_t& lhs>
 struct binary_op_parser;
-
 struct unary_op_parser;
 struct func_def_parser;
 struct procedure_def_parser;
@@ -198,6 +195,19 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_result,
                           std::vector<parse_result>&  results,
                           std::span<token>&           ts);
 
+bool is_any_parse_result_valid(std::vector<parse_result>& results)
+{
+    return std::ranges::any_of(results, [](auto& parse_result_) {
+        return std::holds_alternative<parse_content>(parse_result_);
+    });
+}
+
+bool are_all_parse_results_valid(std::vector<parse_result>& results)
+{
+    return std::ranges::all_of(results, [](auto& parse_result_) {
+      return std::holds_alternative<parse_content>(parse_result_);
+    });
+}
 //****************************************************************************//
 //                             Parser combinators                             //
 //****************************************************************************//
@@ -221,6 +231,7 @@ struct optional
             ts,
             std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)};
 
+        results.clear();
         results.push_back(std::move(new_node));
 
         return results;
@@ -313,14 +324,12 @@ struct surrounded
 
 
         if (!try_add_parse_result(OpeningParser::parse(ts), results, ts))
-
         {
             return results;
         }
 
 
         if (!(try_add_parse_result(InnerParsers::parse(ts), results, ts) && ...))
-
         {
             return results;
         }
@@ -364,14 +373,24 @@ bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
                           std::span<token>&          ts)
 {
+    if (std::holds_alternative<parse_error>(cur_result))
+    {
+        if (std::ranges::none_of(results, [](auto& result) {
+                return std::holds_alternative<parse_error>(result);
+            }))
+        {
+            results.push_back(std::move(cur_result));
+        }
+
+        return false;
+    }
+
+
     results.push_back(std::move(cur_result));
 
-    if (std::holds_alternative<parse_content>(results.back()))
-    {
-        ts = get_token_stream(results.back());
-        return true;
-    }
-    return false;
+    ts = get_token_stream(results.back());
+
+    return true;
 }
 
 bool try_add_parse_result(parse_result&&    cur_result,
@@ -389,19 +408,27 @@ bool try_add_parse_result(parse_result&&    cur_result,
     return false;
 }
 
-bool try_add_parse_result(std::vector<parse_result>&& cur_result,
+bool try_add_parse_result(std::vector<parse_result>&& cur_results,
                           std::vector<parse_result>&  results,
                           std::span<token>&           ts)
 {
-    std::ranges::move(cur_result, std::back_inserter(results));
-    if (std::ranges::all_of(results, [](auto& results) {
-            return std::holds_alternative<parse_content>(results);
+    if (std::ranges::all_of(cur_results, [](auto& cur_result) {
+            return std::holds_alternative<parse_content>(cur_result);
         }))
     {
+        std::ranges::move(cur_results, std::back_inserter(results));
         ts = get_token_stream(results.back());
 
         return true;
     }
+
+    if (std::ranges::none_of(results, [](auto& cur_result) {
+            return std::holds_alternative<parse_error>(cur_result);
+        }))
+    {
+        results.push_back(std::move(cur_results[0]));
+    }
+
     return false;
 }
 
@@ -418,7 +445,7 @@ struct token_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         if (ts[0].type == wanted)
@@ -440,7 +467,7 @@ struct program_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto program = combinators::many<combinators::any<var_init_parser,
@@ -449,7 +476,7 @@ struct program_parser
                                                           func_def_parser>>::parse(ts);
 
 
-        if (program.empty())
+        if (!is_any_parse_result_valid(program))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -473,50 +500,18 @@ struct program_parser
     }
 };
 
-struct expression_parser
-{
-    static inline std::string parsed_structure = "";
 
-    static parse_result parse(std::span<token> ts)
-    {
-        if (ts.empty())
-        {
-            return parse_error(parsed_structure, ts[0]);
-        }
-
-        // TODO: Handle parenthesesed expressions
-        // NOTE: Maybe we cann try parsing any of the below structutes EXCEPT for the
-        // binary op, afterwards we could try constructing the binary op with the
-        // previously parsed structure as the LHS
-        auto expression =
-            combinators::any<binary_op_parser,
-                             unary_op_parser,
-                             call_parser,
-                             token_parser<token_type::LITERAL>,
-                             token_parser<token_type::IDENTIFIER>>::parse(ts);
-
-        if (expression.empty())
-        {
-            return parse_error(parsed_structure, ts[0]);
-        }
-
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(expression[0]),
-                            std::move(get_node(expression[0])));
-    }
-};
-
+// TODO: Implement pratt parser
 // NOTE: Passing the lhs avoids indirect left-recursion
-template <ast_node_t& lhs>
 struct binary_op_parser
 {
     static inline std::string parsed_structure = "";
 
-    static parse_result parse(std::span<token> ts)
+    static parse_result parse(std::span<token> ts, parse_result& lhs)
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto bin_op =
@@ -540,7 +535,7 @@ struct binary_op_parser
                                               token_parser<token_type::RSHIFT>>,
                              expression_parser>::parse(ts);
 
-        if (bin_op.empty())
+        if (!are_all_parse_results_valid(bin_op))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -548,7 +543,7 @@ struct binary_op_parser
 
         auto new_node =
             std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
-                                         lhs,
+                                         get_node(lhs),
                                          get_node(bin_op[1]),
                                          get_node(bin_op[0]),
                                          get_source_location_from_compound(bin_op));
@@ -568,7 +563,7 @@ struct unary_op_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto unary_op = combinators::all<
@@ -578,7 +573,7 @@ struct unary_op_parser
                              token_parser<token_type::DECREMENT>>,
             expression_parser>::parse(ts);
 
-        if (unary_op.empty())
+        if (!are_all_parse_results_valid(unary_op))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -597,6 +592,47 @@ struct unary_op_parser
     }
 };
 
+struct expression_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+
+        // TODO: Handle parenthesesed expressions
+        auto expression =
+            combinators::any<unary_op_parser,
+                             call_parser,
+                             token_parser<token_type::LITERAL>,
+                             token_parser<token_type::IDENTIFIER>>::parse(ts);
+
+        if (!is_any_parse_result_valid(expression))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        // NOTE: Passing the lhs avoids indirect left-recursion
+        if (!(get_token_stream(expression.back()).empty()))
+        {
+            auto bin_op = binary_op_parser::parse(get_token_stream(expression.back()),
+                                                  expression.back());
+
+            if (std::holds_alternative<parse_content>(bin_op))
+            {
+                expression.back() = std::move(bin_op);
+            }
+        }
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(expression.back()),
+                            std::move(get_node(expression.back())));
+    }
+};
+
 struct func_def_parser
 {
     static inline std::string parsed_structure = "";
@@ -605,14 +641,14 @@ struct func_def_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto func_def = combinators::all<token_parser<token_type::FUNCTION>,
                                          signature_parser,
                                          block_parser>::parse(ts);
 
-        if (func_def.empty())
+        if (!are_all_parse_results_valid(func_def))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -620,8 +656,8 @@ struct func_def_parser
 
         auto new_node =
             std::make_unique<ast_node_t>(std::in_place_type<func_def_node>,
-                                         get_node(func_def[0]),
                                          get_node(func_def[1]),
+                                         get_node(func_def[2]),
                                          get_source_location_from_compound(func_def));
 
 
@@ -639,14 +675,14 @@ struct procedure_def_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto procedure_def = combinators::all<token_parser<token_type::PROCEDURE>,
                                               signature_parser,
                                               block_parser>::parse(ts);
 
-        if (procedure_def.empty())
+        if (!are_all_parse_results_valid(procedure_def))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -673,13 +709,13 @@ struct signature_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto signature = combinators::all<token_parser<token_type::IDENTIFIER>,
                                           parameter_def_parser>::parse(ts);
 
-        if (signature.empty())
+        if (!are_all_parse_results_valid(signature))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -705,13 +741,13 @@ struct return_stmt_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto return_stmt = combinators::all<token_parser<token_type::RETURN>,
                                             expression_parser>::parse(ts);
 
-        if (return_stmt.empty())
+        if (!are_all_parse_results_valid(return_stmt))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -719,7 +755,7 @@ struct return_stmt_parser
 
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<return_stmt_node>,
-            get_node(return_stmt[0]),
+            get_node(return_stmt[1]),
             get_source_location_from_compound(return_stmt));
 
         return parse_result(std::in_place_type<parse_content>,
@@ -736,7 +772,7 @@ struct parameter_def_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto parameter_def = combinators::surrounded<
@@ -747,7 +783,7 @@ struct parameter_def_parser
                                        token_parser<token_type::IDENTIFIER>>,
                 token_parser<token_type::IDENTIFIER>>>>::parse(ts);
 
-        if (parameter_def.empty())
+        if (!is_any_parse_result_valid(parameter_def))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -798,7 +834,7 @@ struct var_decl_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto var_decl =
@@ -806,7 +842,7 @@ struct var_decl_parser
                              token_parser<token_type::IDENTIFIER>,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
-        if (var_decl.empty())
+        if (!are_all_parse_results_valid(var_decl))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -831,7 +867,7 @@ struct var_init_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto var_init =
@@ -841,7 +877,7 @@ struct var_init_parser
                              expression_parser,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
-        if (var_init.empty())
+        if (!are_all_parse_results_valid(var_init))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -867,7 +903,7 @@ struct var_assignment_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto var_assignment =
@@ -876,7 +912,7 @@ struct var_assignment_parser
                              expression_parser,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
-        if (var_assignment.empty())
+        if (!are_all_parse_results_valid(var_assignment))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -902,13 +938,13 @@ struct call_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto call = combinators::all<token_parser<token_type::IDENTIFIER>,
                                      parameter_pass_parser>::parse(ts);
 
-        if (call.empty())
+        if (!are_all_parse_results_valid(call))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -934,7 +970,7 @@ struct parameter_pass_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto parameter_pass = combinators::surrounded<
@@ -945,7 +981,7 @@ struct parameter_pass_parser
                                                         expression_parser>,
                                  expression_parser>>>::parse(ts);
 
-        if (parameter_pass.empty())
+        if (!is_any_parse_result_valid(parameter_pass))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -996,7 +1032,7 @@ struct block_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         // TODO: Handle empty block
@@ -1006,10 +1042,12 @@ struct block_parser
                                                            var_init_parser,
                                                            var_decl_parser,
                                                            expression_parser,
-                                                           control_block_parser>>>,
+                                                           control_block_parser,
+                                                           call_parser,
+                                                           return_stmt_parser>>>,
                                       token_parser<token_type::RBRACE>>::parse(ts);
 
-        if (block.empty())
+        if (!are_all_parse_results_valid(block))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -1052,13 +1090,13 @@ struct control_block_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto control_block =
             combinators::all<control_head_parser, block_parser>::parse(ts);
 
-        if (control_block.empty())
+        if (!are_all_parse_results_valid(control_block))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -1083,14 +1121,14 @@ struct control_head_parser
     {
         if (ts.empty())
         {
-            return parse_error(parsed_structure, ts[0]);
+            return parse_error(parsed_structure);
         }
 
         auto control_head = combinators::surrounded<token_parser<token_type::LPAREN>,
                                                     token_parser<token_type::RPAREN>,
                                                     expression_parser>::parse(ts);
 
-        if (control_head.empty())
+        if (!is_any_parse_result_valid(control_head))
         {
             return parse_error(parsed_structure, ts[0]);
         }
