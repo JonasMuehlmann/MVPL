@@ -215,6 +215,70 @@ The parser turns a token stream like this:
 into an *absract syntax tree* (AST) like this:
 ```json
 {
+    "ast": {
+        "type": "PROGRAM",
+        "source_location_": {
+            "line_start": 0,
+            "col_start": 0,
+            "line_end": 3,
+            "col_end": 1
+        },
+        "globals": [
+            {
+                "type": "FUNC_DEF",
+                "source_location_": {
+                    "line_start": 0,
+                    "col_start": 0,
+                    "line_end": 3,
+                    "col_end": 1
+                },
+                "signature": {
+                    "type": "FUNC_SIGNATURE",
+                    "source_location_": {
+                        "line_start": 0,
+                        "col_start": 9,
+                        "line_end": 0,
+                        "col_end": 15
+                    },
+                    "identifier": "main",
+                    "parameter_list": {
+                        "type": "PARAMETER_DEF",
+                        "source_location_": {
+                            "line_start": 0,
+                            "col_start": 13,
+                            "line_end": 0,
+                            "col_end": 15
+                        },
+                        "parameter_list": []
+                    }
+                },
+                "body": {
+                    "type": "BLOCK",
+                    "source_location_": {
+                        "line_start": 1,
+                        "col_start": 0,
+                        "line_end": 3,
+                        "col_end": 1
+                    },
+                    "statements": [
+                        {
+                            "type": "RETURN_STMT",
+                            "source_location_": {
+                                "line_start": 2,
+                                "col_start": 4,
+                                "line_end": 2,
+                                "col_end": 13
+                            },
+                            "value": {
+                                "token": "LITERAL",
+                                "value": "1"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
 }
 ```
 
