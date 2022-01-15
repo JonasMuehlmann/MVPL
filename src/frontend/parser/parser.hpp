@@ -1103,10 +1103,11 @@ struct block_parser
         else
         {
             // Make sure, that we don't copy the parentheses as statements
-            std::for_each(block.begin()+1, block.end()-1, [&statements](auto&& element) {
-                statements.push_back(
-                    std::move(get_node(std::forward<decltype(element)>(element))));
-            });
+            std::for_each(
+                block.begin() + 1, block.end() - 1, [&statements](auto&& element) {
+                    statements.push_back(
+                        std::move(get_node(std::forward<decltype(element)>(element))));
+                });
 
             new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<block_node>, std::move(statements), new_location);
