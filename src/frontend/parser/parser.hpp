@@ -185,15 +185,18 @@ std::span<token>& get_token_stream(parse_result& result);
 
 bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
-                          std::span<token>&          ts);
+                          std::span<token>&          ts,
+                          bool                       overwrite_errors = false);
 
 bool try_add_parse_result(parse_result&&    cur_result,
                           parse_result&     result,
-                          std::span<token>& ts);
+                          std::span<token>& ts,
+                          bool              overwrite_errors = false);
 
 bool try_add_parse_result(std::vector<parse_result>&& cur_result,
                           std::vector<parse_result>&  results,
-                          std::span<token>&           ts);
+                          std::span<token>&           ts,
+                          bool                        overwrite_errors = false);
 
 bool is_any_parse_result_valid(std::vector<parse_result>& results)
 {
@@ -205,7 +208,7 @@ bool is_any_parse_result_valid(std::vector<parse_result>& results)
 bool are_all_parse_results_valid(std::vector<parse_result>& results)
 {
     return std::ranges::all_of(results, [](auto& parse_result_) {
-      return std::holds_alternative<parse_content>(parse_result_);
+        return std::holds_alternative<parse_content>(parse_result_);
     });
 }
 //****************************************************************************//
@@ -222,6 +225,8 @@ struct optional
         std::vector<parse_result> results{};
 
 
+        // FIX: We are being passed a parse_error from combinators::any here,
+        //  even though one alternative was matched!
         if (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
         {
             return results;
@@ -246,7 +251,7 @@ struct any
     {
         std::vector<parse_result> results;
 
-        (try_add_parse_result(Parsers::parse(ts), results, ts) || ...);
+        (try_add_parse_result(Parsers::parse(ts), results, ts, true) || ...);
 
         return results;
     }
@@ -306,6 +311,10 @@ struct separated
         {
             return results;
         }
+
+        // NOTE: The previous block always fails to parse the last item,
+        // because it expects trailing commas, hence we parse the last item manually
+        try_add_parse_result(ItemParser::parse(ts), results, ts);
 
         return results;
     }
@@ -369,7 +378,8 @@ source_location get_source_location_from_compound(std::vector<parse_result>& nod
 
 bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
-                          std::span<token>&          ts)
+                          std::span<token>&          ts,
+                          bool                       overwrite_errors)
 {
     if (std::holds_alternative<parse_error>(cur_result))
     {
@@ -384,6 +394,13 @@ bool try_add_parse_result(parse_result&&             cur_result,
     }
 
 
+    if (overwrite_errors)
+    {
+        std::erase_if(results, [](auto& cur_result) {
+          return std::holds_alternative<parse_error>(cur_result);
+        });
+    }
+    
     results.push_back(std::move(cur_result));
 
     ts = get_token_stream(results.back());
@@ -393,7 +410,8 @@ bool try_add_parse_result(parse_result&&             cur_result,
 
 bool try_add_parse_result(parse_result&&    cur_result,
                           parse_result&     result,
-                          std::span<token>& ts)
+                          std::span<token>& ts,
+                          bool              overwrite_errors)
 {
     result = std::move(cur_result);
 
@@ -408,13 +426,21 @@ bool try_add_parse_result(parse_result&&    cur_result,
 
 bool try_add_parse_result(std::vector<parse_result>&& cur_results,
                           std::vector<parse_result>&  results,
-                          std::span<token>&           ts)
+                          std::span<token>&           ts,
+                          bool                        overwrite_errors)
 {
     if (std::ranges::all_of(cur_results, [](auto& cur_result) {
             return std::holds_alternative<parse_content>(cur_result);
         }))
     {
         std::ranges::move(cur_results, std::back_inserter(results));
+
+        if (overwrite_errors)
+        { 
+            std::erase_if(results, [](auto& cur_result) {
+                return std::holds_alternative<parse_error>(cur_result);
+            });
+        }
         ts = get_token_stream(results.back());
 
         return true;
@@ -424,7 +450,10 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_results,
             return std::holds_alternative<parse_error>(cur_result);
         }))
     {
-        results.push_back(std::move(cur_results[0]));
+        results.push_back(
+            std::move(*std::ranges::find_if(cur_results, [](auto& cur_result) {
+                return std::holds_alternative<parse_error>(cur_result);
+            })));
     }
 
     return false;
