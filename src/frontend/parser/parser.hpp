@@ -275,7 +275,10 @@ struct many
         {}
 
         // When the loop stops, it always adds a parse error!
-        results.erase(results.end());
+        if (std::holds_alternative<parse_error>(results.back()))
+        {
+            results.erase(results.end());
+        }
         return results;
     }
 };
@@ -773,8 +776,10 @@ struct return_stmt_parser
             return parse_error(parsed_structure);
         }
 
-        auto return_stmt = combinators::all<token_parser<token_type::RETURN>,
-                                            expression_parser>::parse(ts);
+        auto return_stmt =
+            combinators::all<token_parser<token_type::RETURN>,
+                             expression_parser,
+                             token_parser<token_type::SEMICOLON>>::parse(ts);
 
         if (!are_all_parse_results_valid(return_stmt))
         {
@@ -1097,7 +1102,8 @@ struct block_parser
         }
         else
         {
-            std::ranges::for_each(block, [&statements](auto&& element) {
+            // Make sure, that we don't copy the parentheses as statements
+            std::for_each(block.begin()+1, block.end()-1, [&statements](auto&& element) {
                 statements.push_back(
                     std::move(get_node(std::forward<decltype(element)>(element))));
             });
