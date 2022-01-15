@@ -275,7 +275,7 @@ struct many
         {}
 
         // When the loop stops, it always adds a parse error!
-        results.erase(results.end()); 
+        results.erase(results.end());
         return results;
     }
 };
@@ -399,10 +399,10 @@ bool try_add_parse_result(parse_result&&             cur_result,
     if (overwrite_errors)
     {
         std::erase_if(results, [](auto& cur_result) {
-          return std::holds_alternative<parse_error>(cur_result);
+            return std::holds_alternative<parse_error>(cur_result);
         });
     }
-    
+
     results.push_back(std::move(cur_result));
 
     ts = get_token_stream(results.back());
@@ -438,7 +438,7 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_results,
         std::ranges::move(cur_results, std::back_inserter(results));
 
         if (overwrite_errors)
-        { 
+        {
             std::erase_if(results, [](auto& cur_result) {
                 return std::holds_alternative<parse_error>(cur_result);
             });
@@ -505,7 +505,7 @@ struct program_parser
                                                           func_def_parser>>::parse(ts);
 
 
-        if (!is_any_parse_result_valid(program))
+        if (!are_all_parse_results_valid(program))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -812,7 +812,7 @@ struct parameter_def_parser
                                        token_parser<token_type::IDENTIFIER>>,
                 token_parser<token_type::IDENTIFIER>>>>::parse(ts);
 
-        if (!is_any_parse_result_valid(parameter_def))
+        if (!are_all_parse_results_valid(parameter_def))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -1010,7 +1010,7 @@ struct parameter_pass_parser
                                                         expression_parser>,
                                  expression_parser>>>::parse(ts);
 
-        if (!is_any_parse_result_valid(parameter_pass))
+        if (!are_all_parse_results_valid(parameter_pass))
         {
             return parse_error(parsed_structure, ts[0]);
         }
@@ -1157,7 +1157,7 @@ struct control_head_parser
                                                     token_parser<token_type::RPAREN>,
                                                     expression_parser>::parse(ts);
 
-        if (!is_any_parse_result_valid(control_head))
+        if (!are_all_parse_results_valid(control_head))
         {
             return parse_error(parsed_structure, ts[0]);
         }
