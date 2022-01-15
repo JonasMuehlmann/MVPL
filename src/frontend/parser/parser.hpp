@@ -274,6 +274,8 @@ struct many
         while (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
         {}
 
+        // When the loop stops, it always adds a parse error!
+        results.erase(results.end()); 
         return results;
     }
 };
