@@ -9,7 +9,7 @@ The lexer turns a program like this:
 
 function main()
 {
-    return 5;
+    return 0;
 }
 ```
 int a *token stream* like this:
@@ -77,7 +77,7 @@ int a *token stream* like this:
       }
     },
     {
-      "value": "5",
+      "value": "0",
       "type": "LITERAL",
       "source_location_": {
         "line_start": 2,
@@ -271,7 +271,7 @@ into an *absract syntax tree* (AST) like this:
                             },
                             "value": {
                                 "token": "LITERAL",
-                                "value": "1"
+                                "value": "0"
                             }
                         }
                     ]
