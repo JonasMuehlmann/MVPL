@@ -179,7 +179,7 @@ The parser turns a token stream like this:
       }
     },
     {
-      "value": "5",
+      "value": "0",
       "type": "LITERAL",
       "source_location_": {
         "line_start": 2,
