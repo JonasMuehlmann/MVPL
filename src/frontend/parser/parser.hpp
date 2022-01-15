@@ -64,7 +64,12 @@ struct parse_error
     std::string parsed_structure;
     token       token_;
 
-    explicit parse_error(std::string& parsed_structure, token token_) :
+    explicit parse_error(std::string& parsed_structure) :
+        parsed_structure(parsed_structure),
+        token_(token_type::END_TOKEN, ""sv, source_location())
+    {}
+
+    parse_error(std::string& parsed_structure, token token_) :
         parsed_structure(parsed_structure), token_(token_)
     {}
 
