@@ -307,8 +307,6 @@ struct separated
             return results;
         }
 
-        try_add_parse_result(ItemParser::parse(ts), results, ts);
-
         return results;
     }
 };
