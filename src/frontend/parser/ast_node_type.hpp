@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_
-#define SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_
+
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -99,4 +99,3 @@ inline void to_json(json& j, const ast_node_type& node)
 {
     j = LUT_AST_NODE_TYPE_TO_STRING[static_cast<size_t>(node)];
 }
-#endif    // SRC_FRONTEND_PARSER_AST_NODE_TYPE_HPP_

@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_
-#define SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_
+
+#pragma once
 #include "enum_range.hpp"
 #include "nlohmann/json.hpp"
 
@@ -104,4 +104,3 @@ inline void to_json(json& j, const operator_type& node)
 {
     j = LUT_OPERATOR_TYPE_TO_STRING[static_cast<size_t>(node)];
 };
-#endif    // SRC_FRONTEND_OPERATOR_TYPE_TYPE_HPP_

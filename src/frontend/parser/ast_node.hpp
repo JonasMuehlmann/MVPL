@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_PARSER_AST_NODE_HPP_
-#define SRC_FRONTEND_PARSER_AST_NODE_HPP_
+
+#pragma once
 
 #include <memory>
 #include <variant>
@@ -351,4 +351,3 @@ inline void to_json(json& j, const ast_node_t& node)
     // std::visit([&j](const auto& node) { to_json(j, node); }, node);
     std::visit([&](auto&& value) { j = std::forward<decltype(value)>(value); }, node);
 }
-#endif    // SRC_FRONTEND_PARSER_AST_NODE_HPP_

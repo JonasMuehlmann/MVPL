@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_LEXER_TOKEN_TYPE_HPP_
-#define SRC_FRONTEND_LEXER_TOKEN_TYPE_HPP_
+
+#pragma once
 
 #include <algorithm>
 #include <string_view>
@@ -301,4 +301,3 @@ inline void to_json(json& j, const token_type& node)
 {
     j = LUT_TOKEN_TO_STRING[static_cast<size_t>(node)];
 }
-#endif    // SRC_FRONTEND_LEXER_TOKEN_TYPE_HPP_

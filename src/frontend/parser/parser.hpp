@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_PARSER_PARSER_HPP_
-#define SRC_FRONTEND_PARSER_PARSER_HPP_
+
+#pragma once
 
 #include <algorithm>
 #include <functional>
@@ -1194,4 +1194,3 @@ inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
     // return get_node(std::get<parse_content>(result));
     return std::get<1>(std::get<parse_content>(program_parser::parse(ts)));
 }
-#endif    // SRC_FRONTEND_PARSER_PARSER_HPP_

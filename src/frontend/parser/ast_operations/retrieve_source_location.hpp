@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_
-#define SRC_FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_
+
+#pragma once
 #include <concepts>
 #include <exception>
 
@@ -39,4 +39,3 @@ struct source_location_retriever_visitor
             "Tried to retrieve source code location of empty AST node");
     }
 };
-#endif    // FRONTEND_PARSER_AST_OPERATIONS_GET_LOCATION_HPP_

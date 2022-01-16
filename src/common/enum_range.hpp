@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_COMMON_ENUM_RANGE_HPP_
-#define SRC_COMMON_ENUM_RANGE_HPP_
+
+#pragma once
 
 #include <algorithm>
 #include <array>
@@ -99,4 +99,3 @@ constexpr auto enum_to_array()
 
     return arr;
 }
-#endif    // SRC_COMMON_ENUM_RANGE_HPP_

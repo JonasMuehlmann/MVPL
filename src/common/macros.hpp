@@ -17,8 +17,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef SRC_COMMON_MACROS_HPP_
-#define SRC_COMMON_MACROS_HPP_
+
+#pragma once
 
 #include "nlohmann/json.hpp"
 // From https://github.com/nlohmann/json/discussions/2397#discussioncomment-680069
@@ -37,5 +37,3 @@
     {                                                                              \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__)) \
     }
-
-#endif    // SRC_COMMON_MACROS_HPP_
