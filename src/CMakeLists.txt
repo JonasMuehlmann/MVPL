@@ -46,11 +46,6 @@ set(SOURCE_FILES
     frontend/parser/ast_node.hpp
     frontend/parser/ast_node.cpp
 
-    frontend/parser/state.hpp
-
-    frontend/parser/finite_state_machine.cpp
-    frontend/parser/finite_state_machine.hpp
-
     frontend/parser/operator_type.hpp
 
     frontend/parser/ast_operations/retrieve_source_location.hpp

@@ -31,7 +31,6 @@
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_node_type.hpp"
 #include "frontend/parser/parser.hpp"
-#include "frontend/parser/state.hpp"
 
 // TODO: Add CLI flags for building and printing up to: tokenstream, AST, bytecode.
 int main(int argc, char* argv[])
