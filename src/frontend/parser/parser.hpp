@@ -86,14 +86,6 @@ struct parse_error
 using parse_content = std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>;
 using parse_result  = std::variant<parse_content, parse_error>;
 
-template <typename Function>
-using ReturnTypeOfFunction = typename decltype(std::function{
-    std::declval<Function>()})::result_type;
-
-template <typename ReturnType, typename... Pack>
-concept PackContainsFunctionWithReturnType =
-    ((std::is_same<ReturnTypeOfFunction<Pack>, ReturnType>::value) || ...);
-
 const auto LUT_TOKEN_TO_PRECEDENCE = []() {
     constexpr auto arr = []() {
         std::array<int, NUM_TOKENS> arr{};
