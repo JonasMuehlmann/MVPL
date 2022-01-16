@@ -112,7 +112,7 @@ int a *token stream* like this:
 
 ## Parser
 
-The parser is a *recursive descent parser* and uses *parser combinators*, and a *pratt parser* for dealing with operator precedence.
+The parser is a *recursive descent parser* and uses *parser combinators* with *backtracking*, and a *pratt parser* for dealing with operator precedence.
 
 The parser turns a token stream like this:
 ```json
