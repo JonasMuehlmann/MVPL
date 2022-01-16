@@ -47,7 +47,12 @@ set(SOURCE_FILES
     frontend/parser/ast_node.cpp
 
     frontend/parser/operator_type.hpp
-
+    
+    frontend/parser/parse_error.hpp
+    frontend/parser/parse_error.cpp
+    
+    frontend/parser/util.hpp
+    
     frontend/parser/ast_operations/retrieve_source_location.hpp
 
 
@@ -56,7 +61,7 @@ set(SOURCE_FILES
     common/util.hpp
 
     common/enum_range.hpp
-)
+    )
 
 #****************************************************************************#
 #                                  Dependencies                              #

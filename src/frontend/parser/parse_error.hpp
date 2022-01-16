@@ -20,33 +20,17 @@
 
 #pragma once
 
-#include <cstddef>
+#include <string>
+#include "frontend/lexer/token.hpp"
 
-#include "common/macros.hpp"
-#include "nlohmann/json.hpp"
-
-using json = nlohmann::ordered_json;
-
-struct source_location
+struct parse_error
 {
-    size_t line_start{};
-    size_t col_start{};
+    std::string parsed_structure;
+    token       token_;
 
-    size_t line_end{};
-    size_t col_end{};
+    explicit parse_error(std::string& parsed_structure);
 
-    source_location() = default;
-
-    source_location(size_t line_start,
-                    size_t col_start,
-                    size_t line_end,
-                    size_t col_end) :
-        line_start{line_start},
-        col_start{col_start},
-        line_end{line_end},
-        col_end{col_end}
-    {}
+    parse_error(std::string& parsed_structure, token token_);
+    
+    void throw_();
 };
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    source_location, line_start, col_start, line_end, col_end);

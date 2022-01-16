@@ -17,36 +17,26 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-#pragma once
-
-#include <cstddef>
-
-#include "common/macros.hpp"
-#include "nlohmann/json.hpp"
+#include "frontend/parser/parse_error.hpp"
+#include "common/source_location.hpp"
 
 using json = nlohmann::ordered_json;
+using namespace std::literals::string_view_literals;
 
-struct source_location
+parse_error::parse_error(std::string& parsed_structure) :
+    parsed_structure(parsed_structure),
+    token_(token_type::END_TOKEN, ""sv, source_location())
+{}
+
+parse_error::parse_error(std::string& parsed_structure, token token_) :
+    parsed_structure(parsed_structure), token_(token_)
+{}
+
+void parse_error::throw_()
 {
-    size_t line_start{};
-    size_t col_start{};
+    json j;
+    to_json(j, token_);
 
-    size_t line_end{};
-    size_t col_end{};
-
-    source_location() = default;
-
-    source_location(size_t line_start,
-                    size_t col_start,
-                    size_t line_end,
-                    size_t col_end) :
-        line_start{line_start},
-        col_start{col_start},
-        line_end{line_end},
-        col_end{col_end}
-    {}
-};
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    source_location, line_start, col_start, line_end, col_end);
+    throw std::runtime_error("Could not parse " + parsed_structure + " at token "
+                             + j.dump(4));
+}
