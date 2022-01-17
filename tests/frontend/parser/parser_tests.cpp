@@ -414,7 +414,7 @@ TEST(TestBinaryOpParser, Complex)
     // 2 / 3
     ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(rhs.rhs)));
     auto rrhs = std::move(std::get<binary_op_node>(*(rhs.rhs)));
-    
+
     // 2
     ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.lhs)));
     auto rrlhs = std::move(std::get<leaf_node>(*(rrhs.lhs)));
@@ -425,8 +425,9 @@ TEST(TestBinaryOpParser, Complex)
     auto rrrhs = std::move(std::get<leaf_node>(*(rrhs.rhs)));
     ASSERT_EQ(rrrhs.token, token_type::LITERAL);
 }
+
 //****************************************************************************//
-//                              expression_parser                             //
+//                               unar_op_parser                               //
 //****************************************************************************//
 TEST(TestUnaryOpParser, NotIdentifier)
 {

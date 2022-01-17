@@ -37,8 +37,8 @@
 #include "frontend/lexer/token.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_operations/retrieve_source_location.hpp"
-#include "nlohmann/json.hpp"
 #include "frontend/parser/util.hpp"
+#include "nlohmann/json.hpp"
 #include "parser.hpp"
 #include "token_type.hpp"
 
@@ -77,8 +77,6 @@ struct optional
         std::vector<parse_result> results{};
 
 
-        // FIX: We are being passed a parse_error from combinators::any here,
-        //  even though one alternative was matched!
         if (!ts.empty() && try_add_parse_result(Parser::parse(ts), results, ts))
         {
             return results;
