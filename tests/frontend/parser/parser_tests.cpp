@@ -14,7 +14,33 @@ using namespace std::string_view_literals;
 
 
 //****************************************************************************//
-//                               ParameterDefParser                              //
+//                               program_parser                               //
+//****************************************************************************//
+TEST(TestProgramParser, 2VarDecls)
+{
+    std::array token_stream_raw{
+                                token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location()) ,
+                                token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "y"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location()) 
+    };
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = program_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+
+    auto globals = std::move(std::get<program_node>((*get_node(result))).globals);
+    ASSERT_EQ(globals.size(), 2);
+    ASSERT_TRUE(std::holds_alternative<var_decl_node>(*(globals[0])));
+    ASSERT_TRUE(std::holds_alternative<var_decl_node>(*(globals[1])));
+}
+//****************************************************************************//
+//                               ParameterDefParser                           //
 //****************************************************************************//
 TEST(TestParameterDefParser, NoParameter)
 {
