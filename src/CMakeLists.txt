@@ -52,6 +52,7 @@ set(SOURCE_FILES
     frontend/parser/parse_error.cpp
     
     frontend/parser/util.hpp
+    frontend/parser/util.cpp
     
     frontend/parser/ast_operations/retrieve_source_location.hpp
 
