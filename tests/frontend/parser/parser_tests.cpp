@@ -18,14 +18,12 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 TEST(TestProgramParser, 2VarDecls)
 {
-    std::array token_stream_raw{
-                                token(token_type::LET, "let"sv, source_location()),
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "x"sv, source_location()),
-                                token(token_type::SEMICOLON, ";"sv, source_location()) ,
+                                token(token_type::SEMICOLON, ";"sv, source_location()),
                                 token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "y"sv, source_location()),
-                                token(token_type::SEMICOLON, ";"sv, source_location()) 
-    };
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -39,8 +37,168 @@ TEST(TestProgramParser, 2VarDecls)
     ASSERT_TRUE(std::holds_alternative<var_decl_node>(*(globals[0])));
     ASSERT_TRUE(std::holds_alternative<var_decl_node>(*(globals[1])));
 }
+
 //****************************************************************************//
-//                               ParameterDefParser                           //
+//                              binary_op_parser                              //
+//****************************************************************************//
+TEST(TestBinaryOpParser, Complex)
+{
+    std::array token_stream_raw{
+        token(token_type::PLUS, "+"sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::MULTIPLICATION, "*"sv, source_location()),
+        token(token_type::LITERAL, "2"sv, source_location()),
+        token(token_type::MULTIPLICATION, "/"sv, source_location()),
+        token(token_type::LITERAL, "3"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto lhs_ = token_parser<token_type::LITERAL>::parse(token_stream.subspan(1, 1));
+
+    auto result = binary_op_parser::parse(token_stream, lhs_);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    auto bin_op = std::move(std::get<binary_op_node>((*get_node(result))));
+
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(bin_op.lhs)));
+    auto lhs = std::get<leaf_node>(*(bin_op.lhs));
+    ASSERT_EQ(lhs.token, token_type::LITERAL);
+
+    // 5 * 2 / 3
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(bin_op.rhs)));
+    auto rhs = std::move(std::get<binary_op_node>(*(bin_op.rhs)));
+
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rhs.lhs)));
+    auto rlhs = std::move(std::get<leaf_node>(*(rhs.lhs)));
+    ASSERT_EQ(rlhs.token, token_type::LITERAL);
+
+    // 2 / 3
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(rhs.rhs)));
+    auto rrhs = std::move(std::get<binary_op_node>(*(rhs.rhs)));
+
+    // 2
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.lhs)));
+    auto rrlhs = std::move(std::get<leaf_node>(*(rrhs.lhs)));
+    ASSERT_EQ(rrlhs.token, token_type::LITERAL);
+
+    // 3
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.rhs)));
+    auto rrrhs = std::move(std::get<leaf_node>(*(rrhs.rhs)));
+    ASSERT_EQ(rrrhs.token, token_type::LITERAL);
+}
+
+//****************************************************************************//
+//                               unar_op_parser                               //
+//****************************************************************************//
+TEST(TestUnaryOpParser, NotIdentifier)
+{
+    std::array token_stream_raw{
+        token(token_type::NOT, "!"sv, source_location()),
+        token(token_type::IDENTIFIER, "x"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = unary_op_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<unary_op_node>((*get_node(result))));
+    auto unary_op = std::move(std::get<unary_op_node>((*get_node(result))));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(unary_op.operand)));
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(unary_op.operator_)));
+
+    auto operand = std::get<leaf_node>(*(unary_op.operand));
+    ASSERT_EQ(operand.token, token_type::IDENTIFIER);
+
+    auto operator_ = std::get<leaf_node>(*(unary_op.operator_));
+    ASSERT_EQ(operator_.token, token_type::NOT);
+}
+
+//****************************************************************************//
+//                              expression_parser                             //
+//****************************************************************************//
+TEST(TestExpressionParser, Identifier)
+{
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "x"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
+    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).token, token_type::IDENTIFIER);
+    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "x"sv);
+}
+
+TEST(TestExpressionParser, Literal)
+{
+    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
+    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).token, token_type::LITERAL);
+    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "5"sv);
+}
+
+TEST(TestExpressionParser, BinaryOp)
+{
+    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::PLUS, "+"sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
+        token_type::LITERAL);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
+            .token,
+        token_type::PLUS);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
+        token_type::LITERAL);
+}
+
+//****************************************************************************//
+//                               func_def_parser                              //
+//****************************************************************************//
+//****************************************************************************//
+//                            procedure_def_parser                            //
+//****************************************************************************//
+//****************************************************************************//
+//                              signature_parser                              //
+//****************************************************************************//
+//****************************************************************************//
+//                             return_stmt_parser                             //
+//****************************************************************************//
+//****************************************************************************//
+//                               parameter_def_parser                         //
 //****************************************************************************//
 TEST(TestParameterDefParser, NoParameter)
 {
@@ -172,7 +330,7 @@ TEST(TestParameterDefParser, TrailingComma)
 }
 
 //****************************************************************************//
-//                               ParameterPassParser                          //
+//                               parameter_pass_parser                        //
 //****************************************************************************//
 TEST(TestParameterPassParser, NoParameter)
 {
@@ -304,6 +462,21 @@ TEST(TestParameterPassParser, TrailingComma)
 }
 
 //****************************************************************************//
+//                               var_decl_parser                              //
+//****************************************************************************//
+//****************************************************************************//
+//                            var_assignment_parser                           //
+//****************************************************************************//
+//****************************************************************************//
+//                                 call_parser                                //
+//****************************************************************************//
+//****************************************************************************//
+//                            control_block_parser                            //
+//****************************************************************************//
+//****************************************************************************//
+//                             control_head_parser                            //
+//****************************************************************************//
+//****************************************************************************//
 //                               var_init_parser                              //
 //****************************************************************************//
 TEST(TestVarInitParser, Literal)
@@ -332,152 +505,4 @@ TEST(TestVarInitParser, Literal)
         (std::get<leaf_node>(*(std::get<var_init_node>((*get_node(result))).value)))
             .token,
         token_type::LITERAL);
-}
-
-
-//****************************************************************************//
-//                              expression_parser                             //
-//****************************************************************************//
-TEST(TestExpressionParser, Identifier)
-{
-    std::array token_stream_raw{
-        token(token_type::IDENTIFIER, "x"sv, source_location())};
-
-    std::span<token> token_stream(token_stream_raw);
-
-    auto result = expression_parser::parse(token_stream);
-
-    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-    ASSERT_EQ(get_token_stream(result).size(), 0);
-    ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
-    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).token, token_type::IDENTIFIER);
-    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "x"sv);
-}
-
-TEST(TestExpressionParser, Literal)
-{
-    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location())};
-
-    std::span<token> token_stream(token_stream_raw);
-
-    auto result = expression_parser::parse(token_stream);
-
-    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-    ASSERT_EQ(get_token_stream(result).size(), 0);
-    ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<leaf_node>((*get_node(result))));
-    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).token, token_type::LITERAL);
-    ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "5"sv);
-}
-
-TEST(TestExpressionParser, BinaryOp)
-{
-    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location()),
-                                token(token_type::PLUS, "+"sv, source_location()),
-                                token(token_type::LITERAL, "5"sv, source_location())};
-
-    std::span<token> token_stream(token_stream_raw);
-
-    auto result = expression_parser::parse(token_stream);
-
-    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-    ASSERT_EQ(get_token_stream(result).size(), 0);
-    ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
-        token_type::LITERAL);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
-            .token,
-        token_type::PLUS);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
-        token_type::LITERAL);
-}
-
-//****************************************************************************//
-//                              binary_op_parser                              //
-//****************************************************************************//
-TEST(TestBinaryOpParser, Complex)
-{
-    std::array token_stream_raw{
-        token(token_type::PLUS, "+"sv, source_location()),
-        token(token_type::LITERAL, "5"sv, source_location()),
-        token(token_type::MULTIPLICATION, "*"sv, source_location()),
-        token(token_type::LITERAL, "2"sv, source_location()),
-        token(token_type::MULTIPLICATION, "/"sv, source_location()),
-        token(token_type::LITERAL, "3"sv, source_location())};
-
-    std::span<token> token_stream(token_stream_raw);
-
-    auto lhs_ = token_parser<token_type::LITERAL>::parse(token_stream.subspan(1, 1));
-
-    auto result = binary_op_parser::parse(token_stream, lhs_);
-
-    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-    ASSERT_EQ(get_token_stream(result).size(), 0);
-    ASSERT_NE(get_node(result), nullptr);
-
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
-    auto bin_op = std::move(std::get<binary_op_node>((*get_node(result))));
-
-    // 5
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(bin_op.lhs)));
-    auto lhs = std::get<leaf_node>(*(bin_op.lhs));
-    ASSERT_EQ(lhs.token, token_type::LITERAL);
-
-    // 5 * 2 / 3
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(bin_op.rhs)));
-    auto rhs = std::move(std::get<binary_op_node>(*(bin_op.rhs)));
-
-    // 5
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rhs.lhs)));
-    auto rlhs = std::move(std::get<leaf_node>(*(rhs.lhs)));
-    ASSERT_EQ(rlhs.token, token_type::LITERAL);
-
-    // 2 / 3
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(rhs.rhs)));
-    auto rrhs = std::move(std::get<binary_op_node>(*(rhs.rhs)));
-
-    // 2
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.lhs)));
-    auto rrlhs = std::move(std::get<leaf_node>(*(rrhs.lhs)));
-    ASSERT_EQ(rrlhs.token, token_type::LITERAL);
-
-    // 3
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.rhs)));
-    auto rrrhs = std::move(std::get<leaf_node>(*(rrhs.rhs)));
-    ASSERT_EQ(rrrhs.token, token_type::LITERAL);
-}
-
-//****************************************************************************//
-//                               unar_op_parser                               //
-//****************************************************************************//
-TEST(TestUnaryOpParser, NotIdentifier)
-{
-    std::array token_stream_raw{
-        token(token_type::NOT, "!"sv, source_location()),
-        token(token_type::IDENTIFIER, "x"sv, source_location())};
-
-    std::span<token> token_stream(token_stream_raw);
-
-    auto result = unary_op_parser::parse(token_stream);
-
-    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-    ASSERT_EQ(get_token_stream(result).size(), 0);
-    ASSERT_NE(get_node(result), nullptr);
-
-    ASSERT_TRUE(std::holds_alternative<unary_op_node>((*get_node(result))));
-    auto unary_op = std::move(std::get<unary_op_node>((*get_node(result))));
-
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(unary_op.operand)));
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(unary_op.operator_)));
-
-    auto operand = std::get<leaf_node>(*(unary_op.operand));
-    ASSERT_EQ(operand.token, token_type::IDENTIFIER);
-
-    auto operator_ = std::get<leaf_node>(*(unary_op.operator_));
-    ASSERT_EQ(operator_.token, token_type::NOT);
 }
