@@ -814,10 +814,26 @@ struct if_stmt_parser
 
         auto if_stmt =
             combinators::all<token_parser<token_type::IF>,
-                             combinators::surrounded<token_parser<token_type::LBRACE>,
-                                                     token_parser<token_type::RBRACE>,
+                             combinators::surrounded<token_parser<token_type::LPAREN>,
+                                                     token_parser<token_type::RPAREN>,
                                                      expression_parser>,
                              block_parser>::parse(ts);
+
+        if (!are_all_parse_results_valid(if_stmt))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto new_location = get_source_location_from_compound(if_stmt);
+
+        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<if_stmt_node>,
+                                                     get_node(if_stmt[2]),
+                                                     get_node(if_stmt[4]),
+                                                     new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(if_stmt.back()),
+                            std::move(new_node));
     }
 };
 struct else_if_stmt_parser
@@ -830,13 +846,32 @@ struct else_if_stmt_parser
         {
             return parse_error(parsed_structure);
         }
+
         auto else_if_stmt =
             combinators::all<token_parser<token_type::ELSE>,
                              token_parser<token_type::IF>,
-                             combinators::surrounded<token_parser<token_type::LBRACE>,
-                                                     token_parser<token_type::RBRACE>,
+                             combinators::surrounded<token_parser<token_type::LPAREN>,
+                                                     token_parser<token_type::RPAREN>,
                                                      expression_parser>,
                              block_parser>::parse(ts);
+
+
+        if (!are_all_parse_results_valid(else_if_stmt))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto new_location = get_source_location_from_compound(else_if_stmt);
+
+        auto new_node =
+            std::make_unique<ast_node_t>(std::in_place_type<else_if_stmt_node>,
+                                         get_node(else_if_stmt[3]),
+                                         get_node(else_if_stmt[5]),
+                                         new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(else_if_stmt.back()),
+                            std::move(new_node));
     }
 };
 struct else_stmt_parser
@@ -849,12 +884,23 @@ struct else_stmt_parser
         {
             return parse_error(parsed_structure);
         }
+
         auto else_stmt =
-            combinators::all<token_parser<token_type::ELSE>,
-                             combinators::surrounded<token_parser<token_type::LBRACE>,
-                                                     token_parser<token_type::RBRACE>,
-                                                     expression_parser>,
-                             block_parser>::parse(ts);
+            combinators::all<token_parser<token_type::ELSE>, block_parser>::parse(ts);
+
+        if (!are_all_parse_results_valid(else_stmt))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto new_location = get_source_location_from_compound(else_stmt);
+
+        auto new_node = std::make_unique<ast_node_t>(
+            std::in_place_type<else_stmt_node>, get_node(else_stmt[1]), new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(else_stmt.back()),
+                            std::move(new_node));
     }
 };
 struct for_loop_parser
@@ -867,17 +913,50 @@ struct for_loop_parser
         {
             return parse_error(parsed_structure);
         }
-        auto else_stmt =
-            combinators::all<token_parser<token_type::FOR>,
-                             combinators::surrounded<
-                                 token_parser<token_type::LBRACE>,
-                                 token_parser<token_type::RBRACE>,
-                                 combinators::all<statement_parser,
-                                                  token_parser<token_type::SEMICOLON>,
-                                                  expression_parser,
-                                                  token_parser<token_type::SEMICOLON>,
-                                                  expression_parser>>,
-                             block_parser>::parse(ts);
+
+        auto for_loop = combinators::all<
+            token_parser<token_type::FOR>,
+            combinators::surrounded<
+                token_parser<token_type::LPAREN>,
+                token_parser<token_type::RPAREN>,
+                combinators::all<combinators::optional<statement_parser>,
+                                 token_parser<token_type::SEMICOLON>,
+                                 combinators::optional<expression_parser>,
+                                 token_parser<token_type::SEMICOLON>,
+                                 combinators::optional<expression_parser>>>,
+            block_parser>::parse(ts);
+
+
+        if (!are_all_parse_results_valid(for_loop))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[2])))
+        {
+            get_node(for_loop[2]) = nullptr;
+        }
+        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[4])))
+        {
+            get_node(for_loop[4]) = nullptr;
+        }
+        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[6])))
+        {
+            get_node(for_loop[6]) = nullptr;
+        }
+
+        auto new_location = get_source_location_from_compound(for_loop);
+
+        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<for_loop_node>,
+                                                     get_node(for_loop[2]),
+                                                     get_node(for_loop[4]),
+                                                     get_node(for_loop[6]),
+                                                     get_node(for_loop[8]),
+                                                     new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(for_loop.back()),
+                            std::move(new_node));
     }
 };
 struct while_loop_parser
@@ -890,12 +969,30 @@ struct while_loop_parser
         {
             return parse_error(parsed_structure);
         }
+
         auto while_loop =
             combinators::all<token_parser<token_type::WHILE>,
-                             combinators::surrounded<token_parser<token_type::LBRACE>,
-                                                     token_parser<token_type::RBRACE>,
+                             combinators::surrounded<token_parser<token_type::LPAREN>,
+                                                     token_parser<token_type::RPAREN>,
                                                      expression_parser>,
                              block_parser>::parse(ts);
+
+        if (!are_all_parse_results_valid(while_loop))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto new_location = get_source_location_from_compound(while_loop);
+
+        auto new_node =
+            std::make_unique<ast_node_t>(std::in_place_type<while_loop_node>,
+                                         get_node(while_loop[2]),
+                                         get_node(while_loop[4]),
+                                         new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(while_loop.back()),
+                            std::move(new_node));
     }
 };
 struct switch_parser
@@ -908,12 +1005,29 @@ struct switch_parser
         {
             return parse_error(parsed_structure);
         }
+
         auto switch_stmt =
             combinators::all<token_parser<token_type::SWITCH>,
-                             combinators::surrounded<token_parser<token_type::LBRACE>,
-                                                     token_parser<token_type::RBRACE>,
+                             combinators::surrounded<token_parser<token_type::LPAREN>,
+                                                     token_parser<token_type::RPAREN>,
                                                      expression_parser>,
                              block_parser>::parse(ts);
+
+        if (!are_all_parse_results_valid(switch_stmt))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        auto new_location = get_source_location_from_compound(switch_stmt);
+
+        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<switch_node>,
+                                                     get_node(switch_stmt[2]),
+                                                     get_node(switch_stmt[4]),
+                                                     new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(switch_stmt.back()),
+                            std::move(new_node));
     }
 };
 struct case_parser
@@ -926,10 +1040,27 @@ struct case_parser
         {
             return parse_error(parsed_structure);
         }
+
+
         auto case_stmt = combinators::all<token_parser<token_type::CASE>,
                                           expression_parser,
-                                          token_parser<token_type::COLON>>,
-             block_parser > ::parse(ts);
+                                          token_parser<token_type::COLON>,
+                                          block_parser>::parse(ts);
+
+        if (!are_all_parse_results_valid(case_stmt))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+        auto new_location = get_source_location_from_compound(case_stmt);
+
+        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<case_node>,
+                                                     get_node(case_stmt[1]),
+                                                     get_node(case_stmt[3]),
+                                                     new_location);
+
+        return parse_result(std::in_place_type<parse_content>,
+                            get_token_stream(case_stmt.back()),
+                            std::move(new_node));
     }
 };
 //****************************************************************************//
