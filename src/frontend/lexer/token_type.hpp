@@ -40,6 +40,7 @@ enum class token_type
     LBRACE,
     RBRACE,
     SEMICOLON,
+    COLON,
     COMMA,
     IDENTIFIER,
     LITERAL,
@@ -125,6 +126,7 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::LBRACE)]         = "{"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "}"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = ";"sv;
+        arr[static_cast<size_t>(token_type::COLON)]          = ":"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = ","sv;
         arr[static_cast<size_t>(token_type::ASSIGN)]         = "="sv;
         arr[static_cast<size_t>(token_type::LBLOCKCOMMENT)]  = "/*"sv;
@@ -199,6 +201,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::LBRACE)]         = "LBRACE"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "RBRACE"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = "SEMICOLON"sv;
+        arr[static_cast<size_t>(token_type::COLON)]          = "COLON"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = "COMMA"sv;
         arr[static_cast<size_t>(token_type::LITERAL)]        = "LITERAL"sv;
         arr[static_cast<size_t>(token_type::IDENTIFIER)]     = "IDENTIFIER"sv;
