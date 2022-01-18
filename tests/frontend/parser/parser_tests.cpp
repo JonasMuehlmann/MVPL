@@ -256,9 +256,57 @@ TEST(TestProcedureDefParser, NoParametersEmptyBody)
 //****************************************************************************//
 //                              signature_parser                              //
 //****************************************************************************//
+TEST(TestSignatureParser, NoParameters)
+{
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = signature_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_TRUE(std::holds_alternative<signature_node>(*get_node(result)));
+
+    auto signature = std::move(std::get<signature_node>(*get_node(result)));
+
+    ASSERT_EQ(signature.identifier, "foo"sv);
+    ASSERT_TRUE(
+        std::holds_alternative<parameter_def_node>(*(signature.parameter_list)));
+
+    auto parameter_list = std::get<parameter_def_node>(*(signature.parameter_list));
+    ASSERT_TRUE(parameter_list.parameter_list.empty());
+}
 //****************************************************************************//
 //                             return_stmt_parser                             //
 //****************************************************************************//
+TEST(TestReturnStmtParser, Literal)
+{
+    std::array token_stream_raw{
+        token(token_type::RETURN, "return"sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::SEMICOLON, ";"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = return_stmt_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_TRUE(std::holds_alternative<return_stmt_node>(*get_node(result)));
+
+    auto return_stmt = std::move(std::get<return_stmt_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(return_stmt.value)));
+
+    auto return_value = std::move(std::get<leaf_node>(*(return_stmt.value)));
+
+    ASSERT_EQ(return_value.value, "5"sv);
+}
+
 //****************************************************************************//
 //                               parameter_def_parser                         //
 //****************************************************************************//
