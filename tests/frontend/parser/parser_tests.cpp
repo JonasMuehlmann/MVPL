@@ -580,9 +580,51 @@ TEST(TestParameterPassParser, TrailingComma)
 //****************************************************************************//
 //                               var_decl_parser                              //
 //****************************************************************************//
+TEST(TestVarDeclParser, Simple)
+{
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = var_decl_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<var_decl_node>((*get_node(result))));
+    auto var_decl = std::move(std::get<var_decl_node>((*get_node(result))));
+
+    ASSERT_EQ(var_decl.identifier, "x"sv);
+}
 //****************************************************************************//
 //                            var_assignment_parser                           //
 //****************************************************************************//
+TEST(TestVarAssignmentParser, Literal)
+{
+    std::array token_stream_raw{token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::ASSIGN, "="sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = var_assignment_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<var_assignment_node>((*get_node(result))));
+    auto var_assignment = std::move(std::get<var_assignment_node>((*get_node(result))));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(var_assignment.value)));
+    auto value = std::move(std::get<leaf_node>(*(var_assignment.value)));
+
+    ASSERT_EQ(value.value, "5"sv);
+}
 //****************************************************************************//
 //                                 call_parser                                //
 //****************************************************************************//
