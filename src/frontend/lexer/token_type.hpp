@@ -73,7 +73,6 @@ enum class token_type
     WHILE,
     FOR,
     IF,
-    ELSE_IF,
     ELSE,
     SWITCH,
     CASE,
@@ -155,7 +154,6 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::WHILE)]          = "while"sv;
         arr[static_cast<size_t>(token_type::FOR)]            = "for"sv;
         arr[static_cast<size_t>(token_type::IF)]             = "if"sv;
-        arr[static_cast<size_t>(token_type::ELSE_IF)]        = "else if"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "else"sv;
         arr[static_cast<size_t>(token_type::SWITCH)]         = "switch"sv;
         arr[static_cast<size_t>(token_type::CASE)]           = "case"sv;
@@ -232,7 +230,6 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::WHILE)]          = "WHILE"sv;
         arr[static_cast<size_t>(token_type::FOR)]            = "FOR"sv;
         arr[static_cast<size_t>(token_type::IF)]             = "IF"sv;
-        arr[static_cast<size_t>(token_type::ELSE_IF)]        = "ELSE_IF"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "ELSE"sv;
         arr[static_cast<size_t>(token_type::SWITCH)]         = "SWITCH"sv;
         arr[static_cast<size_t>(token_type::CASE)]           = "CASE"sv;

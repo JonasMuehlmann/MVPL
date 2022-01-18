@@ -112,6 +112,7 @@ struct for_loop_parser;
 struct while_loop_parser;
 struct switch_parser;
 struct case_parser;
+struct statement_parser;
 struct expression_parser;
 
 
@@ -800,13 +801,137 @@ struct control_block_parser
 };
 
 
-struct if_stmt_parser;
-struct else_if_stmt_parser;
-struct else_stmt_parser;
-struct for_loop_parser;
-struct while_loop_parser;
-struct switch_parser;
-struct case_parser;
+struct if_stmt_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+
+        auto if_stmt =
+            combinators::all<token_parser<token_type::IF>,
+                             combinators::surrounded<token_parser<token_type::LBRACE>,
+                                                     token_parser<token_type::RBRACE>,
+                                                     expression_parser>,
+                             block_parser>::parse(ts);
+    }
+};
+struct else_if_stmt_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto else_if_stmt =
+            combinators::all<token_parser<token_type::ELSE>,
+                             token_parser<token_type::IF>,
+                             combinators::surrounded<token_parser<token_type::LBRACE>,
+                                                     token_parser<token_type::RBRACE>,
+                                                     expression_parser>,
+                             block_parser>::parse(ts);
+    }
+};
+struct else_stmt_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto else_stmt =
+            combinators::all<token_parser<token_type::ELSE>,
+                             combinators::surrounded<token_parser<token_type::LBRACE>,
+                                                     token_parser<token_type::RBRACE>,
+                                                     expression_parser>,
+                             block_parser>::parse(ts);
+    }
+};
+struct for_loop_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto else_stmt =
+            combinators::all<token_parser<token_type::FOR>,
+                             combinators::surrounded<
+                                 token_parser<token_type::LBRACE>,
+                                 token_parser<token_type::RBRACE>,
+                                 combinators::all<statement_parser,
+                                                  token_parser<token_type::SEMICOLON>,
+                                                  expression_parser,
+                                                  token_parser<token_type::SEMICOLON>,
+                                                  expression_parser>>,
+                             block_parser>::parse(ts);
+    }
+};
+struct while_loop_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto while_loop =
+            combinators::all<token_parser<token_type::WHILE>,
+                             combinators::surrounded<token_parser<token_type::LBRACE>,
+                                                     token_parser<token_type::RBRACE>,
+                                                     expression_parser>,
+                             block_parser>::parse(ts);
+    }
+};
+struct switch_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto switch_stmt =
+            combinators::all<token_parser<token_type::SWITCH>,
+                             combinators::surrounded<token_parser<token_type::LBRACE>,
+                                                     token_parser<token_type::RBRACE>,
+                                                     expression_parser>,
+                             block_parser>::parse(ts);
+    }
+};
+struct case_parser
+{
+    static inline std::string parsed_structure = "";
+
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+        auto case_stmt = combinators::all<token_parser<token_type::CASE>,
+                                          expression_parser,
+                                          token_parser<token_type::COLON>>,
+             block_parser > ::parse(ts);
+    }
+};
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
