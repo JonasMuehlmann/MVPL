@@ -45,7 +45,6 @@ struct var_assignment_node;
 struct call_node;
 struct parameter_pass_node;
 struct block_node;
-struct control_block_node;
 struct if_stmt_node;
 struct else_if_stmt_node;
 struct else_stmt_node;
@@ -72,7 +71,6 @@ using ast_node_t = std::variant<program_node,
                                 call_node,
                                 parameter_pass_node,
                                 block_node,
-                                control_block_node,
                                 if_stmt_node,
                                 else_if_stmt_node,
                                 else_stmt_node,
@@ -80,8 +78,6 @@ using ast_node_t = std::variant<program_node,
                                 while_loop_node,
                                 switch_node,
                                 case_node,
-                                missing_optional_node,
-                                leaf_node,
                                 missing_optional_node,
                                 leaf_node>;
 
@@ -250,16 +246,6 @@ struct block_node final : public ast_node
 };
 
 
-struct control_block_node final : public ast_node
-{
-    std::unique_ptr<ast_node_t> head;
-
-    control_block_node(std::unique_ptr<ast_node_t>& head,
-                       std::unique_ptr<ast_node_t>& body,
-                       source_location              location);
-};
-
-
 struct if_stmt_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> condition;
@@ -420,7 +406,29 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(block_node,
                                              statements);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
-    control_block_node, type, source_location_, head, body);
+    if_stmt_node, type, condition, body, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
+    else_if_stmt_node, type, condition, body, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(else_stmt_node, type, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(for_loop_node,
+                                             type,
+                                             init_stmt,
+                                             test_expression,
+                                             update_expression,
+                                             body,
+                                             source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
+    while_loop_node, type, condition, body, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
+    switch_node, type, expression, body, source_location_);
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(
+    case_node, type, value, body, source_location_);
 
 inline void to_json(json& j, const ast_node_t& node)
 {

@@ -105,7 +105,13 @@ struct call_parser;
 struct parameter_pass_parser;
 struct block_parser;
 struct control_block_parser;
-struct control_head_parser;
+struct if_stmt_parser;
+struct else_if_stmt_parser;
+struct else_stmt_parser;
+struct for_loop_parser;
+struct while_loop_parser;
+struct switch_parser;
+struct case_parser;
 struct expression_parser;
 
 
@@ -776,57 +782,31 @@ struct control_block_parser
             return parse_error(parsed_structure);
         }
 
-        auto control_block =
-            combinators::all<control_head_parser, block_parser>::parse(ts);
+        auto control_block = combinators::any<if_stmt_parser,
+                                              else_if_stmt_parser,
+                                              else_stmt_parser,
+                                              for_loop_parser,
+                                              while_loop_parser,
+                                              switch_parser,
+                                              case_parser>::parse(ts);
 
-        if (!are_all_parse_results_valid(control_block))
+        if (!is_any_parse_result_valid(control_block))
         {
             return parse_error(parsed_structure, ts[0]);
         }
 
-        auto new_node = std::make_unique<ast_node_t>(
-            std::in_place_type<control_block_node>,
-            get_node(control_block[0]),
-            get_node(control_block[1]),
-            get_source_location_from_compound(control_block));
-
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(control_block.back()),
-                            std::move(new_node));
+        return std::move(control_block[0]);
     }
 };
 
-struct control_head_parser
-{
-    static inline std::string parsed_structure = "";
 
-    static parse_result parse(std::span<token> ts)
-    {
-        if (ts.empty())
-        {
-            return parse_error(parsed_structure);
-        }
-
-        auto control_head = combinators::surrounded<token_parser<token_type::LPAREN>,
-                                                    token_parser<token_type::RPAREN>,
-                                                    expression_parser>::parse(ts);
-
-        if (!are_all_parse_results_valid(control_head))
-        {
-            return parse_error(parsed_structure, ts[0]);
-        }
-
-        auto new_node = std::make_unique<ast_node_t>(
-            std::in_place_type<control_head_node>,
-            get_node(control_head[1]),
-            get_source_location_from_compound(control_head));
-
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(control_head.back()),
-                            std::move(new_node));
-    }
-};
-
+struct if_stmt_parser;
+struct else_if_stmt_parser;
+struct else_stmt_parser;
+struct for_loop_parser;
+struct while_loop_parser;
+struct switch_parser;
+struct case_parser;
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
