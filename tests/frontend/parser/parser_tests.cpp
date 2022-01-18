@@ -626,15 +626,6 @@ TEST(TestVarAssignmentParser, Literal)
     ASSERT_EQ(value.value, "5"sv);
 }
 //****************************************************************************//
-//                                 call_parser                                //
-//****************************************************************************//
-//****************************************************************************//
-//                            control_block_parser                            //
-//****************************************************************************//
-//****************************************************************************//
-//                             control_head_parser                            //
-//****************************************************************************//
-//****************************************************************************//
 //                               var_init_parser                              //
 //****************************************************************************//
 TEST(TestVarInitParser, Literal)
@@ -664,3 +655,36 @@ TEST(TestVarInitParser, Literal)
             .token,
         token_type::LITERAL);
 }
+//****************************************************************************//
+//                                 call_parser                                //
+//****************************************************************************//
+TEST(TestCallParser, NoParameters)
+{
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = call_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<call_node>(*get_node(result)));
+
+    auto call = std::move(std::get<call_node>(*get_node(result)));
+
+    ASSERT_EQ(call.identifier, "foo"sv);
+    ASSERT_TRUE(std::holds_alternative<parameter_pass_node>(*(call.parameter_pass)));
+
+    auto parameter_list = std::get<parameter_pass_node>(*(call.parameter_pass));
+    ASSERT_TRUE(parameter_list.parameter_list.empty());
+}
+//****************************************************************************//
+//                            control_block_parser                            //
+//****************************************************************************//
+//****************************************************************************//
+//                             control_head_parser                            //
+//****************************************************************************//
