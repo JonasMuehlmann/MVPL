@@ -369,8 +369,8 @@ struct procedure_def_parser
 
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<procedure_def_node>,
-            get_node(procedure_def[0]),
             get_node(procedure_def[1]),
+            get_node(procedure_def[2]),
             get_source_location_from_compound(procedure_def));
 
 
@@ -717,7 +717,7 @@ struct block_parser
         }
 
         // TODO: Handle empty block
-        auto block = combinators::all<token_parser<token_type::LBRACAE>,
+        auto block = combinators::all<token_parser<token_type::LBRACE>,
                                       combinators::optional<combinators::many<
                                           combinators::any<var_assignment_parser,
                                                            var_init_parser,
