@@ -151,17 +151,62 @@ block_node::block_node(std::vector<std::unique_ptr<ast_node_t>>&& statements,
     ast_node(ast_node_type::BLOCK, location), statements{std::move(statements)}
 {}
 
-control_block_node::control_block_node(std::unique_ptr<ast_node_t>& head,
-                                       std::unique_ptr<ast_node_t>& body,
-                                       source_location              location) :
 
-    ast_node(ast_node_type::CONTROL_BLOCK, location),
-    head{std::move(head)},
+if_stmt_node::if_stmt_node(std::unique_ptr<ast_node_t>& condition,
+                           std::unique_ptr<ast_node_t>& body,
+                           source_location              location) :
+    ast_node(ast_node_type::IF, location),
+    condition{std::move(condition)},
     body{std::move(body)}
 {}
 
-control_head_node::control_head_node(std::unique_ptr<ast_node_t>& expression,
-                                     source_location              location) :
 
-    ast_node(ast_node_type::CONTROL_HEAD, location), expression{std::move(expression)}
+else_if_stmt_node::else_if_stmt_node(std::unique_ptr<ast_node_t>& condition,
+                                     std::unique_ptr<ast_node_t>& body,
+                                     source_location              location) :
+    ast_node(ast_node_type::ELSE_IF, location),
+    condition{std::move(condition)},
+    body{std::move(body)}
+{}
+
+
+else_stmt_node::else_stmt_node(std::unique_ptr<ast_node_t>& body,
+                               source_location              location) :
+    ast_node(ast_node_type::ELSE, location), body{std::move(body)}
+{}
+
+for_loop_node::for_loop_node(std::unique_ptr<ast_node_t>& init_stmt,
+                             std::unique_ptr<ast_node_t>& test_expression,
+                             std::unique_ptr<ast_node_t>& update_expression,
+                             std::unique_ptr<ast_node_t>& body,
+                             source_location              location) :
+    ast_node(ast_node_type::FOR, location),
+    init_stmt{std::move(init_stmt)},
+    test_expression{std::move(test_expression)},
+    update_expression{std::move(update_expression)},
+    body{std::move(body)}
+{}
+
+while_loop_node::while_loop_node(std::unique_ptr<ast_node_t>& condition,
+                                 std::unique_ptr<ast_node_t>& body,
+                                 source_location              location) :
+    ast_node(ast_node_type::WHILE, location),
+    condition{std::move(condition)},
+    body{std::move(body)}
+{}
+
+switch_node::switch_node(std::unique_ptr<ast_node_t>& expression,
+                         std::unique_ptr<ast_node_t>& body,
+                         source_location              location) :
+    ast_node(ast_node_type::SWITCH, location),
+    expression{std::move(expression)},
+    body{std::move(body)}
+{}
+
+case_node::case_node(std::unique_ptr<ast_node_t>& value,
+                     std::unique_ptr<ast_node_t>& body,
+                     source_location              location) :
+    ast_node(ast_node_type::CASE, location),
+    value{std::move(value)},
+    body{std::move(body)}
 {}

@@ -43,8 +43,13 @@ enum class ast_node_type
     CALL,              // f(2, 5)
     PARAMETER_PASS,    // 2,5
     BLOCK,             // { x = 5; y = x;}//
-    CONTROL_BLOCK,     // while(x){x--;}
-    CONTROL_HEAD,      // while(x)
+    IF,                // if (true)
+    ELSE_IF,           // else if (false)
+    ELSE,              // else {}
+    WHILE,             // while (true)
+    FOR,               // for (let i = 0; i < 5; i++)
+    SWITCH,            // switch (foo)
+    CASE,              // case 1:
     LEAF,
     PROGRAM    // Root node
 };
@@ -80,8 +85,13 @@ const auto LUT_AST_NODE_TYPE_TO_STRING = []() {
         arr[static_cast<size_t>(ast_node_type::CALL)]           = "CALL"sv;
         arr[static_cast<size_t>(ast_node_type::PARAMETER_PASS)] = "PARAMETER_PASS"sv;
         arr[static_cast<size_t>(ast_node_type::BLOCK)]          = "BLOCK"sv;
-        arr[static_cast<size_t>(ast_node_type::CONTROL_BLOCK)]  = "CONTROL_BLOCK"sv;
-        arr[static_cast<size_t>(ast_node_type::CONTROL_HEAD)]   = "CONTROL_HEAD"sv;
+        arr[static_cast<size_t>(ast_node_type::IF)]             = "IF"sv;
+        arr[static_cast<size_t>(ast_node_type::ELSE_IF)]        = "ELSE_IF"sv;
+        arr[static_cast<size_t>(ast_node_type::ELSE)]           = "ELSE"sv;
+        arr[static_cast<size_t>(ast_node_type::WHILE)]          = "WHILE"sv;
+        arr[static_cast<size_t>(ast_node_type::FOR)]            = "FOR"sv;
+        arr[static_cast<size_t>(ast_node_type::SWITCH)]         = "SWITCH"sv;
+        arr[static_cast<size_t>(ast_node_type::CASE)]           = "CASE"sv;
         arr[static_cast<size_t>(ast_node_type::LEAF)]           = "LEAF"sv;
         arr[static_cast<size_t>(ast_node_type::PROGRAM)]        = "PROGRAM"sv;
 

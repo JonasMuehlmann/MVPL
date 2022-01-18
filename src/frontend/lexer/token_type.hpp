@@ -48,9 +48,6 @@ enum class token_type
     RBLOCKCOMMENT,
     LINECOMMENT,
     // Operators
-    // TODO: Having all these token_types might be useless, BINARY_OPERATOR and
-    // UNARY_OPERATOR should be enough, beyond that e.g. LESS, BINARY_AND, etc. should
-    // be lexemes
     LESS,
     LESSEQ,
     GREATER,
@@ -76,8 +73,10 @@ enum class token_type
     WHILE,
     FOR,
     IF,
-    ELIF,
+    ELSE_IF,
     ELSE,
+    SWITCH,
+    CASE,
     // Misc
     LET,
     FUNCTION,
@@ -124,7 +123,7 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::RPAREN)]         = ")"sv;
         arr[static_cast<size_t>(token_type::LBRACKET)]       = "["sv;
         arr[static_cast<size_t>(token_type::RBRACKET)]       = "]"sv;
-        arr[static_cast<size_t>(token_type::LBRACE)]        = "{"sv;
+        arr[static_cast<size_t>(token_type::LBRACE)]         = "{"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "}"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = ";"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = ","sv;
@@ -156,7 +155,7 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::WHILE)]          = "while"sv;
         arr[static_cast<size_t>(token_type::FOR)]            = "for"sv;
         arr[static_cast<size_t>(token_type::IF)]             = "if"sv;
-        arr[static_cast<size_t>(token_type::ELIF)]           = "elif"sv;
+        arr[static_cast<size_t>(token_type::ELSE)]           = "elif"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "else"sv;
         arr[static_cast<size_t>(token_type::LET)]            = "let"sv;
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "function"sv;
@@ -197,7 +196,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::RPAREN)]         = "RPAREN"sv;
         arr[static_cast<size_t>(token_type::LBRACKET)]       = "LBRACKET"sv;
         arr[static_cast<size_t>(token_type::RBRACKET)]       = "RBRACKET"sv;
-        arr[static_cast<size_t>(token_type::LBRACE)]        = "LBRACE"sv;
+        arr[static_cast<size_t>(token_type::LBRACE)]         = "LBRACE"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "RBRACE"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = "SEMICOLON"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = "COMMA"sv;
@@ -231,7 +230,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::WHILE)]          = "WHILE"sv;
         arr[static_cast<size_t>(token_type::FOR)]            = "FOR"sv;
         arr[static_cast<size_t>(token_type::IF)]             = "IF"sv;
-        arr[static_cast<size_t>(token_type::ELIF)]           = "ELIF"sv;
+        arr[static_cast<size_t>(token_type::ELSE)]           = "ELIF"sv;
         arr[static_cast<size_t>(token_type::ELSE)]           = "ELSE"sv;
         arr[static_cast<size_t>(token_type::LET)]            = "LET"sv;
         arr[static_cast<size_t>(token_type::FUNCTION)]       = "FUNCTION"sv;

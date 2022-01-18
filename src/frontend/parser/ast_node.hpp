@@ -46,7 +46,13 @@ struct call_node;
 struct parameter_pass_node;
 struct block_node;
 struct control_block_node;
-struct control_head_node;
+struct if_stmt_node;
+struct else_if_stmt_node;
+struct else_stmt_node;
+struct for_loop_node;
+struct while_loop_node;
+struct switch_node;
+struct case_node;
 struct missing_optional_node;
 struct leaf_node;
 
@@ -67,7 +73,15 @@ using ast_node_t = std::variant<program_node,
                                 parameter_pass_node,
                                 block_node,
                                 control_block_node,
-                                control_head_node,
+                                if_stmt_node,
+                                else_if_stmt_node,
+                                else_stmt_node,
+                                for_loop_node,
+                                while_loop_node,
+                                switch_node,
+                                case_node,
+                                missing_optional_node,
+                                leaf_node,
                                 missing_optional_node,
                                 leaf_node>;
 
@@ -239,7 +253,6 @@ struct block_node final : public ast_node
 struct control_block_node final : public ast_node
 {
     std::unique_ptr<ast_node_t> head;
-    std::unique_ptr<ast_node_t> body;
 
     control_block_node(std::unique_ptr<ast_node_t>& head,
                        std::unique_ptr<ast_node_t>& body,
@@ -247,14 +260,77 @@ struct control_block_node final : public ast_node
 };
 
 
-struct control_head_node final : public ast_node
+struct if_stmt_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> expression;
+    std::unique_ptr<ast_node_t> condition;
+    std::unique_ptr<ast_node_t> body;
 
-    control_head_node(std::unique_ptr<ast_node_t>& expression,
+    if_stmt_node(std::unique_ptr<ast_node_t>& condition,
+                 std::unique_ptr<ast_node_t>& body,
+                 source_location              location);
+};
+
+struct else_if_stmt_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> condition;
+    std::unique_ptr<ast_node_t> body;
+
+    else_if_stmt_node(std::unique_ptr<ast_node_t>& condition,
+                      std::unique_ptr<ast_node_t>& body,
                       source_location              location);
 };
 
+struct else_stmt_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> body;
+
+    else_stmt_node(std::unique_ptr<ast_node_t>& body, source_location location);
+};
+
+struct for_loop_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> init_stmt;
+    std::unique_ptr<ast_node_t> test_expression;
+    std::unique_ptr<ast_node_t> update_expression;
+
+    std::unique_ptr<ast_node_t> body;
+
+    for_loop_node(std::unique_ptr<ast_node_t>& init_stmt,
+                  std::unique_ptr<ast_node_t>& test_expression,
+                  std::unique_ptr<ast_node_t>& update_expression,
+                  std::unique_ptr<ast_node_t>& body,
+                  source_location              location);
+};
+
+struct while_loop_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> condition;
+    std::unique_ptr<ast_node_t> body;
+
+    while_loop_node(std::unique_ptr<ast_node_t>& condition,
+                    std::unique_ptr<ast_node_t>& body,
+                    source_location              location);
+};
+
+struct switch_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> expression;
+    std::unique_ptr<ast_node_t> body;
+
+    switch_node(std::unique_ptr<ast_node_t>& expression,
+                std::unique_ptr<ast_node_t>& body,
+                source_location              location);
+};
+
+struct case_node final : public ast_node
+{
+    std::unique_ptr<ast_node_t> value;
+    std::unique_ptr<ast_node_t> body;
+
+    case_node(std::unique_ptr<ast_node_t>& value,
+              std::unique_ptr<ast_node_t>& body,
+              source_location              location);
+};
 // Needed forawrd declaration
 void to_json(json& j, const ast_node_t& node);
 
