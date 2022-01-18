@@ -204,6 +204,7 @@ TEST(TestFuncDefParser, NoParametersEmptyBody)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<func_def_node>(*get_node(result)));
 
     auto function_def = std::move(std::get<func_def_node>(*get_node(result)));
@@ -238,6 +239,7 @@ TEST(TestProcedureDefParser, NoParametersEmptyBody)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<procedure_def_node>(*get_node(result)));
 
     auto procedure_def = std::move(std::get<procedure_def_node>(*get_node(result)));
@@ -269,6 +271,7 @@ TEST(TestSignatureParser, NoParameters)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<signature_node>(*get_node(result)));
 
     auto signature = std::move(std::get<signature_node>(*get_node(result)));
@@ -296,6 +299,7 @@ TEST(TestReturnStmtParser, Literal)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_TRUE(std::holds_alternative<return_stmt_node>(*get_node(result)));
 
     auto return_stmt = std::move(std::get<return_stmt_node>(*get_node(result)));
@@ -321,6 +325,7 @@ TEST(TestParameterDefParser, NoParameter)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_EQ(std::get<parameter_def_node>((*get_node(result))).parameter_list.size(),
               0);
 }
@@ -453,6 +458,7 @@ TEST(TestParameterPassParser, NoParameter)
 
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
     ASSERT_EQ(std::get<parameter_pass_node>((*get_node(result))).parameter_list.size(),
               0);
 }
