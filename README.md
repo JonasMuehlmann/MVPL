@@ -58,7 +58,7 @@ int a *token stream* like this:
     },
     {
       "value": "{",
-      "type": "LBRACAE",
+      "type": "LBRACE",
       "source_location_": {
         "line_start": 1,
         "col_start": 0,
@@ -160,7 +160,7 @@ The parser turns a token stream like this:
     },
     {
       "value": "{",
-      "type": "LBRACAE",
+      "type": "LBRACE",
       "source_location_": {
         "line_start": 1,
         "col_start": 0,

@@ -37,7 +37,7 @@ enum class token_type
     RPAREN,
     LBRACKET,
     RBRACKET,
-    LBRACAE,
+    LBRACE,
     RBRACE,
     SEMICOLON,
     COMMA,
@@ -124,7 +124,7 @@ const auto LUT_TOKEN_TO_LEXEME = []() {
         arr[static_cast<size_t>(token_type::RPAREN)]         = ")"sv;
         arr[static_cast<size_t>(token_type::LBRACKET)]       = "["sv;
         arr[static_cast<size_t>(token_type::RBRACKET)]       = "]"sv;
-        arr[static_cast<size_t>(token_type::LBRACAE)]        = "{"sv;
+        arr[static_cast<size_t>(token_type::LBRACE)]        = "{"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "}"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = ";"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = ","sv;
@@ -197,7 +197,7 @@ const auto LUT_TOKEN_TO_STRING = []() {
         arr[static_cast<size_t>(token_type::RPAREN)]         = "RPAREN"sv;
         arr[static_cast<size_t>(token_type::LBRACKET)]       = "LBRACKET"sv;
         arr[static_cast<size_t>(token_type::RBRACKET)]       = "RBRACKET"sv;
-        arr[static_cast<size_t>(token_type::LBRACAE)]        = "LBRACAE"sv;
+        arr[static_cast<size_t>(token_type::LBRACE)]        = "LBRACE"sv;
         arr[static_cast<size_t>(token_type::RBRACE)]         = "RBRACE"sv;
         arr[static_cast<size_t>(token_type::SEMICOLON)]      = "SEMICOLON"sv;
         arr[static_cast<size_t>(token_type::COMMA)]          = "COMMA"sv;
