@@ -188,9 +188,71 @@ TEST(TestExpressionParser, BinaryOp)
 //****************************************************************************//
 //                               func_def_parser                              //
 //****************************************************************************//
+TEST(TestFuncDefParser, NoParametersEmptyBody)
+{
+    std::array token_stream_raw{
+        token(token_type::FUNCTION, "function"sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = func_def_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_TRUE(std::holds_alternative<func_def_node>(*get_node(result)));
+
+    auto function_def = std::move(std::get<func_def_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<signature_node>(*(function_def.signature)));
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(function_def.body)));
+
+    auto signature = std::move(std::get<signature_node>(*(function_def.signature)));
+    auto body      = std::move(std::get<block_node>(*(function_def.body)));
+
+    auto parameter_list = std::get<parameter_def_node>(*(signature.parameter_list));
+    ASSERT_TRUE(parameter_list.parameter_list.empty());
+
+    ASSERT_TRUE(body.statements.empty());
+}
 //****************************************************************************//
 //                            procedure_def_parser                            //
 //****************************************************************************//
+TEST(TestProcedureDefParser, NoParametersEmptyBody)
+{
+    std::array token_stream_raw{
+        token(token_type::PROCEDURE, "procedure"sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = procedure_def_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_TRUE(std::holds_alternative<procedure_def_node>(*get_node(result)));
+
+    auto procedure_def = std::move(std::get<procedure_def_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<signature_node>(*(procedure_def.signature)));
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(procedure_def.body)));
+
+    auto signature = std::move(std::get<signature_node>(*(procedure_def.signature)));
+    auto body      = std::move(std::get<block_node>(*(procedure_def.body)));
+
+    auto parameter_list = std::get<parameter_def_node>(*(signature.parameter_list));
+    ASSERT_TRUE(parameter_list.parameter_list.empty());
+
+    ASSERT_TRUE(body.statements.empty());
+}
 //****************************************************************************//
 //                              signature_parser                              //
 //****************************************************************************//
