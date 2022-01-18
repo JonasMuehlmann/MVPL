@@ -711,7 +711,31 @@ struct parameter_pass_parser
                             std::move(new_node));
     }
 };
+struct statement_parser
+{
+    static inline std::string parsed_structure = "";
 
+    static parse_result parse(std::span<token> ts)
+    {
+        if (ts.empty())
+        {
+            return parse_error(parsed_structure);
+        }
+
+        auto statement = combinators::any<var_assignment_parser,
+                                          var_init_parser,
+                                          var_decl_parser,
+                                          expression_parser,
+                                          call_parser>::parse(ts);
+
+        if (!is_any_parse_result_valid(statement))
+        {
+            return parse_error(parsed_structure, ts[0]);
+        }
+
+        return std::move(statement[0]);
+    }
+};
 struct block_parser
 {
     static inline std::string parsed_structure = "";
@@ -724,16 +748,12 @@ struct block_parser
         }
 
         // TODO: Handle empty block
-        auto block = combinators::all<token_parser<token_type::LBRACE>,
-                                      combinators::optional<combinators::many<
-                                          combinators::any<var_assignment_parser,
-                                                           var_init_parser,
-                                                           var_decl_parser,
-                                                           expression_parser,
-                                                           control_block_parser,
-                                                           call_parser,
-                                                           return_stmt_parser>>>,
-                                      token_parser<token_type::RBRACE>>::parse(ts);
+        auto block = combinators::all<
+            token_parser<token_type::LBRACE>,
+            combinators::optional<combinators::many<
+                combinators::
+                    any<statement_parser, control_block_parser, return_stmt_parser>>>,
+            token_parser<token_type::RBRACE>>::parse(ts);
 
         if (!are_all_parse_results_valid(block))
         {
@@ -800,7 +820,6 @@ struct control_block_parser
     }
 };
 
-
 struct if_stmt_parser
 {
     static inline std::string parsed_structure = "";
@@ -836,6 +855,7 @@ struct if_stmt_parser
                             std::move(new_node));
     }
 };
+
 struct else_if_stmt_parser
 {
     static inline std::string parsed_structure = "";
@@ -874,6 +894,7 @@ struct else_if_stmt_parser
                             std::move(new_node));
     }
 };
+
 struct else_stmt_parser
 {
     static inline std::string parsed_structure = "";
@@ -903,6 +924,7 @@ struct else_stmt_parser
                             std::move(new_node));
     }
 };
+
 struct for_loop_parser
 {
     static inline std::string parsed_structure = "";
@@ -959,6 +981,7 @@ struct for_loop_parser
                             std::move(new_node));
     }
 };
+
 struct while_loop_parser
 {
     static inline std::string parsed_structure = "";
@@ -995,6 +1018,7 @@ struct while_loop_parser
                             std::move(new_node));
     }
 };
+
 struct switch_parser
 {
     static inline std::string parsed_structure = "";
@@ -1030,6 +1054,7 @@ struct switch_parser
                             std::move(new_node));
     }
 };
+
 struct case_parser
 {
     static inline std::string parsed_structure = "";
