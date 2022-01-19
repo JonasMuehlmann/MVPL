@@ -1067,21 +1067,45 @@ struct case_parser
         }
 
 
-        auto case_stmt = combinators::all<token_parser<token_type::CASE>,
-                                          expression_parser,
-                                          token_parser<token_type::COLON>,
-                                          block_parser>::parse(ts);
+        auto case_stmt =
+            combinators::all<token_parser<token_type::CASE>,
+                             expression_parser,
+                             token_parser<token_type::COLON>,
+                             combinators::optional<combinators::many<
+                                 combinators::any<statement_parser,
+                                                  control_block_parser,
+                                                  return_stmt_parser>>>>::parse(ts);
 
         if (!are_all_parse_results_valid(case_stmt))
         {
             return parse_error(parsed_structure, ts[0]);
         }
-        auto new_location = get_source_location_from_compound(case_stmt);
 
-        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<case_node>,
-                                                     get_node(case_stmt[1]),
-                                                     get_node(case_stmt[3]),
-                                                     new_location);
+        std::vector<std::unique_ptr<ast_node_t>> statements;
+        source_location                          new_location;
+
+        if (std::holds_alternative<missing_optional_node>(*get_node(case_stmt[3])))
+        {
+            case_stmt.pop_back();
+            new_location = get_source_location_from_compound(case_stmt);
+        }
+        else
+        {
+            new_location = get_source_location_from_compound(case_stmt);
+
+            std::for_each(
+                case_stmt.begin(), case_stmt.end() - 1, [&statements](auto&& element) {
+                    statements.push_back(
+                        std::move(get_node(std::forward<decltype(element)>(element))));
+                });
+        }
+        source_location body_location;
+
+        auto body = std::make_unique<ast_node_t>(
+            std::in_place_type<block_node>, std::move(statements), body_location);
+
+        auto new_node = std::make_unique<ast_node_t>(
+            std::in_place_type<case_node>, get_node(case_stmt[1]), body, new_location);
 
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(case_stmt.back()),
