@@ -722,11 +722,13 @@ struct statement_parser
             return parse_error(parsed_structure);
         }
 
-        auto statement = combinators::any<var_assignment_parser,
-                                          var_init_parser,
-                                          var_decl_parser,
-                                          expression_parser,
-                                          call_parser>::parse(ts);
+        auto statement = combinators::any<
+            var_assignment_parser,
+            var_init_parser,
+            var_decl_parser,
+            combinators::all<expression_parser, token_parser<token_type::SEMICOLON>>,
+            combinators::all<call_parser,
+                             token_parser<token_type::SEMICOLON>>>::parse(ts);
 
         if (!is_any_parse_result_valid(statement))
         {
@@ -1069,7 +1071,7 @@ struct case_parser
 
         auto case_stmt =
             combinators::all<token_parser<token_type::CASE>,
-                             expression_parser,
+                             token_parser<token_type::LITERAL>,
                              token_parser<token_type::COLON>,
                              combinators::optional<combinators::many<
                                  combinators::any<statement_parser,
