@@ -1,5 +1,32 @@
 ---
 Checks: '*,
+abseil-*,
+altera-*,
+android-*,
+boost-*,
+bugprone-*,
+cert-*,
+clang-analyzer-*,
+concurrency-*,
+cppcoreguidelines-*,
+darwin-*,
+fuchsia-*,
+google-*,
+hicpp-*,
+linuxkernel-*,
+llvm-*,
+llvmlibc-*,
+misc-*,
+modernize-*,
+mpi-*,
+objc-*,
+openmp-*,
+performance-*,
+portability-*,
+readability-*,
+zircon-*,
+
+
 -fuchsia-default-arguments-calls,
 -fuchsia-default-arguments-declarations,
 -google-readability-todo,
@@ -17,8 +44,8 @@ Checks: '*,
 -cppcoreguidelines-pro-bounds-constant-array-index,
 -google-build-using-namespace,
 -cppcoreguidelines-special-member-functions,
--hicpp-special-member-functions'
--misc-no-recursion
+-hicpp-special-member-functions
+-misc-no-recursion'
 
 
 WarningsAsErrors: '*'
