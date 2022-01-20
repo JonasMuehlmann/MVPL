@@ -16,7 +16,7 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               program_parser                               //
 //****************************************************************************//
-TEST(TestProgramParser, 2VarDecls)
+TEST(TestProgramParser, TwoVarDecls)
 {
     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
                                 token(token_type::IDENTIFIER, "x"sv, source_location()),
@@ -682,9 +682,223 @@ TEST(TestCallParser, NoParameters)
     auto parameter_list = std::get<parameter_pass_node>(*(call.parameter_pass));
     ASSERT_TRUE(parameter_list.parameter_list.empty());
 }
+
 //****************************************************************************//
-//                            control_block_parser                            //
+//                               if_stmt_parser                               //
 //****************************************************************************//
+TEST(TestIfStmtParser, LiteralHeadEmptyBody)
+{
+    std::array token_stream_raw{token(token_type::IF, "if"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = if_stmt_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<if_stmt_node>(*get_node(result)));
+    auto if_stmt = std::move(std::get<if_stmt_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(if_stmt.condition)));
+    auto condition = std::move(std::get<leaf_node>(*(if_stmt.condition)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(if_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(if_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+}
 //****************************************************************************//
-//                             control_head_parser                            //
+//                             else_if_stmt_parser                            //
 //****************************************************************************//
+TEST(TestElseIfStmtParser, LiteralHeadEmptyBody)
+{
+    std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
+                                token(token_type::IF, "if"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = else_if_stmt_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<else_if_stmt_node>(*get_node(result)));
+    auto else_if_stmt = std::move(std::get<else_if_stmt_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(else_if_stmt.condition)));
+    auto condition = std::move(std::get<leaf_node>(*(else_if_stmt.condition)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(else_if_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(else_if_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+}
+//****************************************************************************//
+//                              else_stmt_parser                              //
+//****************************************************************************//
+TEST(TestElseStmtParser, EmptyBody)
+{
+    std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = else_stmt_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<else_stmt_node>(*get_node(result)));
+    auto else_stmt = std::move(std::get<else_stmt_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(else_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(else_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+}
+//****************************************************************************//
+//                               for_loop_parser                              //
+//****************************************************************************//
+
+//****************************************************************************//
+//                              while_loop_parser                             //
+//****************************************************************************//
+TEST(TestWhileLoopParser, LiteralHeadEmptyBody)
+{
+    std::array token_stream_raw{token(token_type::WHILE, "while"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = while_loop_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<while_loop_node>(*get_node(result)));
+    auto while_loop = std::move(std::get<while_loop_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(while_loop.condition)));
+    auto condition = std::move(std::get<leaf_node>(*(while_loop.condition)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(while_loop.body)));
+    auto body = std::move(std::get<block_node>(*(while_loop.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+}
+//****************************************************************************//
+//                                switch_parser                               //
+//****************************************************************************//
+TEST(TestSwitchParser, LiteralHeadEmptyBody)
+{
+    std::array token_stream_raw{
+        token(token_type::SWITCH, "switch"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::LITERAL, "1"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = switch_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<switch_node>(*get_node(result)));
+    auto switch_stmt = std::move(std::get<switch_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(switch_stmt.expression)));
+    auto condition = std::move(std::get<leaf_node>(*(switch_stmt.expression)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(switch_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(switch_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+}
+//****************************************************************************//
+//                                 case_parser                                //
+//****************************************************************************//
+TEST(TestCaseParser, LiteralHeadEmptyBody)
+{
+    std::array token_stream_raw{token(token_type::CASE, "case"sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::COLON, ":"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = case_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<case_node>(*get_node(result)));
+    auto case_stmt = std::move(std::get<case_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(case_stmt.value)));
+    auto condition = std::move(std::get<leaf_node>(*(case_stmt.value)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(case_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(case_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+};
+TEST(TestCaseParser, LiteralHeadCallBody)
+{
+    std::array token_stream_raw{
+        token(token_type::CASE, "case"sv, source_location()),
+        token(token_type::LITERAL, "1"sv, source_location()),
+        token(token_type::COLON, ":"sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::SEMICOLON, ";"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = case_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+
+    ASSERT_TRUE(std::holds_alternative<case_node>(*get_node(result)));
+    auto case_stmt = std::move(std::get<case_node>(*get_node(result)));
+
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(case_stmt.value)));
+    auto condition = std::move(std::get<leaf_node>(*(case_stmt.value)));
+    ASSERT_EQ(condition.value, "1"sv);
+
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(case_stmt.body)));
+    auto body = std::move(std::get<block_node>(*(case_stmt.body)));
+
+    ASSERT_TRUE(body.statements.empty());
+};
