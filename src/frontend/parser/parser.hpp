@@ -726,8 +726,7 @@ struct statement_parser
             var_assignment_parser,
             var_init_parser,
             var_decl_parser,
-            combinators::all<expression_parser, token_parser<token_type::SEMICOLON>>,
-            combinators::all<call_parser,
+            combinators::all<expression_parser,
                              token_parser<token_type::SEMICOLON>>>::parse(ts);
 
         if (!is_any_parse_result_valid(statement))
@@ -749,7 +748,6 @@ struct block_parser
             return parse_error(parsed_structure);
         }
 
-        // TODO: Handle empty block
         auto block = combinators::all<
             token_parser<token_type::LBRACE>,
             combinators::optional<combinators::many<
@@ -810,8 +808,7 @@ struct control_block_parser
                                               else_stmt_parser,
                                               for_loop_parser,
                                               while_loop_parser,
-                                              switch_parser,
-                                              case_parser>::parse(ts);
+                                              switch_parser>::parse(ts);
 
         if (!is_any_parse_result_valid(control_block))
         {
