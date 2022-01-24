@@ -24,6 +24,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <retrieve_source_location.hpp>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -1088,25 +1089,36 @@ struct case_parser
             return parse_error(parsed_structure, ts[0]);
         }
 
+
         std::vector<std::unique_ptr<ast_node_t>> statements;
         source_location                          new_location;
+        source_location                          body_location;
+        std::span<token>                         new_ts;
 
         if (std::holds_alternative<missing_optional_node>(*get_node(case_stmt[3])))
         {
             case_stmt.pop_back();
-            new_location = get_source_location_from_compound(case_stmt);
+            new_location  = get_source_location_from_compound(case_stmt);
+            body_location = get_source_location_from_compound(case_stmt.begin() + 2,
+                                                              case_stmt.begin() + 2);
+
+            new_ts = get_token_stream(case_stmt.back());
         }
         else
         {
-            new_location = get_source_location_from_compound(case_stmt);
+            new_location  = get_source_location_from_compound(case_stmt);
+            body_location = get_source_location_from_compound(case_stmt.begin() + 3,
+                                                              case_stmt.end() - 1);
+
+            new_ts = get_token_stream(case_stmt.back());
 
             std::for_each(
-                case_stmt.begin(), case_stmt.end() - 1, [&statements](auto&& element) {
+                case_stmt.begin() + 3, case_stmt.end(), [&statements](auto&& element) {
                     statements.push_back(
                         std::move(get_node(std::forward<decltype(element)>(element))));
                 });
         }
-        source_location body_location;
+
 
         auto body = std::make_unique<ast_node_t>(
             std::in_place_type<block_node>, std::move(statements), body_location);
@@ -1114,9 +1126,8 @@ struct case_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<case_node>, get_node(case_stmt[1]), body, new_location);
 
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(case_stmt.back()),
-                            std::move(new_node));
+        return parse_result(
+            std::in_place_type<parse_content>, new_ts, std::move(new_node));
     }
 };
 //****************************************************************************//
