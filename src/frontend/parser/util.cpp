@@ -48,6 +48,21 @@ source_location get_source_location_from_compound(std::vector<parse_result>& nod
             end_location.col_end};
 }
 
+source_location get_source_location_from_compound(
+    std::vector<parse_result>::iterator begin, std::vector<parse_result>::iterator end)
+{
+    auto first_node = get_node(*begin).get();
+    auto last_node  = get_node(*end).get();
+
+    auto start_location = std::visit(source_location_retriever_visitor{}, *first_node);
+    auto end_location   = std::visit(source_location_retriever_visitor{}, *last_node);
+
+    return {start_location.line_start,
+            start_location.col_start,
+            end_location.line_end,
+            end_location.col_end};
+}
+
 bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
                           std::span<token>&          ts,

@@ -59,6 +59,9 @@ std::unique_ptr<ast_node_t>& get_node(parse_result& result);
 
 source_location get_source_location_from_compound(std::vector<parse_result>& nodes);
 
+source_location get_source_location_from_compound(
+    std::vector<parse_result>::iterator begin, std::vector<parse_result>::iterator end);
+
 bool try_add_parse_result(parse_result&&             cur_result,
                           std::vector<parse_result>& results,
                           std::span<token>&          ts,
