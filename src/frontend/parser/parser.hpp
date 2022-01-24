@@ -949,11 +949,13 @@ struct for_loop_parser
             combinators::surrounded<
                 token_parser<token_type::LPAREN>,
                 token_parser<token_type::RPAREN>,
-                combinators::all<combinators::optional<statement_parser>,
-                                 token_parser<token_type::SEMICOLON>,
-                                 combinators::optional<expression_parser>,
-                                 token_parser<token_type::SEMICOLON>,
-                                 combinators::optional<expression_parser>>>,
+                combinators::all<
+                    combinators::any<token_parser<token_type::SEMICOLON>,
+                                     // Semicolon is already parsed in statement_parser
+                                     combinators::optional<statement_parser>>,
+                    combinators::optional<expression_parser>,
+                    token_parser<token_type::SEMICOLON>,
+                    combinators::optional<expression_parser>>>,
             block_parser>::parse(ts);
 
 
@@ -980,8 +982,8 @@ struct for_loop_parser
         auto new_node = std::make_unique<ast_node_t>(std::in_place_type<for_loop_node>,
                                                      get_node(for_loop[2]),
                                                      get_node(for_loop[4]),
-                                                     get_node(for_loop[6]),
-                                                     get_node(for_loop[8]),
+                                                     get_node(for_loop[5]),
+                                                     get_node(for_loop[7]),
                                                      new_location);
 
         return parse_result(std::in_place_type<parse_content>,
