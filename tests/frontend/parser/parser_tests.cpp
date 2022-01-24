@@ -900,5 +900,6 @@ TEST(TestCaseParser, LiteralHeadCallBody)
     ASSERT_TRUE(std::holds_alternative<block_node>(*(case_stmt.body)));
     auto body = std::move(std::get<block_node>(*(case_stmt.body)));
 
-    ASSERT_TRUE(body.statements.empty());
+    ASSERT_EQ(body.statements.size(), 1);
+    ASSERT_TRUE(std::holds_alternative<call_node>(*(body.statements[0])));
 };
