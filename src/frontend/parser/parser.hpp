@@ -734,6 +734,14 @@ struct statement_parser
             return parse_error(parsed_structure, ts[0]);
         }
 
+        // TODO: Check if the size is always 1 or 2
+        if (statement.size() == 2)
+        {
+            // The caller does not care about parsed semicolon,
+            // but we still need to drop it from the token stream
+            get_token_stream(statement[0]) = get_token_stream(statement[1]);
+        }
+
         return std::move(statement[0]);
     }
 };
