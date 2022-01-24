@@ -1038,28 +1038,58 @@ struct switch_parser
             return parse_error(parsed_structure);
         }
 
-        auto switch_stmt =
-            combinators::all<token_parser<token_type::SWITCH>,
-                             combinators::surrounded<token_parser<token_type::LPAREN>,
-                                                     token_parser<token_type::RPAREN>,
-                                                     expression_parser>,
-                             block_parser>::parse(ts);
+        auto switch_stmt = combinators::all<
+            token_parser<token_type::SWITCH>,
+            combinators::surrounded<token_parser<token_type::LPAREN>,
+                                    token_parser<token_type::RPAREN>,
+                                    expression_parser>,
+            combinators::surrounded<
+                token_parser<token_type::LBRACE>,
+                token_parser<token_type::RBRACE>,
+                combinators::optional<combinators::many<case_parser>>>>::parse(ts);
 
         if (!are_all_parse_results_valid(switch_stmt))
         {
             return parse_error(parsed_structure, ts[0]);
         }
 
-        auto new_location = get_source_location_from_compound(switch_stmt);
+        auto            new_ts = get_token_stream(switch_stmt.back());
+        source_location new_location;
+        source_location body_location;
+        std::vector<std::unique_ptr<ast_node_t>> cases;
+
+        if (std::holds_alternative<missing_optional_node>(*get_node(switch_stmt[5])))
+        {
+            new_location  = get_source_location_from_compound(switch_stmt);
+            body_location = get_source_location_from_compound(switch_stmt.begin() + 4,
+                                                              switch_stmt.begin() + 4);
+        }
+        else
+        {
+            new_location = get_source_location_from_compound(switch_stmt);
+
+            body_location = get_source_location_from_compound(switch_stmt.begin() + 4,
+                                                              switch_stmt.end() - 2);
+
+            std::for_each(switch_stmt.begin() + 5,
+                          switch_stmt.end() - 1,
+                          [&cases](auto&& element) {
+                              cases.push_back(std::move(
+                                  get_node(std::forward<decltype(element)>(element))));
+                          });
+        }
+
+
+        auto body = std::make_unique<ast_node_t>(
+            std::in_place_type<block_node>, std::move(cases), body_location);
 
         auto new_node = std::make_unique<ast_node_t>(std::in_place_type<switch_node>,
                                                      get_node(switch_stmt[2]),
-                                                     get_node(switch_stmt[4]),
+                                                     body,
                                                      new_location);
 
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(switch_stmt.back()),
-                            std::move(new_node));
+        return parse_result(
+            std::in_place_type<parse_content>, new_ts, std::move(new_node));
     }
 };
 
