@@ -16,16 +16,14 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               program_parser                               //
 //****************************************************************************//
- TEST(TestProgramParser, TwoVarDecls)
+TEST(TestProgramParser, TwoVarDecls)
 {
-     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
-                                 token(token_type::IDENTIFIER, "x"sv,
-                                 source_location()), token(token_type::SEMICOLON,
-                                 ";"sv, source_location()), token(token_type::LET,
-                                 "let"sv, source_location()),
-                                 token(token_type::IDENTIFIER, "y"sv,
-                                 source_location()), token(token_type::SEMICOLON,
-                                 ";"sv, source_location())};
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location()),
+                                token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "y"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -43,15 +41,15 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                              binary_op_parser                              //
 //****************************************************************************//
- TEST(TestBinaryOpParser, Complex)
+TEST(TestBinaryOpParser, Complex)
 {
-     std::array token_stream_raw{
-         token(token_type::PLUS, "+"sv, source_location()),
-         token(token_type::LITERAL, "5"sv, source_location()),
-         token(token_type::MULTIPLICATION, "*"sv, source_location()),
-         token(token_type::LITERAL, "2"sv, source_location()),
-         token(token_type::MULTIPLICATION, "/"sv, source_location()),
-         token(token_type::LITERAL, "3"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::PLUS, "+"sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::MULTIPLICATION, "*"sv, source_location()),
+        token(token_type::LITERAL, "2"sv, source_location()),
+        token(token_type::MULTIPLICATION, "/"sv, source_location()),
+        token(token_type::LITERAL, "3"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -98,11 +96,11 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               unar_op_parser                               //
 //****************************************************************************//
- TEST(TestUnaryOpParser, NotIdentifier)
+TEST(TestUnaryOpParser, NotIdentifier)
 {
-     std::array token_stream_raw{
-         token(token_type::NOT, "!"sv, source_location()),
-         token(token_type::IDENTIFIER, "x"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::NOT, "!"sv, source_location()),
+        token(token_type::IDENTIFIER, "x"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -128,10 +126,10 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                              expression_parser                             //
 //****************************************************************************//
- TEST(TestExpressionParser, Identifier)
+TEST(TestExpressionParser, Identifier)
 {
-     std::array token_stream_raw{
-         token(token_type::IDENTIFIER, "x"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "x"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -145,10 +143,9 @@ using namespace std::string_view_literals;
     ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "x"sv);
 }
 
- TEST(TestExpressionParser, Literal)
+TEST(TestExpressionParser, Literal)
 {
-     std::array token_stream_raw{token(token_type::LITERAL, "5"sv,
-     source_location())};
+    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -162,12 +159,11 @@ using namespace std::string_view_literals;
     ASSERT_EQ(std::get<leaf_node>((*get_node(result))).value, "5"sv);
 }
 
- TEST(TestExpressionParser, BinaryOp)
+TEST(TestExpressionParser, BinaryOp)
 {
-     std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location()),
-                                 token(token_type::PLUS, "+"sv, source_location()),
-                                 token(token_type::LITERAL, "5"sv,
-                                 source_location())};
+    std::array token_stream_raw{token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::PLUS, "+"sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -192,15 +188,15 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               func_def_parser                              //
 //****************************************************************************//
- TEST(TestFuncDefParser, NoParametersEmptyBody)
+TEST(TestFuncDefParser, NoParametersEmptyBody)
 {
-     std::array token_stream_raw{
-         token(token_type::FUNCTION, "function"sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location()),
-         token(token_type::LBRACE, "{"sv, source_location()),
-         token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::FUNCTION, "function"sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -227,15 +223,15 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                            procedure_def_parser                            //
 //****************************************************************************//
- TEST(TestProcedureDefParser, NoParametersEmptyBody)
+TEST(TestProcedureDefParser, NoParametersEmptyBody)
 {
-     std::array token_stream_raw{
-         token(token_type::PROCEDURE, "procedure"sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location()),
-         token(token_type::LBRACE, "{"sv, source_location()),
-         token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::PROCEDURE, "procedure"sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -262,12 +258,12 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                              signature_parser                              //
 //****************************************************************************//
- TEST(TestSignatureParser, NoParameters)
+TEST(TestSignatureParser, NoParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -290,12 +286,12 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                             return_stmt_parser                             //
 //****************************************************************************//
- TEST(TestReturnStmtParser, Literal)
+TEST(TestReturnStmtParser, Literal)
 {
-     std::array token_stream_raw{
-         token(token_type::RETURN, "return"sv, source_location()),
-         token(token_type::LITERAL, "5"sv, source_location()),
-         token(token_type::SEMICOLON, ";"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::RETURN, "return"sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -318,10 +314,10 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               parameter_def_parser                         //
 //****************************************************************************//
- TEST(TestParameterDefParser, NoParameter)
+TEST(TestParameterDefParser, NoParameter)
 {
-     std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -334,12 +330,12 @@ using namespace std::string_view_literals;
               0);
 }
 
- TEST(TestParameterDefParser, OneParameter)
+TEST(TestParameterDefParser, OneParameter)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -355,14 +351,14 @@ using namespace std::string_view_literals;
               "foo"sv);
 }
 
- TEST(TestParameterDefParser, TwoParameters)
+TEST(TestParameterDefParser, TwoParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -379,16 +375,16 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv}));
 }
 
- TEST(TestParameterDefParser, ThreeParameters)
+TEST(TestParameterDefParser, ThreeParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "baz"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "baz"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -405,18 +401,18 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv, "baz"sv}));
 }
 
- TEST(TestParameterDefParser, FourParameters)
+TEST(TestParameterDefParser, FourParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "baz"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "test"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "baz"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "test"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -433,13 +429,13 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv, "baz"sv, "test"sv}));
 }
 
- TEST(TestParameterDefParser, TrailingComma)
+TEST(TestParameterDefParser, TrailingComma)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -451,10 +447,10 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               parameter_pass_parser                        //
 //****************************************************************************//
- TEST(TestParameterPassParser, NoParameter)
+TEST(TestParameterPassParser, NoParameter)
 {
-     std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -467,12 +463,12 @@ using namespace std::string_view_literals;
               0);
 }
 
- TEST(TestParameterPassParser, OneParameter)
+TEST(TestParameterPassParser, OneParameter)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -488,14 +484,14 @@ using namespace std::string_view_literals;
               "foo"sv);
 }
 
- TEST(TestParameterPassParser, TwoParameters)
+TEST(TestParameterPassParser, TwoParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -512,16 +508,16 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv}));
 }
 
- TEST(TestParameterPassParser, ThreeParameters)
+TEST(TestParameterPassParser, ThreeParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "baz"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "baz"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -538,18 +534,18 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv, "baz"sv}));
 }
 
- TEST(TestParameterPassParser, FourParameters)
+TEST(TestParameterPassParser, FourParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "bar"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "baz"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::IDENTIFIER, "test"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "bar"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "baz"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::IDENTIFIER, "test"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -566,13 +562,13 @@ using namespace std::string_view_literals;
         std::array{"foo"sv, "bar"sv, "baz"sv, "test"sv}));
 }
 
- TEST(TestParameterPassParser, TrailingComma)
+TEST(TestParameterPassParser, TrailingComma)
 {
-     std::array token_stream_raw{
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::COMMA, ","sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::COMMA, ","sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -584,12 +580,11 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               var_decl_parser                              //
 //****************************************************************************//
- TEST(TestVarDeclParser, Simple)
+TEST(TestVarDeclParser, Simple)
 {
-     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
-                                 token(token_type::IDENTIFIER, "x"sv,
-                                 source_location()), token(token_type::SEMICOLON,
-                                 ";"sv, source_location())};
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -607,14 +602,12 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                            var_assignment_parser                           //
 //****************************************************************************//
- TEST(TestVarAssignmentParser, Literal)
+TEST(TestVarAssignmentParser, Literal)
 {
-     std::array token_stream_raw{token(token_type::IDENTIFIER, "x"sv,
-     source_location()),
-                                 token(token_type::ASSIGN, "="sv, source_location()),
-                                 token(token_type::LITERAL, "5"sv, source_location()),
-                                 token(token_type::SEMICOLON, ";"sv,
-                                 source_location())};
+    std::array token_stream_raw{token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::ASSIGN, "="sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -625,8 +618,7 @@ using namespace std::string_view_literals;
     ASSERT_NE(get_node(result), nullptr);
 
     ASSERT_TRUE(std::holds_alternative<var_assignment_node>((*get_node(result))));
-    auto var_assignment =
-    std::move(std::get<var_assignment_node>((*get_node(result))));
+    auto var_assignment = std::move(std::get<var_assignment_node>((*get_node(result))));
 
     ASSERT_TRUE(std::holds_alternative<leaf_node>(*(var_assignment.value)));
     auto value = std::move(std::get<leaf_node>(*(var_assignment.value)));
@@ -636,14 +628,13 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               var_init_parser                              //
 //****************************************************************************//
- TEST(TestVarInitParser, Literal)
+TEST(TestVarInitParser, Literal)
 {
-     std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
-                                 token(token_type::IDENTIFIER, "x"sv,
-                                 source_location()), token(token_type::ASSIGN, "="sv,
-                                 source_location()), token(token_type::LITERAL, "5"sv,
-                                 source_location()), token(token_type::SEMICOLON,
-                                 ";"sv, source_location())};
+    std::array token_stream_raw{token(token_type::LET, "let"sv, source_location()),
+                                token(token_type::IDENTIFIER, "x"sv, source_location()),
+                                token(token_type::ASSIGN, "="sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -667,12 +658,12 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                                 call_parser                                //
 //****************************************************************************//
- TEST(TestCallParser, NoParameters)
+TEST(TestCallParser, NoParameters)
 {
-     std::array token_stream_raw{
-         token(token_type::IDENTIFIER, "foo"sv, source_location()),
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::IDENTIFIER, "foo"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -695,14 +686,14 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                               if_stmt_parser                               //
 //****************************************************************************//
- TEST(TestIfStmtParser, LiteralHeadEmptyBody)
+TEST(TestIfStmtParser, LiteralHeadEmptyBody)
 {
-     std::array token_stream_raw{token(token_type::IF, "if"sv, source_location()),
-                                 token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::LITERAL, "1"sv, source_location()),
-                                 token(token_type::RPAREN, ")"sv, source_location()),
-                                 token(token_type::LBRACE, "{"sv, source_location()),
-                                 token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{token(token_type::IF, "if"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -727,15 +718,15 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                             else_if_stmt_parser                            //
 //****************************************************************************//
- TEST(TestElseIfStmtParser, LiteralHeadEmptyBody)
+TEST(TestElseIfStmtParser, LiteralHeadEmptyBody)
 {
-     std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
-                                 token(token_type::IF, "if"sv, source_location()),
-                                 token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::LITERAL, "1"sv, source_location()),
-                                 token(token_type::RPAREN, ")"sv, source_location()),
-                                 token(token_type::LBRACE, "{"sv, source_location()),
-                                 token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
+                                token(token_type::IF, "if"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -760,11 +751,11 @@ using namespace std::string_view_literals;
 //****************************************************************************//
 //                              else_stmt_parser                              //
 //****************************************************************************//
- TEST(TestElseStmtParser, EmptyBody)
+TEST(TestElseStmtParser, EmptyBody)
 {
-     std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
-                                 token(token_type::LBRACE, "{"sv, source_location()),
-                                 token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{token(token_type::ELSE, "else"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -823,48 +814,46 @@ TEST(TestForLoopParser, HeadZeroTo5EmptyBody)
     auto body = std::move(std::get<block_node>(*(for_loop.body)));
     ASSERT_TRUE(body.statements.empty());
 }
- TEST(TestForLoopParser, EmptyHeadEmptyBody)
- {
-     std::array token_stream_raw{token(token_type::FOR, "for"sv, source_location()),
-                                 token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::SEMICOLON, ";"sv,
-                                 source_location()), token(token_type::SEMICOLON,
-                                 ";"sv, source_location()), token(token_type::RPAREN,
-                                 ")"sv, source_location()), token(token_type::LBRACE,
-                                 "{"sv, source_location()), token(token_type::RBRACE,
-                                 "}"sv, source_location())};
+TEST(TestForLoopParser, EmptyHeadEmptyBody)
+{
+    std::array token_stream_raw{token(token_type::FOR, "for"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location()),
+                                token(token_type::SEMICOLON, ";"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
 
-     std::span<token> token_stream(token_stream_raw);
+    std::span<token> token_stream(token_stream_raw);
 
-     auto result = for_loop_parser::parse(token_stream);
+    auto result = for_loop_parser::parse(token_stream);
 
-     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
-     ASSERT_EQ(get_token_stream(result).size(), 0);
-     ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
 
-     ASSERT_TRUE(std::holds_alternative<for_loop_node>(*get_node(result)));
-     auto for_loop = std::move(std::get<for_loop_node>(*get_node(result)));
+    ASSERT_TRUE(std::holds_alternative<for_loop_node>(*get_node(result)));
+    auto for_loop = std::move(std::get<for_loop_node>(*get_node(result)));
 
-     ASSERT_EQ(for_loop.init_stmt, nullptr);
-     ASSERT_EQ(for_loop.test_expression, nullptr);
-     ASSERT_EQ(for_loop.update_expression, nullptr);
+    ASSERT_EQ(for_loop.init_stmt, nullptr);
+    ASSERT_EQ(for_loop.test_expression, nullptr);
+    ASSERT_EQ(for_loop.update_expression, nullptr);
 
-     ASSERT_TRUE(std::holds_alternative<block_node>(*(for_loop.body)));
-     auto body = std::move(std::get<block_node>(*(for_loop.body)));
-     ASSERT_TRUE(body.statements.empty());
- }
+    ASSERT_TRUE(std::holds_alternative<block_node>(*(for_loop.body)));
+    auto body = std::move(std::get<block_node>(*(for_loop.body)));
+    ASSERT_TRUE(body.statements.empty());
+}
 //****************************************************************************//
 //                              while_loop_parser                             //
 //****************************************************************************//
- TEST(TestWhileLoopParser, LiteralHeadEmptyBody)
+TEST(TestWhileLoopParser, LiteralHeadEmptyBody)
 {
-     std::array token_stream_raw{token(token_type::WHILE, "while"sv,
-     source_location()),
-                                 token(token_type::LPAREN, "("sv, source_location()),
-                                 token(token_type::LITERAL, "1"sv, source_location()),
-                                 token(token_type::RPAREN, ")"sv, source_location()),
-                                 token(token_type::LBRACE, "{"sv, source_location()),
-                                 token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{token(token_type::WHILE, "while"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::LBRACE, "{"sv, source_location()),
+                                token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -889,15 +878,15 @@ TEST(TestForLoopParser, HeadZeroTo5EmptyBody)
 //****************************************************************************//
 //                                switch_parser                               //
 //****************************************************************************//
- TEST(TestSwitchParser, LiteralHeadEmptyBody)
+TEST(TestSwitchParser, LiteralHeadEmptyBody)
 {
-     std::array token_stream_raw{
-         token(token_type::SWITCH, "switch"sv, source_location()),
-         token(token_type::LPAREN, "("sv, source_location()),
-         token(token_type::LITERAL, "1"sv, source_location()),
-         token(token_type::RPAREN, ")"sv, source_location()),
-         token(token_type::LBRACE, "{"sv, source_location()),
-         token(token_type::RBRACE, "}"sv, source_location())};
+    std::array token_stream_raw{
+        token(token_type::SWITCH, "switch"sv, source_location()),
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::LITERAL, "1"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::LBRACE, "{"sv, source_location()),
+        token(token_type::RBRACE, "}"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -922,11 +911,11 @@ TEST(TestForLoopParser, HeadZeroTo5EmptyBody)
 //****************************************************************************//
 //                                 case_parser                                //
 //****************************************************************************//
- TEST(TestCaseParser, LiteralHeadEmptyBody)
+TEST(TestCaseParser, LiteralHeadEmptyBody)
 {
-     std::array token_stream_raw{token(token_type::CASE, "case"sv, source_location()),
-                                 token(token_type::LITERAL, "1"sv, source_location()),
-                                 token(token_type::COLON, ":"sv, source_location())};
+    std::array token_stream_raw{token(token_type::CASE, "case"sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::COLON, ":"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
 
@@ -948,7 +937,7 @@ TEST(TestForLoopParser, HeadZeroTo5EmptyBody)
 
     ASSERT_TRUE(body.statements.empty());
 };
- TEST(TestCaseParser, LiteralHeadCallBody)
+TEST(TestCaseParser, LiteralHeadCallBody)
 {
     std::array token_stream_raw{
         token(token_type::CASE, "case"sv, source_location()),

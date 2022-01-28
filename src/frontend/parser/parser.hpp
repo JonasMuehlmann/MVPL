@@ -22,6 +22,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <retrieve_source_location.hpp>
@@ -949,39 +950,38 @@ struct for_loop_parser
             combinators::surrounded<
                 token_parser<token_type::LPAREN>,
                 token_parser<token_type::RPAREN>,
-                combinators::all<
-                    combinators::any<token_parser<token_type::SEMICOLON>,
-                                     // Semicolon is already parsed in statement_parser
-                                     combinators::optional<statement_parser>>,
-                    combinators::optional<expression_parser>,
-                    token_parser<token_type::SEMICOLON>,
-                    combinators::optional<expression_parser>>>,
+                // Statements already contain semicolons
+                combinators::any<token_parser<token_type::SEMICOLON>,
+                                 combinators::optional<statement_parser>>,
+                combinators::optional<expression_parser>,
+                token_parser<token_type::SEMICOLON>,
+                combinators::optional<expression_parser>>,
             block_parser>::parse(ts);
-
 
         if (!are_all_parse_results_valid(for_loop))
         {
             return parse_error(parsed_structure, ts[0]);
         }
 
-        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[2])))
+
+        if (std::holds_alternative<leaf_node>(*get_node(for_loop[2])))
         {
             get_node(for_loop[2]) = nullptr;
         }
-        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[4])))
+        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[3])))
         {
-            get_node(for_loop[4]) = nullptr;
+            get_node(for_loop[3]) = nullptr;
         }
-        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[6])))
+        if (std::holds_alternative<missing_optional_node>(*get_node(for_loop[5])))
         {
-            get_node(for_loop[6]) = nullptr;
+            get_node(for_loop[5]) = nullptr;
         }
 
         auto new_location = get_source_location_from_compound(for_loop);
 
         auto new_node = std::make_unique<ast_node_t>(std::in_place_type<for_loop_node>,
                                                      get_node(for_loop[2]),
-                                                     get_node(for_loop[4]),
+                                                     get_node(for_loop[3]),
                                                      get_node(for_loop[5]),
                                                      get_node(for_loop[7]),
                                                      new_location);
