@@ -44,6 +44,11 @@ set(MVPL_compile_flags
     -Wstack-protector
 )
 
+if (DEFINED ENV{MVPL_PROFILE_COMPILE_TIME})
+    list(APPEND MVPL_compile_flags ${MVPL_compile_flags} -ftime-trace)
+endif()
+
+
 set(MVPL_link_flags
     -fsanitize=address
     -fsanitize=pointer-compare
