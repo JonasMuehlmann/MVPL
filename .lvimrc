@@ -5,5 +5,18 @@ lua << EOF
 require('code_runner').setup {
   project_path = ".code_runner.json"
   }
+
+local file_dir = vim.fn.expand("%:p:h")
+local command = ""
+
+if string.match(file_dir, "/MVPL/tests") then
+    command = "build_tests.sh"
+elseif string.match(file_dir, "/MVPL/benchmarks") then
+    command = "build_benchmarks.sh"
+else
+    command = "build_main.sh"
+end
+
+-- vim.api.nvim_set_keymap('n', '<Leader>dc', 'ls', {noremap = true})
+vim.api.nvim_set_keymap('n', '<leader>dc', ':!source runtime_flags_lldb.env && ./' .. command .. '<CR>:lua require\'dap\'.continue()<CR>', {noremap = true})
 EOF
-nnoremap <leader>dc  :let $ASAN_OPTIONS = "strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:detect_leaks=0"<CR>:lua require'dap'.continue()<CR>
