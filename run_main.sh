@@ -1,2 +1,5 @@
 #!/usr/bin/sh
-cmake -S . -B cmake-build-debug && cd cmake-build-debug/ && make && ./MVPL ../data/main.mvpl
+
+file="$(realpath data/main.mvpl)"
+
+cd cmake-build-debug && ./MVPL "${file}"
