@@ -20,17 +20,18 @@
 
 #pragma once
 
-#include <string>
+#include <string_view>
+
 #include "frontend/lexer/token.hpp"
 
 struct parse_error
 {
-    std::string parsed_structure;
-    token       token_;
+    std::string_view parsed_structure_;
+    token            token_;
 
-    explicit parse_error(std::string& parsed_structure);
+    explicit parse_error(std::string_view parsed_structure);
 
-    parse_error(std::string& parsed_structure, token token_);
-    
-    void throw_();
+    parse_error(std::string_view parsed_structure, token token_);
+
+    void throw_() const;
 };

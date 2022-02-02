@@ -18,25 +18,33 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "frontend/parser/parse_error.hpp"
+
+#include <string>
+
 #include "common/source_location.hpp"
 
 using json = nlohmann::ordered_json;
 using namespace std::literals::string_view_literals;
 
-parse_error::parse_error(std::string& parsed_structure) :
-    parsed_structure(parsed_structure),
+parse_error::parse_error(std::string_view parsed_structure) :
+    parsed_structure_(parsed_structure),
     token_(token_type::END_TOKEN, ""sv, source_location())
 {}
 
-parse_error::parse_error(std::string& parsed_structure, token token_) :
-    parsed_structure(parsed_structure), token_(token_)
+parse_error::parse_error(std::string_view parsed_structure, token token_) :
+    parsed_structure_(parsed_structure), token_(token_)
 {}
 
-void parse_error::throw_()
+void parse_error::throw_() const
 {
     json j;
     to_json(j, token_);
 
-    throw std::runtime_error("Could not parse " + parsed_structure + " at token "
-                             + j.dump(4));
+    std::string message = "Could not parse ";
+
+    message += parsed_structure_;
+    message += " at token ";
+    message += j.dump(4);
+
+    throw std::runtime_error(message);
 }
