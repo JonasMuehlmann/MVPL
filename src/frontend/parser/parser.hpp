@@ -127,7 +127,7 @@ struct token_parser;
 template <token_type wanted>
 struct token_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "token";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -149,7 +149,7 @@ struct token_parser
 
 struct program_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "progam";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -166,7 +166,7 @@ struct program_parser
 
         if (!are_all_parse_results_valid(program))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(program.back());
         }
 
         auto new_location = get_source_location_from_compound(program);
@@ -193,7 +193,7 @@ struct program_parser
 // NOTE: Passing the lhs avoids indirect left-recursion
 struct binary_op_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "binary operation";
 
     static parse_result parse(std::span<token> ts, parse_result& lhs)
     {
@@ -225,7 +225,7 @@ struct binary_op_parser
 
         if (!are_all_parse_results_valid(bin_op))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(bin_op.back());
         }
 
 
@@ -245,7 +245,7 @@ struct binary_op_parser
 
 struct unary_op_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "unary operation";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -263,7 +263,7 @@ struct unary_op_parser
 
         if (!are_all_parse_results_valid(unary_op))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(unary_op.back());
         }
 
 
@@ -282,7 +282,7 @@ struct unary_op_parser
 
 struct expression_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "expression";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -323,7 +323,7 @@ struct expression_parser
 
 struct func_def_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "fuction definition";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -338,7 +338,7 @@ struct func_def_parser
 
         if (!are_all_parse_results_valid(func_def))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(func_def.back());
         }
 
 
@@ -357,7 +357,7 @@ struct func_def_parser
 
 struct procedure_def_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "procedure definition";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -372,7 +372,7 @@ struct procedure_def_parser
 
         if (!are_all_parse_results_valid(procedure_def))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(procedure_def.back());
         }
 
 
@@ -391,7 +391,7 @@ struct procedure_def_parser
 
 struct signature_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "function signature";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -405,7 +405,7 @@ struct signature_parser
 
         if (!are_all_parse_results_valid(signature))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(signature.back());
         }
 
 
@@ -423,7 +423,7 @@ struct signature_parser
 
 struct return_stmt_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "return statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -439,7 +439,7 @@ struct return_stmt_parser
 
         if (!are_all_parse_results_valid(return_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(return_stmt.back());
         }
 
 
@@ -456,7 +456,7 @@ struct return_stmt_parser
 
 struct parameter_def_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "callable parameter defintion";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -475,7 +475,7 @@ struct parameter_def_parser
 
         if (!are_all_parse_results_valid(parameter_def))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(parameter_def.back());
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -518,7 +518,7 @@ struct parameter_def_parser
 
 struct var_decl_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "variable declaration";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -534,7 +534,7 @@ struct var_decl_parser
 
         if (!are_all_parse_results_valid(var_decl))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(var_decl.back());
         }
 
 
@@ -551,7 +551,7 @@ struct var_decl_parser
 
 struct var_init_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "variable initialization";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -569,7 +569,7 @@ struct var_init_parser
 
         if (!are_all_parse_results_valid(var_init))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(var_init.back());
         }
 
 
@@ -587,7 +587,7 @@ struct var_init_parser
 
 struct var_assignment_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "variable assignment";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -604,7 +604,7 @@ struct var_assignment_parser
 
         if (!are_all_parse_results_valid(var_assignment))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(var_assignment.back());
         }
 
 
@@ -622,7 +622,7 @@ struct var_assignment_parser
 
 struct call_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "call";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -636,7 +636,7 @@ struct call_parser
 
         if (!are_all_parse_results_valid(call))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(call.back());
         }
 
 
@@ -654,7 +654,7 @@ struct call_parser
 
 struct parameter_pass_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "callable parameter pass";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -673,7 +673,7 @@ struct parameter_pass_parser
 
         if (!are_all_parse_results_valid(parameter_pass))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(parameter_pass.back());
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -715,7 +715,7 @@ struct parameter_pass_parser
 };
 struct statement_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -749,7 +749,7 @@ struct statement_parser
 };
 struct block_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "code block";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -767,7 +767,7 @@ struct block_parser
 
         if (!are_all_parse_results_valid(block))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(block.back());
         }
 
         auto new_location = get_source_location_from_compound(block);
@@ -804,7 +804,7 @@ struct block_parser
 
 struct control_block_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "control block";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -831,7 +831,7 @@ struct control_block_parser
 
 struct if_stmt_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "if statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -849,7 +849,7 @@ struct if_stmt_parser
 
         if (!are_all_parse_results_valid(if_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(if_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(if_stmt);
@@ -867,7 +867,7 @@ struct if_stmt_parser
 
 struct else_if_stmt_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "else if statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -887,7 +887,7 @@ struct else_if_stmt_parser
 
         if (!are_all_parse_results_valid(else_if_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(else_if_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(else_if_stmt);
@@ -906,7 +906,7 @@ struct else_if_stmt_parser
 
 struct else_stmt_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "else statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -920,7 +920,7 @@ struct else_stmt_parser
 
         if (!are_all_parse_results_valid(else_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(else_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(else_stmt);
@@ -936,7 +936,7 @@ struct else_stmt_parser
 
 struct for_loop_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "for loop";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -960,7 +960,7 @@ struct for_loop_parser
 
         if (!are_all_parse_results_valid(for_loop))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(for_loop.back());
         }
 
 
@@ -994,7 +994,7 @@ struct for_loop_parser
 
 struct while_loop_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "while loop";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -1012,7 +1012,7 @@ struct while_loop_parser
 
         if (!are_all_parse_results_valid(while_loop))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(while_loop.back());
         }
 
         auto new_location = get_source_location_from_compound(while_loop);
@@ -1031,7 +1031,7 @@ struct while_loop_parser
 
 struct switch_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "switch statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -1052,7 +1052,7 @@ struct switch_parser
 
         if (!are_all_parse_results_valid(switch_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(switch_stmt.back());
         }
 
         auto            new_ts = get_token_stream(switch_stmt.back());
@@ -1097,7 +1097,7 @@ struct switch_parser
 
 struct case_parser
 {
-    static inline std::string parsed_structure = "";
+    static constexpr std::string_view parsed_structure = "case statement";
 
     static parse_result parse(std::span<token> ts)
     {
@@ -1118,7 +1118,7 @@ struct case_parser
 
         if (!are_all_parse_results_valid(case_stmt))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<1>(case_stmt.back());
         }
 
 
