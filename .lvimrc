@@ -17,6 +17,6 @@ else
     command = "build_main.sh"
 end
 
--- vim.api.nvim_set_keymap('n', '<Leader>dc', 'ls', {noremap = true})
-vim.api.nvim_set_keymap('n', '<leader>dc', ':!source runtime_flags_lldb.env && ./' .. command .. '<CR>:lua require\'dap\'.continue()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<leader>dC', ':!source runtime_flags_lldb.env && ./' .. command .. '<CR>:lua require\'dap\'.continue()<CR>', {noremap = true})
+vim.api.nvim_set_keymap('n', '<leader>dc', ':lua require\'dap\'.continue()<CR>', {noremap = true})
 EOF
