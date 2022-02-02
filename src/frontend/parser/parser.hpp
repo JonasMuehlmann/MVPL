@@ -166,7 +166,7 @@ struct program_parser
 
         if (!are_all_parse_results_valid(program))
         {
-            return std::get<1>(program.back());
+            return std::get<parse_error>(program.back());
         }
 
         auto new_location = get_source_location_from_compound(program);
@@ -225,7 +225,7 @@ struct binary_op_parser
 
         if (!are_all_parse_results_valid(bin_op))
         {
-            return std::get<1>(bin_op.back());
+            return std::get<parse_error>(bin_op.back());
         }
 
 
@@ -263,7 +263,7 @@ struct unary_op_parser
 
         if (!are_all_parse_results_valid(unary_op))
         {
-            return std::get<1>(unary_op.back());
+            return std::get<parse_error>(unary_op.back());
         }
 
 
@@ -300,7 +300,7 @@ struct expression_parser
 
         if (!is_any_parse_result_valid(expression))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<parse_error>(expression.back());
         }
 
         // NOTE: Passing the lhs avoids indirect left-recursion
@@ -338,7 +338,7 @@ struct func_def_parser
 
         if (!are_all_parse_results_valid(func_def))
         {
-            return std::get<1>(func_def.back());
+            return std::get<parse_error>(func_def.back());
         }
 
 
@@ -372,7 +372,7 @@ struct procedure_def_parser
 
         if (!are_all_parse_results_valid(procedure_def))
         {
-            return std::get<1>(procedure_def.back());
+            return std::get<parse_error>(procedure_def.back());
         }
 
 
@@ -405,7 +405,7 @@ struct signature_parser
 
         if (!are_all_parse_results_valid(signature))
         {
-            return std::get<1>(signature.back());
+            return std::get<parse_error>(signature.back());
         }
 
 
@@ -439,7 +439,7 @@ struct return_stmt_parser
 
         if (!are_all_parse_results_valid(return_stmt))
         {
-            return std::get<1>(return_stmt.back());
+            return std::get<parse_error>(return_stmt.back());
         }
 
 
@@ -475,7 +475,7 @@ struct parameter_def_parser
 
         if (!are_all_parse_results_valid(parameter_def))
         {
-            return std::get<1>(parameter_def.back());
+            return std::get<parse_error>(parameter_def.back());
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -534,7 +534,7 @@ struct var_decl_parser
 
         if (!are_all_parse_results_valid(var_decl))
         {
-            return std::get<1>(var_decl.back());
+            return std::get<parse_error>(var_decl.back());
         }
 
 
@@ -569,7 +569,7 @@ struct var_init_parser
 
         if (!are_all_parse_results_valid(var_init))
         {
-            return std::get<1>(var_init.back());
+            return std::get<parse_error>(var_init.back());
         }
 
 
@@ -604,7 +604,7 @@ struct var_assignment_parser
 
         if (!are_all_parse_results_valid(var_assignment))
         {
-            return std::get<1>(var_assignment.back());
+            return std::get<parse_error>(var_assignment.back());
         }
 
 
@@ -636,7 +636,7 @@ struct call_parser
 
         if (!are_all_parse_results_valid(call))
         {
-            return std::get<1>(call.back());
+            return std::get<parse_error>(call.back());
         }
 
 
@@ -673,7 +673,7 @@ struct parameter_pass_parser
 
         if (!are_all_parse_results_valid(parameter_pass))
         {
-            return std::get<1>(parameter_pass.back());
+            return std::get<parse_error>(parameter_pass.back());
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -733,7 +733,7 @@ struct statement_parser
 
         if (!is_any_parse_result_valid(statement))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<parse_error>(statement.back());
         }
 
         // TODO: Check if the size is always 1 or 2
@@ -767,7 +767,7 @@ struct block_parser
 
         if (!are_all_parse_results_valid(block))
         {
-            return std::get<1>(block.back());
+            return std::get<parse_error>(block.back());
         }
 
         auto new_location = get_source_location_from_compound(block);
@@ -822,7 +822,7 @@ struct control_block_parser
 
         if (!is_any_parse_result_valid(control_block))
         {
-            return parse_error(parsed_structure, ts[0]);
+            return std::get<parse_error>(control_block.back());
         }
 
         return std::move(control_block[0]);
@@ -849,7 +849,7 @@ struct if_stmt_parser
 
         if (!are_all_parse_results_valid(if_stmt))
         {
-            return std::get<1>(if_stmt.back());
+            return std::get<parse_error>(if_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(if_stmt);
@@ -887,7 +887,7 @@ struct else_if_stmt_parser
 
         if (!are_all_parse_results_valid(else_if_stmt))
         {
-            return std::get<1>(else_if_stmt.back());
+            return std::get<parse_error>(else_if_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(else_if_stmt);
@@ -920,7 +920,7 @@ struct else_stmt_parser
 
         if (!are_all_parse_results_valid(else_stmt))
         {
-            return std::get<1>(else_stmt.back());
+            return std::get<parse_error>(else_stmt.back());
         }
 
         auto new_location = get_source_location_from_compound(else_stmt);
@@ -960,7 +960,7 @@ struct for_loop_parser
 
         if (!are_all_parse_results_valid(for_loop))
         {
-            return std::get<1>(for_loop.back());
+            return std::get<parse_error>(for_loop.back());
         }
 
 
@@ -1012,7 +1012,7 @@ struct while_loop_parser
 
         if (!are_all_parse_results_valid(while_loop))
         {
-            return std::get<1>(while_loop.back());
+            return std::get<parse_error>(while_loop.back());
         }
 
         auto new_location = get_source_location_from_compound(while_loop);
@@ -1052,7 +1052,7 @@ struct switch_parser
 
         if (!are_all_parse_results_valid(switch_stmt))
         {
-            return std::get<1>(switch_stmt.back());
+            return std::get<parse_error>(switch_stmt.back());
         }
 
         auto            new_ts = get_token_stream(switch_stmt.back());
@@ -1118,7 +1118,7 @@ struct case_parser
 
         if (!are_all_parse_results_valid(case_stmt))
         {
-            return std::get<1>(case_stmt.back());
+            return std::get<parse_error>(case_stmt.back());
         }
 
 
@@ -1173,6 +1173,6 @@ inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
     {
         std::get<parse_error>(result).throw_();
     }
-    // return get_node(std::get<parse_content>(result));
-    return std::get<1>(std::get<parse_content>(program_parser::parse(ts)));
+
+    return std::get<1>(std::get<parse_content>(std::move(result)));
 }

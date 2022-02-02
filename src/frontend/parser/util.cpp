@@ -76,7 +76,13 @@ bool try_add_parse_result(parse_result&&             cur_result,
         {
             results.push_back(std::move(cur_result));
         }
-
+        else
+        {
+            auto existing_error = std::ranges::find_if(results, [](auto& cur_result) {
+                return std::holds_alternative<parse_error>(cur_result);
+            });
+            *existing_error     = std::move(cur_result);
+        }
         return false;
     }
 
