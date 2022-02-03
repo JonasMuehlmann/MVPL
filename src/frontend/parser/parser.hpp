@@ -136,7 +136,7 @@ struct token_parser
             return parse_error(parsed_structure);
         }
 
-        log_parse_attempt(parsed_structure);
+        log_parse_attempt(parsed_structure, ts[0].value);
 
         if (ts[0].type == wanted)
         {
@@ -145,6 +145,7 @@ struct token_parser
                                 ts.subspan(1),
                                 std::make_unique<ast_node_t>(leaf_node{ts[0]}));
         }
+        log_parse_error(parsed_structure, ts[0].value);
         return parse_error(parsed_structure, ts[0]);
     };
 };
@@ -170,6 +171,7 @@ struct program_parser
 
         if (!are_all_parse_results_valid(program))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(program.back());
         }
 
@@ -231,6 +233,7 @@ struct binary_op_parser
 
         if (!are_all_parse_results_valid(bin_op))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(bin_op.back());
         }
 
@@ -271,6 +274,7 @@ struct unary_op_parser
 
         if (!are_all_parse_results_valid(unary_op))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(unary_op.back());
         }
 
@@ -310,6 +314,7 @@ struct expression_parser
 
         if (!is_any_parse_result_valid(expression))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(expression.back());
         }
 
@@ -350,6 +355,7 @@ struct func_def_parser
 
         if (!are_all_parse_results_valid(func_def))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(func_def.back());
         }
 
@@ -386,6 +392,7 @@ struct procedure_def_parser
 
         if (!are_all_parse_results_valid(procedure_def))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(procedure_def.back());
         }
 
@@ -421,6 +428,7 @@ struct signature_parser
 
         if (!are_all_parse_results_valid(signature))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(signature.back());
         }
 
@@ -458,6 +466,7 @@ struct return_stmt_parser
 
         if (!are_all_parse_results_valid(return_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(return_stmt.back());
         }
 
@@ -496,6 +505,7 @@ struct parameter_def_parser
 
         if (!are_all_parse_results_valid(parameter_def))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(parameter_def.back());
         }
 
@@ -557,6 +567,7 @@ struct var_decl_parser
 
         if (!are_all_parse_results_valid(var_decl))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(var_decl.back());
         }
 
@@ -594,6 +605,7 @@ struct var_init_parser
 
         if (!are_all_parse_results_valid(var_init))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(var_init.back());
         }
 
@@ -631,6 +643,7 @@ struct var_assignment_parser
 
         if (!are_all_parse_results_valid(var_assignment))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(var_assignment.back());
         }
 
@@ -665,6 +678,7 @@ struct call_parser
 
         if (!are_all_parse_results_valid(call))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(call.back());
         }
 
@@ -704,6 +718,7 @@ struct parameter_pass_parser
 
         if (!are_all_parse_results_valid(parameter_pass))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(parameter_pass.back());
         }
 
@@ -766,6 +781,7 @@ struct statement_parser
 
         if (!is_any_parse_result_valid(statement))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(statement.back());
         }
 
@@ -802,6 +818,7 @@ struct block_parser
 
         if (!are_all_parse_results_valid(block))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(block.back());
         }
 
@@ -859,6 +876,7 @@ struct control_block_parser
 
         if (!is_any_parse_result_valid(control_block))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(control_block.back());
         }
 
@@ -888,6 +906,7 @@ struct if_stmt_parser
 
         if (!are_all_parse_results_valid(if_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(if_stmt.back());
         }
 
@@ -928,6 +947,7 @@ struct else_if_stmt_parser
 
         if (!are_all_parse_results_valid(else_if_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(else_if_stmt.back());
         }
 
@@ -963,6 +983,7 @@ struct else_stmt_parser
 
         if (!are_all_parse_results_valid(else_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(else_stmt.back());
         }
 
@@ -1005,6 +1026,7 @@ struct for_loop_parser
 
         if (!are_all_parse_results_valid(for_loop))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(for_loop.back());
         }
 
@@ -1059,6 +1081,7 @@ struct while_loop_parser
 
         if (!are_all_parse_results_valid(while_loop))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(while_loop.back());
         }
 
@@ -1101,6 +1124,7 @@ struct switch_parser
 
         if (!are_all_parse_results_valid(switch_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(switch_stmt.back());
         }
 
@@ -1169,6 +1193,7 @@ struct case_parser
 
         if (!are_all_parse_results_valid(case_stmt))
         {
+            log_parse_error(parsed_structure);
             return std::get<parse_error>(case_stmt.back());
         }
 
