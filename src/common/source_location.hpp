@@ -46,6 +46,8 @@ struct source_location
         line_end{line_end},
         col_end{col_end}
     {}
+
+    bool operator==(const source_location&) const = default;
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(

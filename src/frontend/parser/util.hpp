@@ -57,6 +57,8 @@ std::span<token>& get_token_stream(parse_result& result);
 
 std::unique_ptr<ast_node_t>& get_node(parse_result& result);
 
+parse_error get_parse_error(parse_result& result);
+
 source_location get_source_location_from_compound(std::vector<parse_result>& nodes);
 
 source_location get_source_location_from_compound(

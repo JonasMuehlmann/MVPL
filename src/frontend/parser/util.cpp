@@ -36,6 +36,11 @@ std::unique_ptr<ast_node_t>& get_node(parse_result& result)
     return std::get<1>(std::get<parse_content>(result));
 }
 
+parse_error get_parse_error(parse_result& result)
+{
+    return std::get<parse_error>(result);
+}
+
 source_location get_source_location_from_compound(std::vector<parse_result>& nodes)
 {
     auto first_node = get_node(nodes.front()).get();

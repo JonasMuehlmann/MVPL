@@ -40,6 +40,8 @@ struct token
     token(enum token_type type, std::string_view value, source_location location) :
         value{value}, type{type}, source_location_(location)
     {}
+
+    bool operator==(const token&) const = default;
 };
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED(token, value, type, source_location_);
