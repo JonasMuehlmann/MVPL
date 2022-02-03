@@ -82,5 +82,15 @@ bool are_all_parse_results_valid(std::vector<parse_result>& results);
 
 void log_parse_attempt(std::string_view parsed_structure, std::string_view next_lexeme);
 void log_parse_attempt(std::string_view parsed_structure);
+
+
+void log_parse_error(std::string_view parsed_structure,
+                     std::string_view next_lexeme,
+                     std::string_view wanted_lexeme);
+
 void log_parse_error(std::string_view parsed_structure, std::string_view next_lexeme);
 void log_parse_error(std::string_view parsed_structure);
+
+
+void log_parse_success(std::string_view parsed_structure, std::string_view next_lexeme);
+void log_parse_success(std::string_view parsed_structure);
