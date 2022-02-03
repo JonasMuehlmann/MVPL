@@ -136,6 +136,8 @@ struct token_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         if (ts[0].type == wanted)
         {
             // return {ts.subspan(1), ast_node_t{empty_node{}}};
@@ -157,6 +159,8 @@ struct program_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto program = combinators::many<combinators::any<var_init_parser,
                                                           var_decl_parser,
@@ -201,6 +205,8 @@ struct binary_op_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto bin_op =
             combinators::all<combinators::any<token_parser<token_type::PLUS>,
@@ -254,6 +260,8 @@ struct unary_op_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto unary_op = combinators::all<
 
             combinators::any<token_parser<token_type::NOT>,
@@ -290,6 +298,8 @@ struct expression_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         // TODO: Handle parenthesesed expressions
         auto expression =
@@ -332,6 +342,8 @@ struct func_def_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto func_def = combinators::all<token_parser<token_type::FUNCTION>,
                                          signature_parser,
                                          block_parser>::parse(ts);
@@ -365,6 +377,8 @@ struct procedure_def_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto procedure_def = combinators::all<token_parser<token_type::PROCEDURE>,
                                               signature_parser,
@@ -400,6 +414,8 @@ struct signature_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto signature = combinators::all<token_parser<token_type::IDENTIFIER>,
                                           parameter_def_parser>::parse(ts);
 
@@ -425,12 +441,15 @@ struct return_stmt_parser
 {
     static constexpr std::string_view parsed_structure = "return statement";
 
+    // TODO: The expression should be optional, to allow returning in procedures
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto return_stmt =
             combinators::all<token_parser<token_type::RETURN>,
@@ -464,6 +483,8 @@ struct parameter_def_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto parameter_def = combinators::surrounded<
             token_parser<token_type::LPAREN>,
@@ -527,6 +548,8 @@ struct var_decl_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto var_decl =
             combinators::all<token_parser<token_type::LET>,
                              token_parser<token_type::IDENTIFIER>,
@@ -559,6 +582,8 @@ struct var_init_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto var_init =
             combinators::all<token_parser<token_type::LET>,
@@ -596,6 +621,8 @@ struct var_assignment_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto var_assignment =
             combinators::all<token_parser<token_type::IDENTIFIER>,
                              token_parser<token_type::ASSIGN>,
@@ -631,6 +658,8 @@ struct call_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto call = combinators::all<token_parser<token_type::IDENTIFIER>,
                                      parameter_pass_parser>::parse(ts);
 
@@ -662,6 +691,8 @@ struct parameter_pass_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto parameter_pass = combinators::surrounded<
             token_parser<token_type::LPAREN>,
@@ -724,6 +755,8 @@ struct statement_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto statement = combinators::any<
             var_assignment_parser,
             var_init_parser,
@@ -757,6 +790,8 @@ struct block_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto block = combinators::all<
             token_parser<token_type::LBRACE>,
@@ -813,6 +848,8 @@ struct control_block_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto control_block = combinators::any<if_stmt_parser,
                                               else_if_stmt_parser,
                                               else_stmt_parser,
@@ -839,6 +876,8 @@ struct if_stmt_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto if_stmt =
             combinators::all<token_parser<token_type::IF>,
@@ -875,6 +914,8 @@ struct else_if_stmt_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto else_if_stmt =
             combinators::all<token_parser<token_type::ELSE>,
@@ -915,6 +956,8 @@ struct else_stmt_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto else_stmt =
             combinators::all<token_parser<token_type::ELSE>, block_parser>::parse(ts);
 
@@ -944,6 +987,8 @@ struct for_loop_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto for_loop = combinators::all<
             token_parser<token_type::FOR>,
@@ -1003,6 +1048,8 @@ struct while_loop_parser
             return parse_error(parsed_structure);
         }
 
+        log_parse_attempt(parsed_structure);
+
         auto while_loop =
             combinators::all<token_parser<token_type::WHILE>,
                              combinators::surrounded<token_parser<token_type::LPAREN>,
@@ -1039,6 +1086,8 @@ struct switch_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
         auto switch_stmt = combinators::all<
             token_parser<token_type::SWITCH>,
@@ -1105,6 +1154,8 @@ struct case_parser
         {
             return parse_error(parsed_structure);
         }
+
+        log_parse_attempt(parsed_structure);
 
 
         auto case_stmt =
