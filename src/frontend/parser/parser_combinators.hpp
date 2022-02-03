@@ -82,6 +82,23 @@ struct optional
             return results;
         }
 
+        // If an error occurred after consuming at least one token,
+        // there is no missing optional, there is an error, so we don't reset the token
+        // stream
+        // FIX: Well, this prevents showing wrong error locations,
+        // but swallows errors and produces bad ASTs
+        // The old approach might have been closer to the solution
+        // TODO: A missing optional node should contain the errors it encountered
+        // TODO: If a parser after a missing optional fails,
+        // the missing optional's error should be returned
+        // if (get_parse_error(results.back()).token_ != ts[0])
+        // {
+        // auto dist = std::distance(
+        //     ts.begin(),
+        //     std::ranges::find(ts, get_parse_error(results.back()).token_));
+
+        // ts = ts.subspan(dist);
+        // }
         parse_result new_node = parse_content{
             ts,
             std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)};
@@ -196,4 +213,4 @@ struct surrounded
     }
 };
 
-}    // namespace combinators
+};    // namespace combinators
