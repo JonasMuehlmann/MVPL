@@ -78,5 +78,7 @@ bool try_add_parse_result(std::vector<parse_result>&& cur_results,
                           bool                        overwrite_errors = false);
 
 bool is_any_parse_result_valid(std::vector<parse_result>& results);
-
 bool are_all_parse_results_valid(std::vector<parse_result>& results);
+
+void log_parse_attempt(std::string_view parsed_structure);
+void log_parse_error(std::string_view parsed_structure);

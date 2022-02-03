@@ -20,6 +20,8 @@
 
 #include "frontend/parser/util.hpp"
 
+#include <iostream>
+
 
 //****************************************************************************//
 //                              Helper functions                              //
@@ -164,4 +166,13 @@ bool are_all_parse_results_valid(std::vector<parse_result>& results)
     return std::ranges::all_of(results, [](auto& parse_result_) {
         return std::holds_alternative<parse_content>(parse_result_);
     });
+}
+
+void log_parse_attempt(std::string_view parsed_structure)
+{
+    std::cout << "Attempting to parse " << parsed_structure << '\n';
+}
+void log_parse_error(std::string_view parsed_structure)
+{
+    std::cout << "Failed to parse " << parsed_structure << '\n';
 }
