@@ -516,7 +516,21 @@ struct parameter_def_parser
         if (!are_all_parse_results_valid(parameter_def))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(parameter_def.back());
+
+            parse_error err;
+
+            if (parameter_def.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(parameter_def.end() - 2))))
+            {
+                err = get_parse_error(*(parameter_def.end() - 2));
+            }
+            else
+            {
+                err = get_parse_error(parameter_def.back());
+            }
+
+            return err;
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -734,7 +748,23 @@ struct parameter_pass_parser
         if (!are_all_parse_results_valid(parameter_pass))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(parameter_pass.back());
+
+            parse_error err;
+
+            if (parameter_pass.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(parameter_pass.end() - 2))))
+            {
+                err = std::get<missing_optional_node>(
+                          *get_node(*(parameter_pass.end() - 2)))
+                          .encountered_error;
+            }
+            else
+            {
+                err = get_parse_error(parameter_pass.back());
+            }
+
+            return err;
         }
 
         auto parameters = std::vector<std::string_view>();
@@ -835,7 +865,22 @@ struct block_parser
         if (!are_all_parse_results_valid(block))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(block.back());
+
+            parse_error err;
+
+            if (block.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(block.end() - 2))))
+            {
+                err = std::get<missing_optional_node>(*get_node(*(block.end() - 2)))
+                          .encountered_error;
+            }
+            else
+            {
+                err = get_parse_error(block.back());
+            }
+
+            return err;
         }
 
         auto new_location = get_source_location_from_compound(block);
@@ -1047,7 +1092,22 @@ struct for_loop_parser
         if (!are_all_parse_results_valid(for_loop))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(for_loop.back());
+
+            parse_error err;
+
+            if (for_loop.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(for_loop.end() - 2))))
+            {
+                err = std::get<missing_optional_node>(*get_node(*(for_loop.end() - 2)))
+                          .encountered_error;
+            }
+            else
+            {
+                err = get_parse_error(for_loop.back());
+            }
+
+            return err;
         }
 
 
@@ -1147,7 +1207,23 @@ struct switch_parser
         if (!are_all_parse_results_valid(switch_stmt))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(switch_stmt.back());
+
+            parse_error err;
+
+            if (switch_stmt.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(switch_stmt.end() - 2))))
+            {
+                err =
+                    std::get<missing_optional_node>(*get_node(*(switch_stmt.end() - 2)))
+                        .encountered_error;
+            }
+            else
+            {
+                err = get_parse_error(switch_stmt.back());
+            }
+
+            return err;
         }
 
         auto            new_ts = get_token_stream(switch_stmt.back());
@@ -1217,7 +1293,22 @@ struct case_parser
         if (!are_all_parse_results_valid(case_stmt))
         {
             log_parse_error(parsed_structure);
-            return std::get<parse_error>(case_stmt.back());
+
+            parse_error err;
+
+            if (case_stmt.size() > 1
+                && std::holds_alternative<missing_optional_node>(
+                    *get_node(*(case_stmt.end() - 2))))
+            {
+                err = std::get<missing_optional_node>(*get_node(*(case_stmt.end() - 2)))
+                          .encountered_error;
+            }
+            else
+            {
+                err = get_parse_error(case_stmt.back());
+            }
+
+            return err;
         }
 
 

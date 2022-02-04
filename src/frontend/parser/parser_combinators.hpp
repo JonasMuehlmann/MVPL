@@ -88,9 +88,9 @@ struct optional
         // FIX: Well, this prevents showing wrong error locations,
         // but swallows errors and produces bad ASTs
         // The old approach might have been closer to the solution
-        // TODO: A missing optional node should contain the errors it encountered
         // TODO: If a parser after a missing optional fails,
         // the missing optional's error should be returned
+
         // if (get_parse_error(results.back()).token_ != ts[0])
         // {
         // auto dist = std::distance(
