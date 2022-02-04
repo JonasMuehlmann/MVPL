@@ -26,6 +26,8 @@
 using json = nlohmann::ordered_json;
 using namespace std::literals::string_view_literals;
 
+parse_error::parse_error() : parsed_structure_{}, token_{} {}
+
 parse_error::parse_error(std::string_view parsed_structure) :
     parsed_structure_(parsed_structure),
     token_(token_type::END_TOKEN, ""sv, source_location())

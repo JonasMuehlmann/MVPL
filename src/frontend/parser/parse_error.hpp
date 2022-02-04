@@ -29,6 +29,8 @@ struct parse_error
     std::string_view parsed_structure_;
     token            token_;
 
+    parse_error();
+
     explicit parse_error(std::string_view parsed_structure);
 
     parse_error(std::string_view parsed_structure, token token_);
