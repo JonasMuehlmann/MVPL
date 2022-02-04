@@ -210,3 +210,7 @@ case_node::case_node(std::unique_ptr<ast_node_t>& value,
     value{std::move(value)},
     body{std::move(body)}
 {}
+
+missing_optional_node::missing_optional_node(parse_error encountered_error) :
+    encountered_error(encountered_error)
+{}

@@ -101,7 +101,8 @@ struct optional
         // }
         parse_result new_node = parse_content{
             ts,
-            std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>)};
+            std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>,
+                                         get_parse_error(results.back()))};
 
         results.clear();
         results.push_back(std::move(new_node));

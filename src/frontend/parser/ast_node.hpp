@@ -28,6 +28,7 @@
 #include "common/macros.hpp"
 #include "common/source_location.hpp"
 #include "frontend/lexer/token.hpp"
+#include "frontend/parser/parse_error.hpp"
 #include "nlohmann/json.hpp"
 #include "token_type.hpp"
 
@@ -93,7 +94,11 @@ struct ast_node
 };
 
 struct missing_optional_node
-{};
+{
+    parse_error encountered_error;
+
+    explicit missing_optional_node(parse_error encountered_error);
+};
 
 struct leaf_node final : public ast_node
 {
