@@ -249,7 +249,7 @@ struct binary_op_parser
                                          get_source_location_from_compound(bin_op));
 
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(bin_op.back()),
                             std::move(new_node));
@@ -290,7 +290,7 @@ struct unary_op_parser
                                          get_source_location_from_compound(unary_op));
 
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(unary_op.back()),
                             std::move(new_node));
@@ -378,7 +378,7 @@ struct func_def_parser
                                          get_source_location_from_compound(func_def));
 
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(func_def.back()),
                             std::move(new_node));
@@ -416,7 +416,7 @@ struct procedure_def_parser
             get_source_location_from_compound(procedure_def));
 
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(procedure_def.back()),
                             std::move(new_node));
@@ -452,7 +452,7 @@ struct signature_parser
             get_node(signature[1]),
             get_source_location_from_compound(signature));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(signature.back()),
                             std::move(new_node));
@@ -490,7 +490,7 @@ struct return_stmt_parser
             get_node(return_stmt[1]),
             get_source_location_from_compound(return_stmt));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(return_stmt.back()),
                             std::move(new_node));
@@ -570,7 +570,7 @@ struct parameter_def_parser
                                              source_location);
         }
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(parameter_def.back()),
                             std::move(new_node));
@@ -607,7 +607,7 @@ struct var_decl_parser
             std::get<leaf_node>(*get_node(var_decl[1])).value,
             get_source_location_from_compound(var_decl));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_decl.back()),
                             std::move(new_node));
@@ -647,7 +647,7 @@ struct var_init_parser
             get_node(var_init[3]),
             get_source_location_from_compound(var_init));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_init.back()),
                             std::move(new_node));
@@ -686,7 +686,7 @@ struct var_assignment_parser
             get_node(var_assignment[2]),
             get_source_location_from_compound(var_assignment));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_assignment.back()),
                             std::move(new_node));
@@ -722,7 +722,7 @@ struct call_parser
                                          get_node(call[1]),
                                          get_source_location_from_compound(call));
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(call.back()),
                             std::move(new_node));
@@ -804,7 +804,7 @@ struct parameter_pass_parser
                                              source_location);
         }
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(parameter_pass.back()),
                             std::move(new_node));
@@ -914,7 +914,7 @@ struct block_parser
             new_node = std::make_unique<ast_node_t>(
                 std::in_place_type<block_node>, std::move(statements), new_location);
         }
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(block.back()),
                             std::move(new_node));
@@ -984,7 +984,7 @@ struct if_stmt_parser
                                                      get_node(if_stmt[4]),
                                                      new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(if_stmt.back()),
                             std::move(new_node));
@@ -1027,7 +1027,7 @@ struct else_if_stmt_parser
                                          get_node(else_if_stmt[5]),
                                          new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(else_if_stmt.back()),
                             std::move(new_node));
@@ -1061,7 +1061,7 @@ struct else_stmt_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<else_stmt_node>, get_node(else_stmt[1]), new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(else_stmt.back()),
                             std::move(new_node));
@@ -1138,7 +1138,7 @@ struct for_loop_parser
                                                      get_node(for_loop[7]),
                                                      new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(for_loop.back()),
                             std::move(new_node));
@@ -1179,7 +1179,7 @@ struct while_loop_parser
                                          get_node(while_loop[4]),
                                          new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(while_loop.back()),
                             std::move(new_node));
@@ -1266,7 +1266,7 @@ struct switch_parser
                                                      body,
                                                      new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(
             std::in_place_type<parse_content>, new_ts, std::move(new_node));
     }
@@ -1353,7 +1353,7 @@ struct case_parser
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<case_node>, get_node(case_stmt[1]), body, new_location);
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(
             std::in_place_type<parse_content>, new_ts, std::move(new_node));
     }
