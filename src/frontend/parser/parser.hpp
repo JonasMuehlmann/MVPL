@@ -329,13 +329,18 @@ struct expression_parser
             auto bin_op = binary_op_parser::parse(get_token_stream(expression.back()),
                                                   expression.back());
 
-            if (std::holds_alternative<parse_content>(bin_op))
+            if (std::holds_alternative<parse_error>(bin_op))
+            {
+                log_parse_error(parsed_structure);
+                return std::get<parse_error>(bin_op);
+            }
+            else
             {
                 expression.back() = std::move(bin_op);
             }
         }
 
-        log_parse_error(parsed_structure, ts[0].value);
+        log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(expression.back()),
                             std::move(get_node(expression.back())));

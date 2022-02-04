@@ -108,15 +108,15 @@ struct optional
         {
             err = get_parse_error(results.back());
         }
-            parse_result new_node = parse_content{
-                ts,
-                std::make_unique<ast_node_t>(std::in_place_type<missing_optional_node>,
-                                             err)};
+        parse_result new_node =
+            parse_content{ts,
+                          std::make_unique<ast_node_t>(
+                              std::in_place_type<missing_optional_node>, err)};
 
-            results.clear();
-            results.push_back(std::move(new_node));
+        results.clear();
+        results.push_back(std::move(new_node));
 
-            return results;
+        return results;
     }
 };
 template <typename... Parsers>
