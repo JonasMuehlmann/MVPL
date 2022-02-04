@@ -37,6 +37,8 @@ struct token
     token_type       type;
     source_location  source_location_;
 
+    token() : value{}, type{}, source_location_{} {}
+
     token(enum token_type type, std::string_view value, source_location location) :
         value{value}, type{type}, source_location_(location)
     {}
