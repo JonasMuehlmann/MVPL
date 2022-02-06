@@ -49,7 +49,7 @@ TEST(TestBinaryOpParser, Complex)
         token(token_type::LITERAL, "5"sv, source_location()),
         token(token_type::MULTIPLICATION, "*"sv, source_location()),
         token(token_type::LITERAL, "2"sv, source_location()),
-        token(token_type::MULTIPLICATION, "/"sv, source_location()),
+        token(token_type::DIVISION, "/"sv, source_location()),
         token(token_type::LITERAL, "3"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
@@ -71,32 +71,32 @@ TEST(TestBinaryOpParser, Complex)
     auto lhs = std::get<leaf_node>(*(bin_op.lhs));
     ASSERT_EQ(lhs.token, token_type::LITERAL);
 
-    // 5 * 2 / 3
+    // (5 * 2) / 3
     ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(bin_op.rhs)));
     auto rhs = std::move(std::get<binary_op_node>(*(bin_op.rhs)));
 
-    // 5
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rhs.lhs)));
-    auto rlhs = std::move(std::get<leaf_node>(*(rhs.lhs)));
-    ASSERT_EQ(rlhs.token, token_type::LITERAL);
-
-    // 2 / 3
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(rhs.rhs)));
-    auto rrhs = std::move(std::get<binary_op_node>(*(rhs.rhs)));
-
-    // 2
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.lhs)));
-    auto rrlhs = std::move(std::get<leaf_node>(*(rrhs.lhs)));
-    ASSERT_EQ(rrlhs.token, token_type::LITERAL);
+    // 5 * 2
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(rhs.lhs)));
+    auto rlhs = std::move(std::get<binary_op_node>(*(rhs.lhs)));
 
     // 3
-    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rrhs.rhs)));
-    auto rrrhs = std::move(std::get<leaf_node>(*(rrhs.rhs)));
-    ASSERT_EQ(rrrhs.token, token_type::LITERAL);
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rhs.rhs)));
+    auto rrhs = std::move(std::get<leaf_node>(*(rhs.rhs)));
+    ASSERT_EQ(rrhs.token, token_type::LITERAL);
+
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rlhs.lhs)));
+    auto rllhs = std::move(std::get<leaf_node>(*(rlhs.lhs)));
+    ASSERT_EQ(rllhs.token, token_type::LITERAL);
+
+    // 2
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(rlhs.rhs)));
+    auto rlrhs = std::move(std::get<leaf_node>(*(rlhs.rhs)));
+    ASSERT_EQ(rlrhs.token, token_type::LITERAL);
 }
 
 //****************************************************************************//
-//                               unar_op_parser                               //
+//                               unary_op_parser                              //
 //****************************************************************************//
 TEST(TestUnaryOpParser, NotIdentifier)
 {
