@@ -44,6 +44,7 @@ TEST(TestProgramParser, TwoVarDecls)
 TEST(TestBinaryOpParser, Complex)
 {
     std::array token_stream_raw{
+        // NOTE: Imagine token(token_type::LITERAL, "5"sv, source_location())  here
         token(token_type::PLUS, "+"sv, source_location()),
         token(token_type::LITERAL, "5"sv, source_location()),
         token(token_type::MULTIPLICATION, "*"sv, source_location()),
@@ -53,6 +54,7 @@ TEST(TestBinaryOpParser, Complex)
 
     std::span<token> token_stream(token_stream_raw);
 
+    // 5
     auto lhs_ = token_parser<token_type::LITERAL>::parse(token_stream.subspan(1, 1));
 
     auto result = binary_op_parser::parse(token_stream, lhs_);

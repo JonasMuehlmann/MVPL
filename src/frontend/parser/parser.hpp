@@ -292,33 +292,31 @@ parse_result expression_parser::parse(std::span<token> ts,
         return std::get<parse_error>(lhs.back());
     }
 
-    while (LUT_TOKEN_TO_PRECEDENCE.at(
-               static_cast<size_t>(get_token_stream(lhs.back())[0].type))
-           > previous_operator_precedence)
+    // NOTE: Passing the lhs avoids indirect left-recursion
+    while (!get_token_stream(lhs.back()).empty()
+           && LUT_TOKEN_TO_PRECEDENCE.at(
+                  static_cast<size_t>(get_token_stream(lhs.back())[0].type))
+                  > previous_operator_precedence)
     {
-        // NOTE: Passing the lhs avoids indirect left-recursion
-        if (!(get_token_stream(lhs.back()).empty()))
-        {
-            auto bin_op = binary_op_parser::parse(
-                get_token_stream(lhs.back()),
-                lhs.back(),
-                LUT_TOKEN_TO_PRECEDENCE.at(
-                    static_cast<size_t>(get_token_stream(lhs.back())[0].type)));
+        auto bin_op = binary_op_parser::parse(
+            get_token_stream(lhs.back()),
+            lhs.back(),
+            LUT_TOKEN_TO_PRECEDENCE.at(
+                static_cast<size_t>(get_token_stream(lhs.back())[0].type)));
 
-            if (std::holds_alternative<parse_error>(bin_op))
-            {
-                // TODO: To simplify error handling, could we build a global error
-                // list and and throw the one, which parsed the most tokens? FIX:
-                // This gives more correct error messages, but gives false errors
-                // when parsing a non-binary-operation expression
-                // log_parse_error(parsed_structure);
-                //
-                // return std::get<parse_error>(bin_op);
-            }
-            else
-            {
-                lhs.back() = std::move(bin_op);
-            }
+        if (std::holds_alternative<parse_error>(bin_op))
+        {
+            // TODO: To simplify error handling, could we build a global error
+            // list and and throw the one, which parsed the most tokens? FIX:
+            // This gives more correct error messages, but gives false errors
+            // when parsing a non-binary-operation expression
+            // log_parse_error(parsed_structure);
+            //
+            // return std::get<parse_error>(bin_op);
+        }
+        else
+        {
+            lhs.back() = std::move(bin_op);
         }
     }
 
