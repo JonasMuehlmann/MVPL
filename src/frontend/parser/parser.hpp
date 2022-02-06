@@ -197,7 +197,6 @@ struct program_parser
     }
 };
 
-// TODO: Implement pratt parser
 // NOTE: Passing the lhs avoids indirect left-recursion
 struct binary_op_parser
 {
@@ -253,7 +252,8 @@ parse_result binary_op_parser::parse(std::span<token> ts,
         return std::get<parse_error>(bin_op.back());
     }
 
-    bin_op.push_back(expression_parser::parse(get_token_stream(bin_op.back())));
+    bin_op.push_back(expression_parser::parse(get_token_stream(bin_op.back()),
+                                              previous_operator_precedence));
 
 
     auto new_node =
