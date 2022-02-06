@@ -46,6 +46,7 @@ zircon-*,
 -cppcoreguidelines-special-member-functions,
 -hicpp-special-member-functions
 -misc-no-recursion'
+-altera-id-dependent-backward-branch
 
 
 WarningsAsErrors: '*'

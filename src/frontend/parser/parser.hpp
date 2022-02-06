@@ -60,27 +60,27 @@ const auto LUT_TOKEN_TO_PRECEDENCE = []() {
 
 
         arr[static_cast<size_t>(token_type::LPAREN)]         = 100;
+        arr[static_cast<size_t>(token_type::INCREMENT)]      = 90;
+        arr[static_cast<size_t>(token_type::DECREMENT)]      = 90;
+        arr[static_cast<size_t>(token_type::NOT)]            = 90;
+        arr[static_cast<size_t>(token_type::MULTIPLICATION)] = 80;
+        arr[static_cast<size_t>(token_type::DIVISION)]       = 80;
+        arr[static_cast<size_t>(token_type::MODULO)]         = 80;
+        arr[static_cast<size_t>(token_type::PLUS)]           = 70;
+        arr[static_cast<size_t>(token_type::MINUS)]          = 70;
+        arr[static_cast<size_t>(token_type::BINARY_AND)]     = 60;
+        arr[static_cast<size_t>(token_type::BINARY_OR)]      = 60;
+        arr[static_cast<size_t>(token_type::LSHIFT)]         = 60;
+        arr[static_cast<size_t>(token_type::RSHIFT)]         = 60;
+        arr[static_cast<size_t>(token_type::XOR)]            = 60;
         arr[static_cast<size_t>(token_type::LESS)]           = 50;
         arr[static_cast<size_t>(token_type::LESSEQ)]         = 50;
         arr[static_cast<size_t>(token_type::GREATER)]        = 50;
         arr[static_cast<size_t>(token_type::GREATEREQ)]      = 50;
         arr[static_cast<size_t>(token_type::EQUAL)]          = 50;
         arr[static_cast<size_t>(token_type::NEQUAL)]         = 50;
-        arr[static_cast<size_t>(token_type::NOT)]            = 90;
         arr[static_cast<size_t>(token_type::LOGICAL_AND)]    = 50;
         arr[static_cast<size_t>(token_type::LOGICAL_OR)]     = 50;
-        arr[static_cast<size_t>(token_type::BINARY_AND)]     = 60;
-        arr[static_cast<size_t>(token_type::BINARY_OR)]      = 60;
-        arr[static_cast<size_t>(token_type::LSHIFT)]         = 60;
-        arr[static_cast<size_t>(token_type::RSHIFT)]         = 60;
-        arr[static_cast<size_t>(token_type::XOR)]            = 60;
-        arr[static_cast<size_t>(token_type::PLUS)]           = 70;
-        arr[static_cast<size_t>(token_type::MINUS)]          = 70;
-        arr[static_cast<size_t>(token_type::MULTIPLICATION)] = 80;
-        arr[static_cast<size_t>(token_type::DIVISION)]       = 80;
-        arr[static_cast<size_t>(token_type::MODULO)]         = 80;
-        arr[static_cast<size_t>(token_type::INCREMENT)]      = 90;
-        arr[static_cast<size_t>(token_type::DECREMENT)]      = 90;
 
         return arr;
     }();
@@ -94,6 +94,7 @@ const auto LUT_TOKEN_TO_PRECEDENCE = []() {
 
 struct program_parser;
 struct binary_op_parser;
+struct expression_parser;
 struct unary_op_parser;
 struct func_def_parser;
 struct procedure_def_parser;
@@ -115,8 +116,6 @@ struct while_loop_parser;
 struct switch_parser;
 struct case_parser;
 struct statement_parser;
-struct expression_parser;
-
 
 template <token_type wanted>
 struct token_parser;
@@ -124,6 +123,7 @@ struct token_parser;
 //****************************************************************************//
 //                                   Parsers                                  //
 //****************************************************************************//
+
 template <token_type wanted>
 struct token_parser
 {
@@ -197,64 +197,136 @@ struct program_parser
     }
 };
 
-
 // TODO: Implement pratt parser
 // NOTE: Passing the lhs avoids indirect left-recursion
 struct binary_op_parser
 {
     static constexpr std::string_view parsed_structure = "binary operation";
 
-    static parse_result parse(std::span<token> ts, parse_result& lhs)
-    {
-        if (ts.empty())
-        {
-            return parse_error(parsed_structure);
-        }
-
-        log_parse_attempt(parsed_structure);
-
-        auto bin_op =
-            combinators::all<combinators::any<token_parser<token_type::PLUS>,
-                                              token_parser<token_type::MINUS>,
-                                              token_parser<token_type::MULTIPLICATION>,
-                                              token_parser<token_type::DIVISION>,
-                                              token_parser<token_type::MODULO>,
-                                              token_parser<token_type::LESS>,
-                                              token_parser<token_type::LESSEQ>,
-                                              token_parser<token_type::GREATER>,
-                                              token_parser<token_type::GREATEREQ>,
-                                              token_parser<token_type::EQUAL>,
-                                              token_parser<token_type::NEQUAL>,
-                                              token_parser<token_type::LOGICAL_AND>,
-                                              token_parser<token_type::LOGICAL_OR>,
-                                              token_parser<token_type::BINARY_AND>,
-                                              token_parser<token_type::BINARY_OR>,
-                                              token_parser<token_type::XOR>,
-                                              token_parser<token_type::LSHIFT>,
-                                              token_parser<token_type::RSHIFT>>,
-                             expression_parser>::parse(ts);
-
-        if (!are_all_parse_results_valid(bin_op))
-        {
-            log_parse_error(parsed_structure);
-            return std::get<parse_error>(bin_op.back());
-        }
-
-
-        auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
-                                         get_node(lhs),
-                                         get_node(bin_op[1]),
-                                         get_node(bin_op[0]),
-                                         get_source_location_from_compound(bin_op));
-
-
-        log_parse_success(parsed_structure);
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(bin_op.back()),
-                            std::move(new_node));
-    }
+    static parse_result parse(std::span<token> ts,
+                              parse_result&    lhs,
+                              int              previous_operator_precedence = 0);
 };
+
+struct expression_parser
+{
+    static constexpr std::string_view parsed_structure = "expression";
+
+    static parse_result parse(std::span<token> ts,
+                              int              previous_operator_precedence = 0);
+};
+
+parse_result binary_op_parser::parse(std::span<token> ts,
+                                     parse_result&    lhs,
+                                     int              previous_operator_precedence)
+{
+    if (ts.empty())
+    {
+        return parse_error(parsed_structure);
+    }
+
+    log_parse_attempt(parsed_structure);
+
+    std::vector<parse_result> bin_op =
+        combinators::all<combinators::any<token_parser<token_type::PLUS>,
+                                          token_parser<token_type::MINUS>,
+                                          token_parser<token_type::MULTIPLICATION>,
+                                          token_parser<token_type::DIVISION>,
+                                          token_parser<token_type::MODULO>,
+                                          token_parser<token_type::LESS>,
+                                          token_parser<token_type::LESSEQ>,
+                                          token_parser<token_type::GREATER>,
+                                          token_parser<token_type::GREATEREQ>,
+                                          token_parser<token_type::EQUAL>,
+                                          token_parser<token_type::NEQUAL>,
+                                          token_parser<token_type::LOGICAL_AND>,
+                                          token_parser<token_type::LOGICAL_OR>,
+                                          token_parser<token_type::BINARY_AND>,
+                                          token_parser<token_type::BINARY_OR>,
+                                          token_parser<token_type::XOR>,
+                                          token_parser<token_type::LSHIFT>,
+                                          token_parser<token_type::RSHIFT>>>::parse(ts);
+
+    if (!are_all_parse_results_valid(bin_op))
+    {
+        log_parse_error(parsed_structure);
+        return std::get<parse_error>(bin_op.back());
+    }
+
+    bin_op.push_back(expression_parser::parse(get_token_stream(bin_op.back())));
+
+
+    auto new_node =
+        std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
+                                     get_node(lhs),
+                                     get_node(bin_op[1]),
+                                     get_node(bin_op[0]),
+                                     get_source_location_from_compound(bin_op));
+
+
+    log_parse_success(parsed_structure);
+    return parse_result(std::in_place_type<parse_content>,
+                        get_token_stream(bin_op.back()),
+                        std::move(new_node));
+}
+
+parse_result expression_parser::parse(std::span<token> ts,
+                                      int              previous_operator_precedence)
+{
+    if (ts.empty())
+    {
+        return parse_error(parsed_structure);
+    }
+
+    log_parse_attempt(parsed_structure);
+
+    // TODO: Handle parenthesesed expressions
+    auto lhs = combinators::any<unary_op_parser,
+                                call_parser,
+                                token_parser<token_type::LITERAL>,
+                                token_parser<token_type::IDENTIFIER>>::parse(ts);
+
+    if (!is_any_parse_result_valid(lhs))
+    {
+        log_parse_error(parsed_structure);
+        return std::get<parse_error>(lhs.back());
+    }
+
+    while (LUT_TOKEN_TO_PRECEDENCE.at(
+               static_cast<size_t>(get_token_stream(lhs.back())[0].type))
+           > previous_operator_precedence)
+    {
+        // NOTE: Passing the lhs avoids indirect left-recursion
+        if (!(get_token_stream(lhs.back()).empty()))
+        {
+            auto bin_op = binary_op_parser::parse(
+                get_token_stream(lhs.back()),
+                lhs.back(),
+                LUT_TOKEN_TO_PRECEDENCE.at(
+                    static_cast<size_t>(get_token_stream(lhs.back())[0].type)));
+
+            if (std::holds_alternative<parse_error>(bin_op))
+            {
+                // TODO: To simplify error handling, could we build a global error
+                // list and and throw the one, which parsed the most tokens? FIX:
+                // This gives more correct error messages, but gives false errors
+                // when parsing a non-binary-operation expression
+                // log_parse_error(parsed_structure);
+                //
+                // return std::get<parse_error>(bin_op);
+            }
+            else
+            {
+                lhs.back() = std::move(bin_op);
+            }
+        }
+    }
+
+    log_parse_success(parsed_structure);
+    return parse_result(std::in_place_type<parse_content>,
+                        get_token_stream(lhs.back()),
+                        std::move(get_node(lhs.back())));
+}
 
 struct unary_op_parser
 {
@@ -294,56 +366,6 @@ struct unary_op_parser
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(unary_op.back()),
                             std::move(new_node));
-    }
-};
-
-struct expression_parser
-{
-    static constexpr std::string_view parsed_structure = "expression";
-
-    static parse_result parse(std::span<token> ts)
-    {
-        if (ts.empty())
-        {
-            return parse_error(parsed_structure);
-        }
-
-        log_parse_attempt(parsed_structure);
-
-        // TODO: Handle parenthesesed expressions
-        auto expression =
-            combinators::any<unary_op_parser,
-                             call_parser,
-                             token_parser<token_type::LITERAL>,
-                             token_parser<token_type::IDENTIFIER>>::parse(ts);
-
-        if (!is_any_parse_result_valid(expression))
-        {
-            log_parse_error(parsed_structure);
-            return std::get<parse_error>(expression.back());
-        }
-
-        // NOTE: Passing the lhs avoids indirect left-recursion
-        if (!(get_token_stream(expression.back()).empty()))
-        {
-            auto bin_op = binary_op_parser::parse(get_token_stream(expression.back()),
-                                                  expression.back());
-
-            if (std::holds_alternative<parse_error>(bin_op))
-            {
-                log_parse_error(parsed_structure);
-                return std::get<parse_error>(bin_op);
-            }
-            else
-            {
-                expression.back() = std::move(bin_op);
-            }
-        }
-
-        log_parse_success(parsed_structure);
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(expression.back()),
-                            std::move(get_node(expression.back())));
     }
 };
 
@@ -810,6 +832,7 @@ struct parameter_pass_parser
                             std::move(new_node));
     }
 };
+
 struct statement_parser
 {
     static constexpr std::string_view parsed_structure = "statement";
@@ -847,6 +870,7 @@ struct statement_parser
         return std::move(statement[0]);
     }
 };
+
 struct block_parser
 {
     static constexpr std::string_view parsed_structure = "code block";
@@ -1358,9 +1382,11 @@ struct case_parser
             std::in_place_type<parse_content>, new_ts, std::move(new_node));
     }
 };
+
 //****************************************************************************//
 //                                 Public API                                 //
 //****************************************************************************//
+
 inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
 {
     auto result = program_parser::parse(ts);
