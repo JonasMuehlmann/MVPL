@@ -7,7 +7,7 @@ on:
     branches: [ main ]
   
 env:
-  CXX: clang++
+  CXX: clang++-13
   
 jobs:
   build:
