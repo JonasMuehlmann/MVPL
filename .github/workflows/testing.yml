@@ -26,7 +26,7 @@ jobs:
             sudo ./llvm.sh 13
 
     - name: Build
-      run: ./build_tests.sh
+      run: ./build_tests.sh; tree cmake-build-debug
 
     - name: Test
       run: ./run_tests.sh
