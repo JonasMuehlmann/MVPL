@@ -26,7 +26,7 @@
 #include <unordered_set>
 
 #include "common/enum_range.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::ordered_json;
 

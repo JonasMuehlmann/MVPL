@@ -38,7 +38,7 @@
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_operations/retrieve_source_location.hpp"
 #include "frontend/parser/util.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include "parser.hpp"
 #include "token_type.hpp"
 

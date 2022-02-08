@@ -25,7 +25,7 @@
 #include <string_view>
 
 #include "common/macros.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include "source_location.hpp"
 #include "token_type.hpp"
 

@@ -28,7 +28,7 @@
 #include "frontend/lexer/token_type.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_node_type.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::ordered_json;
 

@@ -29,7 +29,7 @@
 #include "common/source_location.hpp"
 #include "frontend/lexer/token.hpp"
 #include "frontend/parser/parse_error.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include "token_type.hpp"
 
 struct program_node;
