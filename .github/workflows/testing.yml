@@ -5,7 +5,10 @@ on:
     branches: [ '*' ]
   pull_request:
     branches: [ main ]
-
+  
+env:
+  CXX: clang++
+  
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
@@ -15,6 +18,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Get dependencies
+      run: |
+            sudo apt update
+            sudo apt install clang
 
     - name: Build
       run: ./build_tests.sh
