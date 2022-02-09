@@ -25,6 +25,7 @@
 #include <string>
 
 #include "common/util.hpp"
+#include "docopt.h"
 #include "frontend/lexer/lexer.hpp"
 #include "frontend/lexer/token.hpp"
 #include "frontend/lexer/token_type.hpp"
@@ -32,14 +33,41 @@
 #include "frontend/parser/ast_node_type.hpp"
 #include "frontend/parser/parser.hpp"
 
-// TODO: Add CLI flags for building and printing up to: tokenstream, AST, bytecode.
+static const std::string options =
+    R"(MVPL - The minimum viable programming language.
+
+    Usage:
+        mvpl -h
+        mvpl [-Stasgpv] FILE
+        mvpl -r FILE
+
+    Arguments:
+        FILE    source file to process
+        STAGE:  token_stream
+                ast
+                symbol_table
+                semantic_validator
+                code_generation
+
+    Options:
+        -h --help                   show this help message and exit
+        -v --verbose                print extra output on stderr
+        -r --run                    run an already compiled program
+        -S STAGE --stage=STAGE      stop after completinng the stage
+        -t --token-steam=FILE       write token stream to file [default: stdout]
+        -a --ast=FILE               write abstract syntax tree to file [default: stdout]
+        -s --symbol-table=FILE      write program's symbol tabke to file [default: stdout]
+        -g --generated-code=FILE    write generated code to file [default: stdout]
+        -p --program-output=FILE    write run program's output to file [default: stdout]
+
+    )";
+
 int main(int argc, char* argv[])
 {
-    if (argc == 1)
-    {
-        return 1;
-    }
-    std::ifstream source_stream(argv[1]);
+    std::map<std::string, docopt::value> args =
+        docopt::docopt(options, {argv + 1, argv + argc}, true);
+
+    std::ifstream source_stream(args["FILE"].asString());
     std::string   source_code((std::istreambuf_iterator<char>(source_stream)),
                             std::istreambuf_iterator<char>());
 
