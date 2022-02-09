@@ -284,7 +284,7 @@ into an *absract syntax tree* (AST) like this:
 
 # Roadmap
 - [x] Functional lexer
-- [ ] [Functional parser](https://github.com/JonasMuehlmann/MVPL/milestone/1)
+- [x] [Functional parser](https://github.com/JonasMuehlmann/MVPL/milestone/1)
 - [ ] [Functional semantic analyser](https://github.com/JonasMuehlmann/MVPL/milestone/8)
 - [ ] [Functional code generator](https://github.com/JonasMuehlmann/MVPL/milestone/2)
 - [ ] [Functional interpreter](https://github.com/JonasMuehlmann/MVPL/milestone/3)
