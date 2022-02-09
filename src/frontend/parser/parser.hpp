@@ -94,7 +94,6 @@ const auto LUT_TOKEN_TO_PRECEDENCE = []() {
 struct program_parser;
 struct binary_op_parser;
 struct expression_parser;
-struct parenthesized_expression_parser;
 struct unary_op_parser;
 struct func_def_parser;
 struct procedure_def_parser;
@@ -197,14 +196,6 @@ struct program_parser
     }
 };
 
-struct parenthesized_expression_parser
-{
-    static constexpr std::string_view parsed_structure = "parenthesized expression";
-
-    static parse_result parse(std::span<token> ts,
-                              int              previous_operator_precedence = 0);
-};
-
 struct binary_op_parser
 {
     static constexpr std::string_view parsed_structure = "binary operation";
@@ -221,59 +212,6 @@ struct expression_parser
     static parse_result parse(std::span<token> ts,
                               int              previous_operator_precedence = 0);
 };
-
-parse_result parenthesized_expression_parser::parse(std::span<token> ts,
-                                                    int previous_operator_precedence)
-{
-    if (ts.empty())
-    {
-        return parse_error(parsed_structure);
-    }
-
-    log_parse_attempt(parsed_structure);
-
-    std::vector<parse_result> parenthesized_expression;
-    parenthesized_expression.reserve(3);
-    parenthesized_expression.push_back(token_parser<token_type::LPAREN>::parse(ts));
-
-    if (std::holds_alternative<parse_error>(parenthesized_expression.front()))
-    {
-        previous_operator_precedence = 0;
-    }
-    else
-    {
-        ts = get_token_stream(parenthesized_expression.front());
-    }
-    parenthesized_expression.push_back(
-        expression_parser::parse(ts, previous_operator_precedence));
-
-    if (std::holds_alternative<parse_error>(parenthesized_expression[1]))
-    {
-        log_parse_error(parsed_structure);
-        return std::get<parse_error>(parenthesized_expression.back());
-    }
-    parenthesized_expression.push_back(token_parser<token_type::RPAREN>::parse(
-        get_token_stream(parenthesized_expression.back())));
-
-    if (std::holds_alternative<parse_content>(parenthesized_expression.front())
-        && std::holds_alternative<parse_error>(parenthesized_expression.back()))
-    {
-        log_parse_error(parsed_structure);
-        return std::get<parse_error>(parenthesized_expression.back());
-    }
-
-
-    log_parse_success(parsed_structure);
-
-    if (std::holds_alternative<parse_content>(parenthesized_expression.front()))
-    {
-        get_token_stream(parenthesized_expression[1]) =
-            get_token_stream(parenthesized_expression[2]);
-
-        return std::move(parenthesized_expression[1]);
-    }
-    return std::move(parenthesized_expression[1]);
-}
 
 parse_result binary_op_parser::parse(std::span<token> ts,
                                      parse_result&    lhs,
@@ -312,8 +250,8 @@ parse_result binary_op_parser::parse(std::span<token> ts,
         return std::get<parse_error>(bin_op.back());
     }
 
-    bin_op.push_back(parenthesized_expression_parser::parse(
-        get_token_stream(bin_op.back()), previous_operator_precedence));
+    bin_op.push_back(expression_parser::parse(get_token_stream(bin_op.back()),
+                                              previous_operator_precedence));
 
 
     auto new_node =
@@ -341,20 +279,63 @@ parse_result expression_parser::parse(std::span<token> ts,
     log_parse_attempt(parsed_structure);
 
     // TODO: Handle parenthesesed expressions
+    // TODO: Grammer: expression := [terminal] [lparen expression rparen]
 
     // FIX: With the current implementation an expression fails to parse with a ts like
     // (5 * 5) + 1, because of the parens, should we lhs =
     // parenthesized_expression>>parse(ts)?
-    auto lhs = combinators::any<unary_op_parser,
-                                call_parser,
-                                token_parser<token_type::LITERAL>,
-                                token_parser<token_type::IDENTIFIER>>::parse(ts);
+    // auto lhs = combinators::all<
+    //     combinators::optional<token_parser<token_type::LPAREN>>,
+    //     combinators::any<unary_op_parser,
+    //                      call_parser,
+    //                      token_parser<token_type::LITERAL>,
+    //                      token_parser<token_type::IDENTIFIER>>>::parse(ts);
+
+
+    // auto lhs = combinators::any<
+    //     combinators::all<token_parser<token_type::LPAREN>,
+    //                      combinators::any<unary_op_parser,
+    //                                       call_parser,
+    //                                       token_parser<token_type::LITERAL>,
+    //                                       token_parser<token_type::IDENTIFIER>>,
+    //                      token_parser<token_type::RPAREN>>,
+    //     combinators::any<unary_op_parser,
+    //                      call_parser,
+    //                      token_parser<token_type::LITERAL>,
+    //                      token_parser<token_type::IDENTIFIER>>>::parse(ts);
+
+
+    auto lhs = combinators::any<
+        combinators::all<token_parser<token_type::LPAREN>,
+                         expression_parser,
+                         token_parser<token_type::RPAREN>>,
+        combinators::any<unary_op_parser,
+                         call_parser,
+                         token_parser<token_type::LITERAL>,
+                         token_parser<token_type::IDENTIFIER>>>::parse(ts);
 
     if (!are_all_parse_results_valid(lhs))
     {
         log_parse_error(parsed_structure);
         return std::get<parse_error>(lhs.back());
     }
+
+    std::span<token> location_start;
+    std::span<token> location_end;
+    bool             was_parenthesized = false;
+    if (lhs.size() == 3)
+    {
+        location_start = get_token_stream(lhs.front());
+        auto expr      = std::move(lhs[1]);
+        // NOTE: Is this the end of the the lhs?
+        location_end = get_token_stream(lhs.back());
+
+        lhs.clear();
+        lhs.push_back(std::move(expr));
+
+        was_parenthesized = true;
+    }
+
 
     // NOTE: Passing the lhs avoids indirect left-recursion
     while (!get_token_stream(lhs.back()).empty()
@@ -372,10 +353,10 @@ parse_result expression_parser::parse(std::span<token> ts,
         {
             // TODO: To simplify error handling, could we build a global error
             // list and and throw the one, which parsed the most tokens?
-            //
-            // FIX:
-            // This gives more correct error messages, but gives false errors
+
+            // FIX: This gives more correct error messages, but gives false errors
             // when parsing a non-binary-operation expression
+            //
             // log_parse_error(parsed_structure);
             //
             // return std::get<parse_error>(bin_op);
@@ -385,6 +366,8 @@ parse_result expression_parser::parse(std::span<token> ts,
             lhs.back() = std::move(bin_op);
         }
     }
+
+    // TODO: If we find an RPAREN here, there is a syntax error!
 
     log_parse_success(parsed_structure);
     return parse_result(std::in_place_type<parse_content>,
@@ -992,7 +975,7 @@ struct block_parser
         }
         else
         {
-            // Make sure, that we don't copy the parentheses as statements
+            // Make sure, that we don't copy the curly braces as statements
             std::for_each(
                 block.begin() + 1, block.end() - 1, [&statements](auto&& element) {
                     statements.push_back(

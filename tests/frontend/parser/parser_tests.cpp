@@ -186,6 +186,98 @@ TEST(TestExpressionParser, BinaryOp)
         std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
         token_type::LITERAL);
 }
+TEST(TestExpressionParser, BinaryOpParenthesis)
+{
+    std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::PLUS, "+"sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
+        token_type::LITERAL);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
+            .token,
+        token_type::PLUS);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
+        token_type::LITERAL);
+}
+
+TEST(TestExpressionParser, BinaryOpParenthesisComplex)
+{
+    std::array token_stream_raw{
+        token(token_type::LPAREN, "("sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::PLUS, "+"sv, source_location()),
+        token(token_type::LITERAL, "5"sv, source_location()),
+        token(token_type::RPAREN, ")"sv, source_location()),
+        token(token_type::MULTIPLICATION, "*"sv, source_location()),
+        token(token_type::LITERAL, "2"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
+        token_type::LITERAL);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
+            .token,
+        token_type::PLUS);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
+        token_type::LITERAL);
+}
+
+TEST(TestExpressionParser, BinaryOpParenthesisNested)
+{
+    std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "5"sv, source_location()),
+                                token(token_type::PLUS, "+"sv, source_location()),
+                                token(token_type::LPAREN, "("sv, source_location()),
+                                token(token_type::LITERAL, "1"sv, source_location()),
+                                token(token_type::DIVISION, "/"sv, source_location()),
+                                token(token_type::LITERAL, "2"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::RPAREN, ")"sv, source_location()),
+                                token(token_type::PLUS, "*"sv, source_location()),
+                                token(token_type::LITERAL, "3"sv, source_location())};
+
+    std::span<token> token_stream(token_stream_raw);
+
+    auto result = expression_parser::parse(token_stream);
+
+    ASSERT_TRUE(std::holds_alternative<parse_content>(result));
+    ASSERT_EQ(get_token_stream(result).size(), 0);
+    ASSERT_NE(get_node(result), nullptr);
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
+        token_type::LITERAL);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
+            .token,
+        token_type::PLUS);
+    ASSERT_EQ(
+        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
+        token_type::LITERAL);
+}
 
 //****************************************************************************//
 //                               func_def_parser                              //
