@@ -82,6 +82,21 @@ foreach(dir IN ITEMS
     get_filename_component(dir ${dir} ABSOLUTE)
     list(APPEND MVPL_include_dirs  ${dir})
 endforeach()
+#****************************************************************************#
+#                                  Dependencies                              #
+#****************************************************************************#
+
+include(FetchContent)
+
+FetchContent_Declare(
+    docopt
+    GIT_REPOSITORY "https://github.com/docopt/docopt.cpp"
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+    GIT_TAG "v0.6.3"
+)
+
+FetchContent_MakeAvailable(docopt)
 
 #****************************************************************************#
 #                                Configuration                               #
@@ -93,6 +108,6 @@ add_subdirectory(benchmarks)
 
 include_directories(${MVPL_include_dirs})
 add_executable(MVPL src/main.cpp)
-target_link_libraries(MVPL PRIVATE MVPL_lib)
+target_link_libraries(MVPL PRIVATE MVPL_lib docopt)
 target_compile_options(MVPL PRIVATE ${MVPL_compile_flags})
 target_link_options(MVPL PRIVATE  ${MVPL_compile_flags})
