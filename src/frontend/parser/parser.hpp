@@ -556,7 +556,7 @@ struct return_stmt_parser
 
         auto return_stmt =
             combinators::all<token_parser<token_type::RETURN>,
-                             expression_parser,
+                             combinators::optional<expression_parser>,
                              token_parser<token_type::SEMICOLON>>::parse(ts);
 
         if (!are_all_parse_results_valid(return_stmt))
@@ -566,6 +566,10 @@ struct return_stmt_parser
         }
 
 
+        if (std::holds_alternative<missing_optional_node>(*get_node(return_stmt[1])))
+        {
+            get_node(return_stmt[1]) = nullptr;
+        }
         auto new_node = std::make_unique<ast_node_t>(
             std::in_place_type<return_stmt_node>,
             get_node(return_stmt[1]),
