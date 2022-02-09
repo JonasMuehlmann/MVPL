@@ -186,6 +186,7 @@ TEST(TestExpressionParser, BinaryOp)
         std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
         token_type::LITERAL);
 }
+
 TEST(TestExpressionParser, BinaryOpParenthesis)
 {
     std::array token_stream_raw{token(token_type::LPAREN, "("sv, source_location()),
@@ -201,16 +202,16 @@ TEST(TestExpressionParser, BinaryOpParenthesis)
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*get_node(result)));
     ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
+        std::get<leaf_node>(*(std::get<binary_op_node>(*get_node(result)).lhs)).token,
         token_type::LITERAL);
     ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
+        std::get<leaf_node>(*(std::get<binary_op_node>(*get_node(result)).operator_))
             .token,
         token_type::PLUS);
     ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
+        std::get<leaf_node>(*(std::get<binary_op_node>(*get_node(result)).rhs)).token,
         token_type::LITERAL);
 }
 
@@ -232,17 +233,32 @@ TEST(TestExpressionParser, BinaryOpParenthesisComplex)
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
-        token_type::LITERAL);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
-            .token,
-        token_type::PLUS);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
-        token_type::LITERAL);
+
+    // (5 + 5) * 2
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*get_node(result)));
+    auto bin_op = std::move((std::get<binary_op_node>(*get_node(result))));
+    ASSERT_EQ(std::get<leaf_node>(*bin_op.operator_).token, token_type::MULTIPLICATION);
+
+
+    // (5 + 5)
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(bin_op.lhs)));
+    auto lhs = std::move((std::get<binary_op_node>(*(bin_op.lhs))));
+    ASSERT_EQ(std::get<leaf_node>(*lhs.operator_).token, token_type::PLUS);
+
+
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(lhs.lhs)));
+    auto llhs = std::move((std::get<leaf_node>(*(lhs.lhs))));
+    ASSERT_EQ(llhs.token, token_type::LITERAL);
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(lhs.rhs)));
+    auto lrhs = std::move((std::get<leaf_node>(*(lhs.rhs))));
+    ASSERT_EQ(lrhs.token, token_type::LITERAL);
+
+    // 2
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(bin_op.rhs)));
+    auto rhs = std::move((std::get<leaf_node>(*(bin_op.rhs))));
+    ASSERT_EQ(rhs.token, token_type::LITERAL);
 }
 
 TEST(TestExpressionParser, BinaryOpParenthesisNested)
@@ -256,7 +272,7 @@ TEST(TestExpressionParser, BinaryOpParenthesisNested)
                                 token(token_type::LITERAL, "2"sv, source_location()),
                                 token(token_type::RPAREN, ")"sv, source_location()),
                                 token(token_type::RPAREN, ")"sv, source_location()),
-                                token(token_type::PLUS, "*"sv, source_location()),
+                                token(token_type::MULTIPLICATION, "*"sv, source_location()),
                                 token(token_type::LITERAL, "3"sv, source_location())};
 
     std::span<token> token_stream(token_stream_raw);
@@ -266,17 +282,43 @@ TEST(TestExpressionParser, BinaryOpParenthesisNested)
     ASSERT_TRUE(std::holds_alternative<parse_content>(result));
     ASSERT_EQ(get_token_stream(result).size(), 0);
     ASSERT_NE(get_node(result), nullptr);
-    ASSERT_TRUE(std::holds_alternative<binary_op_node>((*get_node(result))));
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).lhs)).token,
-        token_type::LITERAL);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).operator_))
-            .token,
-        token_type::PLUS);
-    ASSERT_EQ(
-        std::get<leaf_node>(*(std::get<binary_op_node>((*get_node(result))).rhs)).token,
-        token_type::LITERAL);
+
+    // (5 + (1 / 2)) * 3
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*get_node(result)));
+    auto bin_op = std::move((std::get<binary_op_node>(*get_node(result))));
+    ASSERT_EQ(std::get<leaf_node>(*bin_op.operator_).token, token_type::MULTIPLICATION);
+
+
+    // (5 + (1 / 2))
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(bin_op.lhs)));
+    auto lhs = std::move((std::get<binary_op_node>(*(bin_op.lhs))));
+    ASSERT_EQ(std::get<leaf_node>(*lhs.operator_).token, token_type::PLUS);
+
+
+    // 5
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(lhs.lhs)));
+    auto llhs = std::move((std::get<leaf_node>(*(lhs.lhs))));
+    ASSERT_EQ(llhs.token, token_type::LITERAL);
+
+    // (1 / 2)
+    ASSERT_TRUE(std::holds_alternative<binary_op_node>(*(lhs.rhs)));
+    auto lrhs = std::move((std::get<binary_op_node>(*(lhs.rhs))));
+    ASSERT_EQ(std::get<leaf_node>(*lrhs.operator_).token, token_type::DIVISION);
+
+    // 1
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(lrhs.lhs)));
+    auto lrlhs = std::move((std::get<leaf_node>(*(lrhs.lhs))));
+    ASSERT_EQ(lrlhs.token, token_type::LITERAL);
+
+    // 2
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(lrhs.lhs)));
+    auto lrrhs = std::move((std::get<leaf_node>(*(lrhs.lhs))));
+    ASSERT_EQ(lrrhs.token, token_type::LITERAL);
+
+    // 3
+    ASSERT_TRUE(std::holds_alternative<leaf_node>(*(bin_op.rhs)));
+    auto rhs = std::move((std::get<leaf_node>(*(bin_op.rhs))));
+    ASSERT_EQ(rhs.token, token_type::LITERAL);
 }
 
 //****************************************************************************//
