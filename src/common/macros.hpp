@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 // From https://github.com/nlohmann/json/discussions/2397#discussioncomment-680069
 /*!
 @brief macro added to work with ordered_json -- hutch

@@ -23,7 +23,7 @@
 #include <cstddef>
 
 #include "common/macros.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::ordered_json;
 

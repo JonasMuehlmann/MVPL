@@ -20,7 +20,7 @@
 
 #pragma once
 #include "enum_range.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::ordered_json;
 

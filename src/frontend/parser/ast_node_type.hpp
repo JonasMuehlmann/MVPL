@@ -24,7 +24,7 @@
 #include <string_view>
 
 #include "common/enum_range.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::ordered_json;
 

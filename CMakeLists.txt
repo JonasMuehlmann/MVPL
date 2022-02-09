@@ -66,7 +66,7 @@ set(MVPL_include_dirs "")
 foreach(dir IN ITEMS
         src
         src/frontend
-        src/frontend/lexer/
+        src/frontend/lexer
         src/frontend/parser
         src/frontend/parser/ast_operations
 
@@ -75,6 +75,9 @@ foreach(dir IN ITEMS
         src/backend/interpreter
 
         src/common
+        # Yeah, this could be ${json_SOURCE_DIR}/single_include, 
+        # but this var seems to be needed exactly here but is not defined here
+        ${CMAKE_CURRENT_BINARY_DIR}/_deps/json-src/single_include
 )
     get_filename_component(dir ${dir} ABSOLUTE)
     list(APPEND MVPL_include_dirs  ${dir})

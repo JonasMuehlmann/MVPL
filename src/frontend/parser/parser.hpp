@@ -42,7 +42,7 @@
 #include "frontend/parser/parse_error.hpp"
 #include "frontend/parser/parser_combinators.hpp"
 #include "frontend/parser/util.hpp"
-#include "nlohmann/json.hpp"
+#include <nlohmann/json.hpp>
 #include "token_type.hpp"
 
 
