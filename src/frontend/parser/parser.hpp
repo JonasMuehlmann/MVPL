@@ -278,33 +278,6 @@ parse_result expression_parser::parse(std::span<token> ts,
 
     log_parse_attempt(parsed_structure);
 
-    // TODO: Handle parenthesesed expressions
-    // TODO: Grammer: expression := [terminal] [lparen expression rparen]
-
-    // FIX: With the current implementation an expression fails to parse with a ts like
-    // (5 * 5) + 1, because of the parens, should we lhs =
-    // parenthesized_expression>>parse(ts)?
-    // auto lhs = combinators::all<
-    //     combinators::optional<token_parser<token_type::LPAREN>>,
-    //     combinators::any<unary_op_parser,
-    //                      call_parser,
-    //                      token_parser<token_type::LITERAL>,
-    //                      token_parser<token_type::IDENTIFIER>>>::parse(ts);
-
-
-    // auto lhs = combinators::any<
-    //     combinators::all<token_parser<token_type::LPAREN>,
-    //                      combinators::any<unary_op_parser,
-    //                                       call_parser,
-    //                                       token_parser<token_type::LITERAL>,
-    //                                       token_parser<token_type::IDENTIFIER>>,
-    //                      token_parser<token_type::RPAREN>>,
-    //     combinators::any<unary_op_parser,
-    //                      call_parser,
-    //                      token_parser<token_type::LITERAL>,
-    //                      token_parser<token_type::IDENTIFIER>>>::parse(ts);
-
-
     auto lhs = combinators::any<
         combinators::all<token_parser<token_type::LPAREN>,
                          expression_parser,
@@ -323,7 +296,6 @@ parse_result expression_parser::parse(std::span<token> ts,
     source_location  location_start;
     source_location  location_end;
     std::span<token> ts_end;
-    // bool             was_parenthesized = false;
     if (lhs.size() == 3)
     {
         location_start =
@@ -336,7 +308,6 @@ parse_result expression_parser::parse(std::span<token> ts,
         lhs.clear();
         lhs.push_back(std::move(expr));
 
-        // was_parenthesized = true;
         get_token_stream(lhs.front()) = ts_end;
         auto& lhs_expr =
             std::visit(source_location_retriever_visitor(), *get_node(lhs.front()));
@@ -378,8 +349,6 @@ parse_result expression_parser::parse(std::span<token> ts,
             lhs.back() = std::move(bin_op);
         }
     }
-
-    // TODO: If we find an RPAREN here, there is a syntax error!
 
     log_parse_success(parsed_structure);
     return parse_result(std::in_place_type<parse_content>,
@@ -544,7 +513,6 @@ struct return_stmt_parser
 {
     static constexpr std::string_view parsed_structure = "return statement";
 
-    // TODO: The expression should be optional, to allow returning in procedures
     static parse_result parse(std::span<token> ts)
     {
         if (ts.empty())
