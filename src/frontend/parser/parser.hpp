@@ -24,6 +24,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <retrieve_source_location.hpp>
 #include <span>
@@ -42,7 +43,6 @@
 #include "frontend/parser/parse_error.hpp"
 #include "frontend/parser/parser_combinators.hpp"
 #include "frontend/parser/util.hpp"
-#include <nlohmann/json.hpp>
 #include "token_type.hpp"
 
 
@@ -320,20 +320,32 @@ parse_result expression_parser::parse(std::span<token> ts,
         return std::get<parse_error>(lhs.back());
     }
 
-    std::span<token> location_start;
-    std::span<token> location_end;
-    bool             was_parenthesized = false;
+    source_location  location_start;
+    source_location  location_end;
+    std::span<token> ts_end;
+    // bool             was_parenthesized = false;
     if (lhs.size() == 3)
     {
-        location_start = get_token_stream(lhs.front());
-        auto expr      = std::move(lhs[1]);
-        // NOTE: Is this the end of the the lhs?
-        location_end = get_token_stream(lhs.back());
+        location_start =
+            std::visit(source_location_retriever_visitor(), *get_node(lhs.front()));
+        location_end =
+            std::visit(source_location_retriever_visitor(), *get_node(lhs.back()));
+        auto expr = std::move(lhs[1]);
+        ts_end    = get_token_stream(lhs.back());
 
         lhs.clear();
         lhs.push_back(std::move(expr));
 
-        was_parenthesized = true;
+        // was_parenthesized = true;
+        get_token_stream(lhs.front()) = ts_end;
+        auto& lhs_expr =
+            std::visit(source_location_retriever_visitor(), *get_node(lhs.front()));
+
+        lhs_expr.col_start  = location_start.col_start;
+        lhs_expr.line_start = location_start.line_start;
+
+        lhs_expr.col_end  = location_end.col_end;
+        lhs_expr.line_end = location_end.line_end;
     }
 
 
