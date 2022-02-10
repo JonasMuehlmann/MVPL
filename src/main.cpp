@@ -38,31 +38,33 @@ static const std::string options =
 
     Usage:
         mvpl -h
-        mvpl [-Stasgpv] FILE
+        mvpl [-S STAGE] [-t OUT_FILE] [-a OUT_FILE] [-s OUT_FILE] [-g OUT_FILE] [-p OUT_FILE] FILE
         mvpl -r FILE
 
     Arguments:
-        FILE    source file to process
-        STAGE:  token_stream
-                ast
-                symbol_table
-                semantic_validator
-                code_generation
+        FILE        source file to process
+        STAGE:      token_stream
+                    ast
+                    symbol_table
+                    semantic_validator
+                    code_generation
 
     Options:
-        -h --help                   show this help message and exit
-        -r --run                    run an already compiled program
-        -S STAGE --stage=STAGE      stop after completinng the stage
-        -t --token-steam=FILE       write token stream to file [default: stdout]
-        -a --ast=FILE               write abstract syntax tree to file [default: stdout]
-        -s --symbol-table=FILE      write program's symbol tabke to file [default: stdout]
-        -g --generated-code=FILE    write generated code to file [default: stdout]
-        -p --program-output=FILE    write run program's output to file [default: stdout]
+        -h --help                                show this help message and exit
+        -r --run                                 run an already compiled program
+        -S STAGE --stage=STAGE                   stop after completinng the stage
+        -t OUT_FILE --token-steam=OUT_FILE       write token stream to file [default: stdout]
+        -a OUT_FILE --ast=OUT_FILE               write abstract syntax tree to file [default: stdout]
+        -s OUT_FILE --symbol-table=OUT_FILE      write program's symbol tabke to file [default: stdout]
+        -g OUT_FILE --generated-code=OUT_FILE    write generated code to file [default: stdout]
+        -p OUT_FILE --program-output=OUT_FILE    write run program's output to file [default: stdout]
 
     )";
 
 int main(int argc, char* argv[])
 {
+    json output_artifacts{};
+
     std::map<std::string, docopt::value> args =
         docopt::docopt(options, {argv + 1, argv + argc}, true);
 
@@ -73,14 +75,15 @@ int main(int argc, char* argv[])
     lexer              lexer(source_code);
     std::vector<token> token_stream = lexer.lex();
 
-    print_token_stream(token_stream);
+    auto token_stream_output_artifact = token_stream_to_json(token_stream);
 
     std::unique_ptr<ast_node_t> ast = parse(token_stream);
 
-    if (ast != nullptr)
-    {
-        print_ast(*ast);
-    }
+    auto ast_output_artifact = ast_to_json(*ast);
+    // if (ast != nullptr)
+    // {
+    //     auto ast_output_artifact = ast_to_json(*ast);
+    // }
 
     return 0;
 }

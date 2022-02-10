@@ -27,8 +27,8 @@
 #include "frontend/parser/ast_node.hpp"
 #include "source_location.hpp"
 
+using json = nlohmann::ordered_json;
 std::string token_to_str(const token_type t);
 token_type  str_to_token(const std::string& str);
-void        print_token_stream(const std::vector<token>& token_stream);
-void        print_ast(const ast_node_t& ast);
-void        print_source_location(const source_location& source_location);
+json        token_stream_to_json(const std::vector<token>& token_stream);
+json        ast_to_json(const ast_node_t& ast);

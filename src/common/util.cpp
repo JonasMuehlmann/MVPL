@@ -20,6 +20,7 @@
 #include "util.hpp"
 
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -28,22 +29,16 @@
 #include "frontend/lexer/token_type.hpp"
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_node_type.hpp"
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::ordered_json;
 
 
-void print_token_stream(const std::vector<token>& token_stream)
+json token_stream_to_json(const std::vector<token>& token_stream)
 {
     // Double brackets to define as key-value pair instead of list
-    json j = {{"token_stream", token_stream}};
-    std::cout << j.dump(4) << std::endl;
+    return {{"token_stream", token_stream}};
 }
 
-void print_ast(const ast_node_t& ast)
+json ast_to_json(const ast_node_t& ast)
 {
     // Double brackets to define as key-value pair instead of list
-    json j = {{"ast", ast}};
-
-    std::cout << j.dump(4) << std::endl;
+    return {{"ast", ast}};
 }
