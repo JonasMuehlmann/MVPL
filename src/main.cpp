@@ -19,12 +19,14 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <map>
 #include <memory>
 #include <ostream>
-#include <set>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
+#include <unordered_set>
 
 #include "common/util.hpp"
 #include "docopt.h"
@@ -69,15 +71,15 @@ static const std::string options =
 
     )";
 
-std::set<std::string> STAGES{
-    "token_stream",
-    "ast",
-    "symbol_table",
-    "semantic_validator",
-    "code_generation",
+std::map<std::string, int> STAGES{
+    {"token_stream", 0},
+    {"ast", 1},
+    {"symbol_table", 2},
+    {"semantic_validator", 3},
+    {"code_generation", 4},
 };
 
-std::set<std::string> ARTIFACTS{
+std::unordered_set<std::string> ARTIFACTS{
     "token_stream", "ast", "symbol_table", "generated_code", "program_output"};
 
 int main(int argc, char* argv[])
@@ -99,7 +101,7 @@ int main(int argc, char* argv[])
     }
     auto output_artifacts = args["--output_artifact"].asStringList();
     auto output_artifacts_set =
-        std::set(begin(output_artifacts), end(output_artifacts));
+        std::unordered_set(begin(output_artifacts), end(output_artifacts));
 
     if (!std::ranges::all_of(output_artifacts_set, [](auto& artifact) {
             return ARTIFACTS.contains(artifact);
@@ -133,19 +135,22 @@ int main(int argc, char* argv[])
                            token_stream_output_artifact);
     }
 
-    std::unique_ptr<ast_node_t> ast                 = parse(token_stream);
-    auto                        ast_output_artifact = ast_to_json(*ast);
-
-    if (output_artifacts_set.contains("ast"))
+    if (!args["--stage"].isString()
+        || STAGES[args["--stage"].asString()] > STAGES["token_stream"])
     {
-        artifact_output.update(ast_output_artifact);
-    }
+        std::unique_ptr<ast_node_t> ast                 = parse(token_stream);
+        auto                        ast_output_artifact = ast_to_json(*ast);
 
-    if (args["--ast"].isString())
-    {
-        write_json_to_file(args["--ast"].asString(), ast_output_artifact);
-    }
+        if (output_artifacts_set.contains("ast"))
+        {
+            artifact_output.update(ast_output_artifact);
+        }
 
+        if (args["--ast"].isString())
+        {
+            write_json_to_file(args["--ast"].asString(), ast_output_artifact);
+        }
+    }
     if (!artifact_output.empty())
     {
         std::cout << artifact_output.dump(4) << '\n';
