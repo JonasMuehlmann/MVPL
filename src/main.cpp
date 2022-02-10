@@ -61,7 +61,7 @@ static const std::string options =
         -i FILE --input=FILE                     input file to process
         -S STAGE --stage=STAGE                   stop after completinng the stage
         -o ARTIFACT --output_artifact=ARTIFACT   include the following artifact in output
-        -t OUT_FILE --token-steam=OUT_FILE       redirect token stream to file
+        -t OUT_FILE --token-stream=OUT_FILE       redirect token stream to file
         -a OUT_FILE --ast=OUT_FILE               redirect abstract syntax tree to file
         -s OUT_FILE --symbol-table=OUT_FILE      redirect program's symbol tabke to file
         -g OUT_FILE --generated-code=OUT_FILE    redirect generated code to file
@@ -82,7 +82,7 @@ std::set<std::string> ARTIFACTS{
 
 int main(int argc, char* argv[])
 {
-    json artifact_output{};
+    json artifact_output = json::object();
 
     std::map<std::string, docopt::value> args =
         docopt::docopt(options, {argv + 1, argv + argc}, true);
@@ -119,17 +119,36 @@ int main(int argc, char* argv[])
                             std::istreambuf_iterator<char>());
 
     lexer              lexer(source_code);
-    std::vector<token> token_stream = lexer.lex();
-
+    std::vector<token> token_stream   = lexer.lex();
     auto token_stream_output_artifact = token_stream_to_json(token_stream);
 
-    std::unique_ptr<ast_node_t> ast = parse(token_stream);
+    if (output_artifacts_set.contains("token_stream"))
+    {
+        artifact_output.update(token_stream_output_artifact);
+    }
 
-    auto ast_output_artifact = ast_to_json(*ast);
-    // if (ast != nullptr)
-    // {
-    //     auto ast_output_artifact = ast_to_json(*ast);
-    // }
+    if (args["--token-stream"].isString())
+    {
+        write_json_to_file(args["--token-stream"].asString(),
+                           token_stream_output_artifact);
+    }
 
+    std::unique_ptr<ast_node_t> ast                 = parse(token_stream);
+    auto                        ast_output_artifact = ast_to_json(*ast);
+
+    if (output_artifacts_set.contains("ast"))
+    {
+        artifact_output.update(ast_output_artifact);
+    }
+
+    if (args["--ast"].isString())
+    {
+        write_json_to_file(args["--ast"].asString(), ast_output_artifact);
+    }
+
+    if (!artifact_output.empty())
+    {
+        std::cout << artifact_output.dump(4) << '\n';
+    }
     return 0;
 }
