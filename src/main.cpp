@@ -38,26 +38,32 @@ static const std::string options =
 
     Usage:
         mvpl -h
-        mvpl [-S STAGE] [-t OUT_FILE] [-a OUT_FILE] [-s OUT_FILE] [-g OUT_FILE] [-p OUT_FILE] FILE
-        mvpl -r FILE
+        mvpl [-S STAGE] [-t OUT_FILE] [-a OUT_FILE] [-s OUT_FILE] [-g OUT_FILE] [-p OUT_FILE] [-o ARTIFACT]...  -i FILE
+        mvpl -r -i FILE
 
     Arguments:
-        FILE        source file to process
-        STAGE:      token_stream
-                    ast
-                    symbol_table
-                    semantic_validator
-                    code_generation
+        STAGE:    token_stream
+                  ast
+                  symbol_table
+                  semantic_validator
+                  code_generation
+        ARTIFACT: token_stream
+                  ast
+                  symbol_table
+                  generated_code
+                  program_output
 
     Options:
         -h --help                                show this help message and exit
         -r --run                                 run an already compiled program
+        -i FILE --input=FILE                     input file to process
         -S STAGE --stage=STAGE                   stop after completinng the stage
-        -t OUT_FILE --token-steam=OUT_FILE       write token stream to file [default: stdout]
-        -a OUT_FILE --ast=OUT_FILE               write abstract syntax tree to file [default: stdout]
-        -s OUT_FILE --symbol-table=OUT_FILE      write program's symbol tabke to file [default: stdout]
-        -g OUT_FILE --generated-code=OUT_FILE    write generated code to file [default: stdout]
-        -p OUT_FILE --program-output=OUT_FILE    write run program's output to file [default: stdout]
+        -o ARTIFACT --output_artifact=ARTIFACT   include the following artifact in output
+        -t OUT_FILE --token-steam=OUT_FILE       redirect token stream to file
+        -a OUT_FILE --ast=OUT_FILE               redirect abstract syntax tree to file
+        -s OUT_FILE --symbol-table=OUT_FILE      redirect program's symbol tabke to file
+        -g OUT_FILE --generated-code=OUT_FILE    redirect generated code to file
+        -p OUT_FILE --program-output=OUT_FILE    redirect run program's output to file
 
     )";
 
