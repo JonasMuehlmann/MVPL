@@ -21,6 +21,8 @@
 #include <iostream>
 #include <memory>
 #include <ostream>
+#include <set>
+#include <stdexcept>
 #include <streambuf>
 #include <string>
 
@@ -67,14 +69,52 @@ static const std::string options =
 
     )";
 
+std::set<std::string> STAGES{
+    "token_stream",
+    "ast",
+    "symbol_table",
+    "semantic_validator",
+    "code_generation",
+};
+
+std::set<std::string> ARTIFACTS{
+    "token_stream", "ast", "symbol_table", "generated_code", "program_output"};
+
 int main(int argc, char* argv[])
 {
-    json output_artifacts{};
+    json artifact_output{};
 
     std::map<std::string, docopt::value> args =
         docopt::docopt(options, {argv + 1, argv + argc}, true);
 
-    std::ifstream source_stream(args["FILE"].asString());
+    // for (auto const& arg : args)
+    // {
+    //     std::cout << arg.first << arg.second << std::endl;
+    // }
+
+    // Validate --output_artifact arguments
+    if (!args["--output_artifact"].isStringList())
+    {
+        throw std::invalid_argument("output artifacts must be specified as strings");
+    }
+    auto output_artifacts = args["--output_artifact"].asStringList();
+    auto output_artifacts_set =
+        std::set(begin(output_artifacts), end(output_artifacts));
+
+    if (!std::ranges::all_of(output_artifacts_set, [](auto& artifact) {
+            return ARTIFACTS.contains(artifact);
+        }))
+    {
+        throw std::invalid_argument("Invalid artifact passed");
+    }
+
+    // Validate --stage argument
+    if (args["--stage"].isString() && !STAGES.contains(args["--stage"].asString()))
+    {
+        throw std::invalid_argument("Invalid stage passed");
+    }
+
+    std::ifstream source_stream(args["--input"].asString());
     std::string   source_code((std::istreambuf_iterator<char>(source_stream)),
                             std::istreambuf_iterator<char>());
 
