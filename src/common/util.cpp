@@ -19,6 +19,7 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "util.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
@@ -41,4 +42,10 @@ json ast_to_json(const ast_node_t& ast)
 {
     // Double brackets to define as key-value pair instead of list
     return {{"ast", ast}};
+}
+
+void write_json_to_file(std::string_view file_path, json j)
+{
+    std::ofstream file(file_path.data());
+    file << j.dump(4);
 }

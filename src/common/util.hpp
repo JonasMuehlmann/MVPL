@@ -20,6 +20,7 @@
 
 #pragma once
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "frontend/lexer/token.hpp"
@@ -28,7 +29,8 @@
 #include "source_location.hpp"
 
 using json = nlohmann::ordered_json;
-std::string token_to_str(const token_type t);
-token_type  str_to_token(const std::string& str);
-json        token_stream_to_json(const std::vector<token>& token_stream);
-json        ast_to_json(const ast_node_t& ast);
+
+json token_stream_to_json(const std::vector<token>& token_stream);
+json ast_to_json(const ast_node_t& ast);
+
+void write_json_to_file(std::string_view file_path, json j);
