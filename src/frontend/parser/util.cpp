@@ -176,12 +176,16 @@ bool are_all_parse_results_valid(std::vector<parse_result>& results)
 
 void log_parse_attempt(std::string_view parsed_structure, std::string_view next_lexeme)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Attempting to parse " << parsed_structure << " at lexeme "
               << next_lexeme << '\n';
+#endif
 }
 void log_parse_attempt(std::string_view parsed_structure)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Attempting to parse " << parsed_structure << '\n';
+#endif
 }
 
 
@@ -189,26 +193,36 @@ void log_parse_error(std::string_view parsed_structure,
                      std::string_view next_lexeme,
                      std::string_view wanted_lexeme)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Failed to parse " << parsed_structure << " at lexeme " << next_lexeme
               << " when expecting " << wanted_lexeme << '\n';
+#endif
 }
 void log_parse_error(std::string_view parsed_structure, std::string_view next_lexeme)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Failed to parse " << parsed_structure << " at lexeme " << next_lexeme
               << '\n';
+#endif
 }
 void log_parse_error(std::string_view parsed_structure)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Failed to parse " << parsed_structure << '\n';
+#endif
 }
 
 
 void log_parse_success(std::string_view parsed_structure, std::string_view next_lexeme)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Successfully parsed " << parsed_structure << " at lexeme "
               << next_lexeme << '\n';
+#endif
 }
 void log_parse_success(std::string_view parsed_structure)
 {
+#ifdef MVPL_LOGGING
     std::cerr << "Successfully parsed " << parsed_structure << '\n';
+#endif
 }

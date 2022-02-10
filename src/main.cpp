@@ -51,7 +51,6 @@ static const std::string options =
 
     Options:
         -h --help                   show this help message and exit
-        -v --verbose                print extra output on stderr
         -r --run                    run an already compiled program
         -S STAGE --stage=STAGE      stop after completinng the stage
         -t --token-steam=FILE       write token stream to file [default: stdout]
