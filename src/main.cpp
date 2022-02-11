@@ -37,6 +37,17 @@
 #include "frontend/parser/ast_node_type.hpp"
 #include "frontend/parser/parser.hpp"
 
+std::map<std::string, int> STAGES{
+    {"token_stream", 0},
+    {"ast", 1},
+    {"symbol_table", 2},
+    {"semantic_validator", 3},
+    {"code_generation", 4},
+};
+
+std::unordered_set<std::string> ARTIFACTS{
+    "token_stream", "ast", "symbol_table", "generated_code", "program_output"};
+
 static const std::string options =
     R"(MVPL - The minimum viable programming language.
 
@@ -62,8 +73,8 @@ static const std::string options =
         -r --run                                 run an already compiled program
         -i FILE --input=FILE                     input file to process
         -S STAGE --stage=STAGE                   stop after completinng the stage
-        -o ARTIFACT --output_artifact=ARTIFACT   include the following artifact in output
-        -t OUT_FILE --token-stream=OUT_FILE       redirect token stream to file
+        -o ARTIFACT --output-artifact=ARTIFACT   include the following artifact in output
+        -t OUT_FILE --token-stream=OUT_FILE      redirect token stream to file
         -a OUT_FILE --ast=OUT_FILE               redirect abstract syntax tree to file
         -s OUT_FILE --symbol-table=OUT_FILE      redirect program's symbol tabke to file
         -g OUT_FILE --generated-code=OUT_FILE    redirect generated code to file
@@ -71,16 +82,6 @@ static const std::string options =
 
     )";
 
-std::map<std::string, int> STAGES{
-    {"token_stream", 0},
-    {"ast", 1},
-    {"symbol_table", 2},
-    {"semantic_validator", 3},
-    {"code_generation", 4},
-};
-
-std::unordered_set<std::string> ARTIFACTS{
-    "token_stream", "ast", "symbol_table", "generated_code", "program_output"};
 
 int main(int argc, char* argv[])
 {
@@ -89,17 +90,16 @@ int main(int argc, char* argv[])
     std::map<std::string, docopt::value> args =
         docopt::docopt(options, {argv + 1, argv + argc}, true);
 
-    // for (auto const& arg : args)
-    // {
-    //     std::cout << arg.first << arg.second << std::endl;
-    // }
+    //******************************************************************//
+    //                              Validation                          //
+    //******************************************************************//
 
-    // Validate --output_artifact arguments
-    if (!args["--output_artifact"].isStringList())
+    //*********************    --output-artifact    ********************//
+    if (!args["--output-artifact"].isStringList())
     {
         throw std::invalid_argument("output artifacts must be specified as strings");
     }
-    auto output_artifacts = args["--output_artifact"].asStringList();
+    auto output_artifacts = args["--output-artifact"].asStringList();
     auto output_artifacts_set =
         std::unordered_set(begin(output_artifacts), end(output_artifacts));
 
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
         throw std::invalid_argument("Invalid artifact passed");
     }
 
-    // Validate --stage argument
+    //**************************    --stage    *************************//
     if (args["--stage"].isString() && !STAGES.contains(args["--stage"].asString()))
     {
         throw std::invalid_argument("Invalid stage passed");
@@ -120,6 +120,10 @@ int main(int argc, char* argv[])
     std::string   source_code((std::istreambuf_iterator<char>(source_stream)),
                             std::istreambuf_iterator<char>());
 
+
+    //******************************************************************//
+    //                        Stage: token_stream                       //
+    //******************************************************************//
     lexer              lexer(source_code);
     std::vector<token> token_stream   = lexer.lex();
     auto token_stream_output_artifact = token_stream_to_json(token_stream);
@@ -135,6 +139,9 @@ int main(int argc, char* argv[])
                            token_stream_output_artifact);
     }
 
+    //******************************************************************//
+    //                            Stage: AST                            //
+    //******************************************************************//
     if (!args["--stage"].isString()
         || STAGES[args["--stage"].asString()] > STAGES["token_stream"])
     {
@@ -151,6 +158,8 @@ int main(int argc, char* argv[])
             write_json_to_file(args["--ast"].asString(), ast_output_artifact);
         }
     }
+
+
     if (!artifact_output.empty())
     {
         std::cout << artifact_output.dump(4) << '\n';
