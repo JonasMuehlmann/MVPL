@@ -69,6 +69,7 @@ foreach(dir IN ITEMS
         src/frontend/lexer
         src/frontend/parser
         src/frontend/parser/ast_operations
+        src/frontend/semantic_analysis
 
         src/backend
         src/backend/code_generator

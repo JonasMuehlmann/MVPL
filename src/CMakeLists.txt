@@ -39,6 +39,8 @@ set(SOURCE_FILES
 
     frontend/lexer/token.hpp
 
+
+
     frontend/parser/parser.hpp
 
     frontend/parser/ast_node_type.hpp
@@ -55,6 +57,15 @@ set(SOURCE_FILES
     frontend/parser/util.cpp
     
     frontend/parser/ast_operations/retrieve_source_location.hpp
+
+
+
+    frontend/semantic_analysis/scope_node.hpp
+
+    frontend/semantic_analysis/symbol.hpp
+
+    frontend/semantic_analysis/symbol_table.hpp
+    frontend/semantic_analysis/symbol_table.cpp
 
 
 
