@@ -58,6 +58,7 @@ set(SOURCE_FILES
     
     frontend/parser/ast_operations/retrieve_source_location.hpp
     frontend/parser/ast_operations/list_nodes.hpp
+    frontend/parser/ast_operations/find_node.hpp
 
 
 
