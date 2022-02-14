@@ -26,18 +26,22 @@
 #include "frontend/semantic_analysis/scope_node.hpp"
 #include "frontend/semantic_analysis/symbol_identifier.hpp"
 #include "frontend/semantic_analysis/symbol_type.hpp"
+#include "source_location.hpp"
 
 struct symbol
 {
     symbol_type       type;
     std::size_t       scope_index_of_defintion;
     symbol_identifier identifier;
+    source_location   source_location;
 
-    symbol(symbol_type       type,
-           std::size_t       scope_index_of_defintion,
-           symbol_identifier identifier) :
+    symbol(symbol_type            type,
+           std::size_t            scope_index_of_defintion,
+           symbol_identifier      identifier,
+           struct source_location source_location) :
         type{type},
         scope_index_of_defintion{scope_index_of_defintion},
-        identifier{identifier}
+        identifier{identifier},
+        source_location(source_location)
     {}
 };
