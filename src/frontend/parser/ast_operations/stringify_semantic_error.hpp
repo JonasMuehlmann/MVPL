@@ -23,36 +23,64 @@
 #include <string>
 
 #include "frontend/semantic_analysis/semantic_error.hpp"
+#include "nlohmann/json.hpp"
+#include "source_location.hpp"
+
+using json = nlohmann::ordered_json;
 
 struct semantic_error_stringifier_visitor
 {
-    std::string operator()(call_to_variable& error)
+    std::string operator()(const call_to_variable& error)
     {
-        ;
+        json violating_call;
+
+        to_json(violating_call, error.violating_call);
+
+        return "Call to variable at " + violating_call.dump(4);
     }
 
-    std::string operator()(assignment_to_callable& error)
+    std::string operator()(const assignment_to_callable& error)
     {
-        ;
+        json violating_assignment;
+
+        to_json(violating_assignment, error.violating_assignment);
+
+        return "Assignment to callable at " + violating_assignment.dump(4);
     }
 
-    std::string operator()(evaluatio_of_procedure& error)
+    std::string operator()(const evaluatio_of_procedure& error)
     {
-        ;
+        json violating_evaluation;
+        to_json(violating_evaluation, error.violating_evaluation);
+        return "Evaluation of procedure call at " + violating_evaluation.dump(4);
     }
 
-    std::string operator()(redifintion_of_symbol& error)
+    std::string operator()(const redifintion_of_symbol& error)
     {
-        ;
+        json violating_definition;
+        json definition;
+
+        to_json(violating_definition, error.violating_definition);
+        to_json(definition, error.previous_definition);
+
+        return "Redifinition of symbol at " + violating_definition.dump(4)
+               + " with previous definition at " + definition.dump(4);
     }
 
-    std::string operator()(missing_main_function& error)
+    std::string operator()([[maybe_unused]] const missing_main_function& error)
     {
-        ;
+        return "Missing main function";
     }
 
-    std::string operator()(use_before_definition& error)
+    std::string operator()(const use_before_definition& error)
     {
-        ;
+        json violating_use;
+        json definition;
+
+        to_json(violating_use, error.violating_use);
+        to_json(definition, error.definition);
+
+        return "Use of symbol " + violating_use.dump(4) + " with definition at "
+               + definition.dump(4);
     }
 };
