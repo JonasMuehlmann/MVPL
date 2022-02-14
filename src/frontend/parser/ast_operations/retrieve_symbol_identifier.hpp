@@ -24,6 +24,7 @@
 #include <string_view>
 
 #include "ast_node.hpp"
+
 struct symbol_identifier_retriever_visitor
 {
     std::string_view operator()(var_decl_node node)

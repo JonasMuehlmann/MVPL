@@ -60,6 +60,7 @@ set(SOURCE_FILES
     frontend/parser/ast_operations/retrieve_symbol_identifier.hpp
     frontend/parser/ast_operations/list_nodes.hpp
     frontend/parser/ast_operations/find_node.hpp
+    frontend/parser/ast_operations/stringify_semantic_error.hpp
 
 
 
@@ -71,6 +72,8 @@ set(SOURCE_FILES
 
     frontend/semantic_analysis/symbol_table.hpp
     frontend/semantic_analysis/symbol_table.cpp
+
+    frontend/semantic_analysis/semantic_error.hpp
 
 
 

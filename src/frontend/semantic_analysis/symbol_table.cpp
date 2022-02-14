@@ -17,12 +17,20 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include "frontend/semantic_analysis/symbol_table.hpp"
+
+#include <memory>
+#include <stdexcept>
+#include <variant>
+#include <vector>
 
 #include "frontend/parser/ast_operations/retrieve_symbol_identifier.hpp"
 #include "frontend/semantic_analysis/symbol.hpp"
 #include "frontend/semantic_analysis/symbol_identifier.hpp"
 #include "list_nodes.hpp"
+#include "semantic_error.hpp"
+#include "stringify_semantic_error.hpp"
 
 bool does_node_declare_symbol(ast_node_t node)
 {
@@ -37,6 +45,7 @@ symbol_table build_symbol_table(ast_node_t ast)
     scope_node                                     scope_tree("global", nullptr);
     symbol_table                                   symbol_table;
     std::forward_list<std::shared_ptr<ast_node_t>> ast_nodes;
+    std::vector<semantic_error_t>                  semantic_errors;
 
 
     std::visit(node_lister_visitor(ast_nodes), ast);
@@ -55,4 +64,17 @@ symbol_table build_symbol_table(ast_node_t ast)
     }
 
     return symbol_table;
+}
+
+void throw_semantic_analysis_error(const std::vector<semantic_error_t>& errors)
+{
+    std::string error_message;
+
+    for (auto& error : errors)
+    {
+        error_message +=
+            std::visit(semantic_error_stringifier_visitor(), error) + "\n\n";
+    }
+
+    throw std::runtime_error(error_message);
 }
