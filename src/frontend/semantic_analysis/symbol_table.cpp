@@ -21,6 +21,7 @@
 
 #include "frontend/parser/ast_operations/retrieve_symbol_identifier.hpp"
 #include "frontend/semantic_analysis/symbol.hpp"
+#include "frontend/semantic_analysis/symbol_identifier.hpp"
 #include "list_nodes.hpp"
 
 bool does_node_declare_symbol(ast_node_t node)
@@ -44,8 +45,12 @@ symbol_table build_symbol_table(ast_node_t ast)
     {
         if (does_node_declare_symbol(*ast_node))
         {
-            auto identifier =
+            auto symbol_name =
                 std::visit(symbol_identifier_retriever_visitor(), *ast_node);
+
+            // TODO: How can we efficiently find the scope of a node?
+            auto scope      = scope_node{};
+            auto identifier = symbol_identifier(symbol_name, scope);
         }
     }
 

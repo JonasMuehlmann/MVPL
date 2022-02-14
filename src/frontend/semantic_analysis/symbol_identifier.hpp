@@ -20,15 +20,18 @@
 
 #pragma once
 
-#include <map>
-#include <string>
+#include <memory>
+#include <string_view>
 
-#include "ast_node.hpp"
-#include "frontend/semantic_analysis/symbol.hpp"
-#include "frontend/semantic_analysis/symbol_identifier.hpp"
-// The key here should probably be a fully qualified identifier (including all enclosing
-// scopes
-using symbol_table = std::map<symbol_identifier, symbol>;
+#include "scope_node.hpp"
 
-bool         does_node_declare_symbol(ast_node_t node);
-symbol_table build_symbol_table(ast_node_t ast);
+struct symbol_identifier
+{
+    std::string_view            name;
+    std::shared_ptr<scope_node> enclosing_scope;
+
+    symbol_identifier(std::string_view            name,
+                      std::shared_ptr<scope_node> enclosing_scope) :
+        name{name}, enclosing_scope{enclosing_scope}
+    {}
+};

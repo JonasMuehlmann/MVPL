@@ -24,22 +24,20 @@
 #include <string>
 
 #include "frontend/semantic_analysis/scope_node.hpp"
+#include "frontend/semantic_analysis/symbol_identifier.hpp"
 #include "frontend/semantic_analysis/symbol_type.hpp"
 
 struct symbol
 {
-    symbol_type                 type;
-    std::string                 name;
-    std::shared_ptr<scope_node> enclosing_scope;
-    std::size_t                 scope_index_of_defintion;
+    symbol_type       type;
+    std::size_t       scope_index_of_defintion;
+    symbol_identifier identifier;
 
-    symbol(const std::string&          name,
-           symbol_type                 type,
-           std::shared_ptr<scope_node> enclosing_scope,
-           std::size_t                 scope_index_of_defintion) :
+    symbol(symbol_type       type,
+           std::size_t       scope_index_of_defintion,
+           symbol_identifier identifier) :
         type{type},
-        name{name},
-        enclosing_scope{enclosing_scope},
-        scope_index_of_defintion{scope_index_of_defintion}
+        scope_index_of_defintion{scope_index_of_defintion},
+        identifier{identifier}
     {}
 };

@@ -67,6 +67,8 @@ set(SOURCE_FILES
 
     frontend/semantic_analysis/symbol.hpp
 
+    frontend/semantic_analysis/symbol_identifier.hpp
+
     frontend/semantic_analysis/symbol_table.hpp
     frontend/semantic_analysis/symbol_table.cpp
 
