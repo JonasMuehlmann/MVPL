@@ -47,7 +47,7 @@ concept Parser = requires(TFunction& function)
         } -> std::convertible_to<bool>;
 };
 
-using parse_content = std::tuple<std::span<token>, std::unique_ptr<ast_node_t>>;
+using parse_content = std::tuple<std::span<token>, std::shared_ptr<ast_node_t>>;
 using parse_result  = std::variant<parse_content, parse_error>;
 
 //****************************************************************************//
@@ -55,7 +55,7 @@ using parse_result  = std::variant<parse_content, parse_error>;
 //****************************************************************************//
 std::span<token>& get_token_stream(parse_result& result);
 
-std::unique_ptr<ast_node_t>& get_node(parse_result& result);
+std::shared_ptr<ast_node_t>& get_node(parse_result& result);
 
 parse_error get_parse_error(parse_result& result);
 

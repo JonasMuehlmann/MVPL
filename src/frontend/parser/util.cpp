@@ -31,7 +31,7 @@ std::span<token>& get_token_stream(parse_result& result)
     return std::get<0>(std::get<parse_content>(result));
 }
 
-std::unique_ptr<ast_node_t>& get_node(parse_result& result)
+std::shared_ptr<ast_node_t>& get_node(parse_result& result)
 {
     return std::get<1>(std::get<parse_content>(result));
 }

@@ -26,23 +26,30 @@
 #include "ast_node.hpp"
 struct symbol_identifier_retriever_visitor
 {
-    std::string_view operator()(std::shared_ptr<var_decl_node> node)
+    std::string_view operator()(var_decl_node node)
     {
-        return node->identifier;
+        return node.identifier;
     }
 
-    std::string_view operator()(std::shared_ptr<var_init_node> node)
+    std::string_view operator()(var_init_node node)
     {
-        return node->identifier;
+        return node.identifier;
     }
 
-    std::string_view operator()(std::shared_ptr<func_def_node> node)
+    std::string_view operator()(func_def_node node)
     {
-        return std::get<signature_node>(*(node->signature)).identifier;
+        return std::get<signature_node>(*(node.signature)).identifier;
     }
 
-    std::string_view operator()(std::shared_ptr<procedure_def_node> node)
+    std::string_view operator()(procedure_def_node node)
     {
-        return std::get<signature_node>(*(node->signature)).identifier;
+        return std::get<signature_node>(*(node.signature)).identifier;
+    }
+
+    std::string_view operator()([[maybe_unused]] auto node)
+    {
+        throw std::invalid_argument(
+            "Tried to retrieve symbol identifier of ast node, which "
+            "does not declare a symbol");
     }
 };

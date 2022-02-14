@@ -142,7 +142,7 @@ struct token_parser
             log_parse_success(parsed_structure, ts[0].value);
             return parse_result(std::in_place_type<parse_content>,
                                 ts.subspan(1),
-                                std::make_unique<ast_node_t>(leaf_node{ts[0]}));
+                                std::make_shared<ast_node_t>(leaf_node{ts[0]}));
         }
         log_parse_error(parsed_structure,
                         ts[0].value,
@@ -178,7 +178,7 @@ struct program_parser
 
         auto new_location = get_source_location_from_compound(program);
 
-        std::vector<std::unique_ptr<ast_node_t>> globals;
+        std::vector<std::shared_ptr<ast_node_t>> globals;
         globals.reserve(program.size());
 
         std::ranges::for_each(program, [&globals](auto&& element) {
@@ -186,7 +186,7 @@ struct program_parser
                 std::move(get_node(std::forward<decltype(element)>(element))));
         });
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<program_node>, std::move(globals), new_location);
 
         log_parse_success(parsed_structure);
@@ -255,7 +255,7 @@ parse_result binary_op_parser::parse(std::span<token> ts,
 
 
     auto new_node =
-        std::make_unique<ast_node_t>(std::in_place_type<binary_op_node>,
+        std::make_shared<ast_node_t>(std::in_place_type<binary_op_node>,
                                      get_node(lhs),
                                      get_node(bin_op[1]),
                                      get_node(bin_op[0]),
@@ -353,7 +353,7 @@ parse_result expression_parser::parse(std::span<token> ts,
     log_parse_success(parsed_structure);
     return parse_result(std::in_place_type<parse_content>,
                         get_token_stream(lhs.back()),
-                        std::move(get_node(lhs.back())));
+                        get_node(lhs.back()));
 }
 
 struct unary_op_parser
@@ -384,7 +384,7 @@ struct unary_op_parser
 
 
         auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<unary_op_node>,
+            std::make_shared<ast_node_t>(std::in_place_type<unary_op_node>,
                                          get_node(unary_op[1]),
                                          get_node(unary_op[0]),
                                          get_source_location_from_compound(unary_op));
@@ -393,7 +393,7 @@ struct unary_op_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(unary_op.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -422,7 +422,7 @@ struct func_def_parser
 
 
         auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<func_def_node>,
+            std::make_shared<ast_node_t>(std::in_place_type<func_def_node>,
                                          get_node(func_def[1]),
                                          get_node(func_def[2]),
                                          get_source_location_from_compound(func_def));
@@ -431,7 +431,7 @@ struct func_def_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(func_def.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -459,7 +459,7 @@ struct procedure_def_parser
         }
 
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<procedure_def_node>,
             get_node(procedure_def[1]),
             get_node(procedure_def[2]),
@@ -469,7 +469,7 @@ struct procedure_def_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(procedure_def.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -496,7 +496,7 @@ struct signature_parser
         }
 
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<signature_node>,
             std::get<leaf_node>(*get_node(signature[0])).value,
             get_node(signature[1]),
@@ -505,7 +505,7 @@ struct signature_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(signature.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -538,7 +538,7 @@ struct return_stmt_parser
         {
             get_node(return_stmt[1]) = nullptr;
         }
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<return_stmt_node>,
             get_node(return_stmt[1]),
             get_source_location_from_compound(return_stmt));
@@ -546,7 +546,7 @@ struct return_stmt_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(return_stmt.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -595,13 +595,13 @@ struct parameter_def_parser
         // Drop surrounder and separators
         parameters.reserve((parameter_def.size() - 2) / 2 + 1);
 
-        std::unique_ptr<ast_node_t> new_node;
+        std::shared_ptr<ast_node_t> new_node;
 
         if (parameter_def.size() == 3
             && std::holds_alternative<missing_optional_node>(
                 (*get_node(parameter_def[1]))))
         {
-            new_node = std::make_unique<ast_node_t>(
+            new_node = std::make_shared<ast_node_t>(
                 std::in_place_type<parameter_def_node>,
                 std::move(parameters),
                 get_source_location_from_compound(parameter_def));
@@ -618,7 +618,7 @@ struct parameter_def_parser
             auto source_location = get_source_location_from_compound(parameter_def);
 
             new_node =
-                std::make_unique<ast_node_t>(std::in_place_type<parameter_def_node>,
+                std::make_shared<ast_node_t>(std::in_place_type<parameter_def_node>,
                                              std::move(parameters),
                                              source_location);
         }
@@ -626,7 +626,7 @@ struct parameter_def_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(parameter_def.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -655,7 +655,7 @@ struct var_decl_parser
         }
 
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<var_decl_node>,
             std::get<leaf_node>(*get_node(var_decl[1])).value,
             get_source_location_from_compound(var_decl));
@@ -663,7 +663,7 @@ struct var_decl_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_decl.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -694,7 +694,7 @@ struct var_init_parser
         }
 
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<var_init_node>,
             std::get<leaf_node>(*get_node(var_init[1])).value,
             get_node(var_init[3]),
@@ -703,7 +703,7 @@ struct var_init_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_init.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -733,7 +733,7 @@ struct var_assignment_parser
         }
 
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<var_assignment_node>,
             std::get<leaf_node>(*get_node(var_assignment[0])).value,
             get_node(var_assignment[2]),
@@ -742,7 +742,7 @@ struct var_assignment_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(var_assignment.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -770,15 +770,14 @@ struct call_parser
 
 
         auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<call_node>,
+            std::make_shared<ast_node_t>(std::in_place_type<call_node>,
                                          std::get<leaf_node>(*get_node(call[0])).value,
                                          get_node(call[1]),
                                          get_source_location_from_compound(call));
 
         log_parse_success(parsed_structure);
-        return parse_result(std::in_place_type<parse_content>,
-                            get_token_stream(call.back()),
-                            std::move(new_node));
+        return parse_result(
+            std::in_place_type<parse_content>, get_token_stream(call.back()), new_node);
     }
 };
 
@@ -829,13 +828,13 @@ struct parameter_pass_parser
         // Drop surrounder and separators
         parameters.reserve((parameter_pass.size() - 2) / 2 + 1);
 
-        std::unique_ptr<ast_node_t> new_node;
+        std::shared_ptr<ast_node_t> new_node;
 
         if (parameter_pass.size() == 3
             && std::holds_alternative<missing_optional_node>(
                 (*get_node(parameter_pass[1]))))
         {
-            new_node = std::make_unique<ast_node_t>(
+            new_node = std::make_shared<ast_node_t>(
                 std::in_place_type<parameter_pass_node>,
                 std::move(parameters),
                 get_source_location_from_compound(parameter_pass));
@@ -852,7 +851,7 @@ struct parameter_pass_parser
             auto source_location = get_source_location_from_compound(parameter_pass);
 
             new_node =
-                std::make_unique<ast_node_t>(std::in_place_type<parameter_pass_node>,
+                std::make_shared<ast_node_t>(std::in_place_type<parameter_pass_node>,
                                              std::move(parameters),
                                              source_location);
         }
@@ -860,7 +859,7 @@ struct parameter_pass_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(parameter_pass.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -898,7 +897,7 @@ struct statement_parser
             get_token_stream(statement[0]) = get_token_stream(statement[1]);
         }
 
-        return std::move(statement[0]);
+        return statement[0];
     }
 };
 
@@ -945,15 +944,15 @@ struct block_parser
 
         auto new_location = get_source_location_from_compound(block);
 
-        std::unique_ptr<ast_node_t>              new_node;
-        std::vector<std::unique_ptr<ast_node_t>> statements;
+        std::shared_ptr<ast_node_t>              new_node;
+        std::vector<std::shared_ptr<ast_node_t>> statements;
         statements.reserve(block.size());
 
         if (block.size() == 3
             && std::holds_alternative<missing_optional_node>((*get_node(block[1]))))
         {
             new_node =
-                std::make_unique<ast_node_t>(std::in_place_type<block_node>,
+                std::make_shared<ast_node_t>(std::in_place_type<block_node>,
                                              std::move(statements),
                                              get_source_location_from_compound(block));
         }
@@ -966,13 +965,13 @@ struct block_parser
                         std::move(get_node(std::forward<decltype(element)>(element))));
                 });
 
-            new_node = std::make_unique<ast_node_t>(
+            new_node = std::make_shared<ast_node_t>(
                 std::in_place_type<block_node>, std::move(statements), new_location);
         }
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(block.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1002,7 +1001,7 @@ struct control_block_parser
             return std::get<parse_error>(control_block.back());
         }
 
-        return std::move(control_block[0]);
+        return control_block[0];
     }
 };
 
@@ -1034,7 +1033,7 @@ struct if_stmt_parser
 
         auto new_location = get_source_location_from_compound(if_stmt);
 
-        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<if_stmt_node>,
+        auto new_node = std::make_shared<ast_node_t>(std::in_place_type<if_stmt_node>,
                                                      get_node(if_stmt[2]),
                                                      get_node(if_stmt[4]),
                                                      new_location);
@@ -1042,7 +1041,7 @@ struct if_stmt_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(if_stmt.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1077,7 +1076,7 @@ struct else_if_stmt_parser
         auto new_location = get_source_location_from_compound(else_if_stmt);
 
         auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<else_if_stmt_node>,
+            std::make_shared<ast_node_t>(std::in_place_type<else_if_stmt_node>,
                                          get_node(else_if_stmt[3]),
                                          get_node(else_if_stmt[5]),
                                          new_location);
@@ -1085,7 +1084,7 @@ struct else_if_stmt_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(else_if_stmt.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1113,13 +1112,13 @@ struct else_stmt_parser
 
         auto new_location = get_source_location_from_compound(else_stmt);
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<else_stmt_node>, get_node(else_stmt[1]), new_location);
 
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(else_stmt.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1186,7 +1185,7 @@ struct for_loop_parser
 
         auto new_location = get_source_location_from_compound(for_loop);
 
-        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<for_loop_node>,
+        auto new_node = std::make_shared<ast_node_t>(std::in_place_type<for_loop_node>,
                                                      get_node(for_loop[2]),
                                                      get_node(for_loop[3]),
                                                      get_node(for_loop[5]),
@@ -1196,7 +1195,7 @@ struct for_loop_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(for_loop.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1229,7 +1228,7 @@ struct while_loop_parser
         auto new_location = get_source_location_from_compound(while_loop);
 
         auto new_node =
-            std::make_unique<ast_node_t>(std::in_place_type<while_loop_node>,
+            std::make_shared<ast_node_t>(std::in_place_type<while_loop_node>,
                                          get_node(while_loop[2]),
                                          get_node(while_loop[4]),
                                          new_location);
@@ -1237,7 +1236,7 @@ struct while_loop_parser
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(while_loop.back()),
-                            std::move(new_node));
+                            new_node);
     }
 };
 
@@ -1289,7 +1288,7 @@ struct switch_parser
         auto            new_ts = get_token_stream(switch_stmt.back());
         source_location new_location;
         source_location body_location;
-        std::vector<std::unique_ptr<ast_node_t>> cases;
+        std::vector<std::shared_ptr<ast_node_t>> cases;
 
         if (std::holds_alternative<missing_optional_node>(*get_node(switch_stmt[5])))
         {
@@ -1313,17 +1312,16 @@ struct switch_parser
         }
 
 
-        auto body = std::make_unique<ast_node_t>(
+        auto body = std::make_shared<ast_node_t>(
             std::in_place_type<block_node>, std::move(cases), body_location);
 
-        auto new_node = std::make_unique<ast_node_t>(std::in_place_type<switch_node>,
+        auto new_node = std::make_shared<ast_node_t>(std::in_place_type<switch_node>,
                                                      get_node(switch_stmt[2]),
                                                      body,
                                                      new_location);
 
         log_parse_success(parsed_structure);
-        return parse_result(
-            std::in_place_type<parse_content>, new_ts, std::move(new_node));
+        return parse_result(std::in_place_type<parse_content>, new_ts, new_node);
     }
 };
 
@@ -1372,7 +1370,7 @@ struct case_parser
         }
 
 
-        std::vector<std::unique_ptr<ast_node_t>> statements;
+        std::vector<std::shared_ptr<ast_node_t>> statements;
         source_location                          new_location;
         source_location                          body_location;
         std::span<token>                         new_ts;
@@ -1402,15 +1400,14 @@ struct case_parser
         }
 
 
-        auto body = std::make_unique<ast_node_t>(
+        auto body = std::make_shared<ast_node_t>(
             std::in_place_type<block_node>, std::move(statements), body_location);
 
-        auto new_node = std::make_unique<ast_node_t>(
+        auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<case_node>, get_node(case_stmt[1]), body, new_location);
 
         log_parse_success(parsed_structure);
-        return parse_result(
-            std::in_place_type<parse_content>, new_ts, std::move(new_node));
+        return parse_result(std::in_place_type<parse_content>, new_ts, new_node);
     }
 };
 
@@ -1418,7 +1415,7 @@ struct case_parser
 //                                 Public API                                 //
 //****************************************************************************//
 
-inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
+inline std::shared_ptr<ast_node_t> parse(std::span<token> ts)
 {
     auto result = program_parser::parse(ts);
 
@@ -1427,5 +1424,5 @@ inline std::unique_ptr<ast_node_t> parse(std::span<token> ts)
         std::get<parse_error>(result).throw_();
     }
 
-    return std::get<1>(std::get<parse_content>(std::move(result)));
+    return std::get<1>(std::get<parse_content>(result));
 }

@@ -21,6 +21,7 @@
 #pragma once
 
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <variant>
 #include <vector>
 
@@ -29,7 +30,6 @@
 #include "common/source_location.hpp"
 #include "frontend/lexer/token.hpp"
 #include "frontend/parser/parse_error.hpp"
-#include <nlohmann/json.hpp>
 #include "token_type.hpp"
 
 struct program_node;
@@ -112,54 +112,54 @@ struct leaf_node final : public ast_node
 
 struct program_node final : public ast_node
 {
-    std::vector<std::unique_ptr<ast_node_t>> globals;
+    std::vector<std::shared_ptr<ast_node_t>> globals;
 
-    program_node(std::vector<std::unique_ptr<ast_node_t>>&& globals,
+    program_node(std::vector<std::shared_ptr<ast_node_t>>&& globals,
                  source_location                            location);
 };
 
 struct binary_op_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> lhs;
-    std::unique_ptr<ast_node_t> rhs;
-    std::unique_ptr<ast_node_t> operator_;
+    std::shared_ptr<ast_node_t> lhs;
+    std::shared_ptr<ast_node_t> rhs;
+    std::shared_ptr<ast_node_t> operator_;
 
-    binary_op_node(std::unique_ptr<ast_node_t>& lhs_,
-                   std::unique_ptr<ast_node_t>& rhs_,
-                   std::unique_ptr<ast_node_t>& operator_,
+    binary_op_node(std::shared_ptr<ast_node_t> lhs_,
+                   std::shared_ptr<ast_node_t> rhs_,
+                   std::shared_ptr<ast_node_t> operator_,
                    source_location              location);
 };
 
 
 struct unary_op_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> operand;
-    std::unique_ptr<ast_node_t> operator_;
+    std::shared_ptr<ast_node_t> operand;
+    std::shared_ptr<ast_node_t> operator_;
 
-    unary_op_node(std::unique_ptr<ast_node_t>& operand,
-                  std::unique_ptr<ast_node_t>& operator_,
+    unary_op_node(std::shared_ptr<ast_node_t> operand,
+                  std::shared_ptr<ast_node_t> operator_,
                   source_location              location);
 };
 
 
 struct func_def_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> signature;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> signature;
+    std::shared_ptr<ast_node_t> body;
 
-    func_def_node(std::unique_ptr<ast_node_t>& signature,
-                  std::unique_ptr<ast_node_t>& body,
+    func_def_node(std::shared_ptr<ast_node_t> signature,
+                  std::shared_ptr<ast_node_t> body,
                   source_location              location);
 };
 
 
 struct procedure_def_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> signature;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> signature;
+    std::shared_ptr<ast_node_t> body;
 
-    procedure_def_node(std::unique_ptr<ast_node_t>& signature,
-                       std::unique_ptr<ast_node_t>& body,
+    procedure_def_node(std::shared_ptr<ast_node_t> signature,
+                       std::shared_ptr<ast_node_t> body,
                        source_location              location);
 };
 
@@ -167,19 +167,19 @@ struct procedure_def_node final : public ast_node
 struct signature_node final : public ast_node
 {
     std::string_view            identifier;
-    std::unique_ptr<ast_node_t> parameter_list;
+    std::shared_ptr<ast_node_t> parameter_list;
 
     signature_node(std::string_view             identifier,
-                   std::unique_ptr<ast_node_t>& parameter_list,
+                   std::shared_ptr<ast_node_t> parameter_list,
                    source_location              location);
 };
 
 
 struct return_stmt_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> value;
+    std::shared_ptr<ast_node_t> value;
 
-    return_stmt_node(std::unique_ptr<ast_node_t>& value, source_location location);
+    return_stmt_node(std::shared_ptr<ast_node_t> value, source_location location);
 };
 
 
@@ -203,10 +203,10 @@ struct var_decl_node final : public ast_node
 struct var_init_node final : public ast_node
 {
     std::string_view            identifier;
-    std::unique_ptr<ast_node_t> value;
+    std::shared_ptr<ast_node_t> value;
 
     var_init_node(std::string_view             identifier,
-                  std::unique_ptr<ast_node_t>& value,
+                  std::shared_ptr<ast_node_t> value,
                   source_location              location);
 };
 
@@ -214,10 +214,10 @@ struct var_init_node final : public ast_node
 struct var_assignment_node final : public ast_node
 {
     std::string_view            identifier;
-    std::unique_ptr<ast_node_t> value;
+    std::shared_ptr<ast_node_t> value;
 
     var_assignment_node(std::string_view             identifier,
-                        std::unique_ptr<ast_node_t>& value,
+                        std::shared_ptr<ast_node_t> value,
                         source_location              location);
 };
 
@@ -225,10 +225,10 @@ struct var_assignment_node final : public ast_node
 struct call_node final : public ast_node
 {
     std::string_view            identifier;
-    std::unique_ptr<ast_node_t> parameter_pass;
+    std::shared_ptr<ast_node_t> parameter_pass;
 
     call_node(std::string_view             identifier,
-              std::unique_ptr<ast_node_t>& parameter_pass,
+              std::shared_ptr<ast_node_t> parameter_pass,
               source_location              location);
 };
 
@@ -244,82 +244,82 @@ struct parameter_pass_node final : public ast_node
 
 struct block_node final : public ast_node
 {
-    std::vector<std::unique_ptr<ast_node_t>> statements;
+    std::vector<std::shared_ptr<ast_node_t>> statements;
 
-    block_node(std::vector<std::unique_ptr<ast_node_t>>&& statements,
+    block_node(std::vector<std::shared_ptr<ast_node_t>>&& statements,
                source_location                            location);
 };
 
 
 struct if_stmt_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> condition;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> condition;
+    std::shared_ptr<ast_node_t> body;
 
-    if_stmt_node(std::unique_ptr<ast_node_t>& condition,
-                 std::unique_ptr<ast_node_t>& body,
+    if_stmt_node(std::shared_ptr<ast_node_t> condition,
+                 std::shared_ptr<ast_node_t> body,
                  source_location              location);
 };
 
 struct else_if_stmt_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> condition;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> condition;
+    std::shared_ptr<ast_node_t> body;
 
-    else_if_stmt_node(std::unique_ptr<ast_node_t>& condition,
-                      std::unique_ptr<ast_node_t>& body,
+    else_if_stmt_node(std::shared_ptr<ast_node_t> condition,
+                      std::shared_ptr<ast_node_t> body,
                       source_location              location);
 };
 
 struct else_stmt_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> body;
 
-    else_stmt_node(std::unique_ptr<ast_node_t>& body, source_location location);
+    else_stmt_node(std::shared_ptr<ast_node_t> body, source_location location);
 };
 
 struct for_loop_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> init_stmt;
-    std::unique_ptr<ast_node_t> test_expression;
-    std::unique_ptr<ast_node_t> update_expression;
+    std::shared_ptr<ast_node_t> init_stmt;
+    std::shared_ptr<ast_node_t> test_expression;
+    std::shared_ptr<ast_node_t> update_expression;
 
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> body;
 
-    for_loop_node(std::unique_ptr<ast_node_t>& init_stmt,
-                  std::unique_ptr<ast_node_t>& test_expression,
-                  std::unique_ptr<ast_node_t>& update_expression,
-                  std::unique_ptr<ast_node_t>& body,
+    for_loop_node(std::shared_ptr<ast_node_t> init_stmt,
+                  std::shared_ptr<ast_node_t> test_expression,
+                  std::shared_ptr<ast_node_t> update_expression,
+                  std::shared_ptr<ast_node_t> body,
                   source_location              location);
 };
 
 struct while_loop_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> condition;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> condition;
+    std::shared_ptr<ast_node_t> body;
 
-    while_loop_node(std::unique_ptr<ast_node_t>& condition,
-                    std::unique_ptr<ast_node_t>& body,
+    while_loop_node(std::shared_ptr<ast_node_t> condition,
+                    std::shared_ptr<ast_node_t> body,
                     source_location              location);
 };
 
 struct switch_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> expression;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> expression;
+    std::shared_ptr<ast_node_t> body;
 
-    switch_node(std::unique_ptr<ast_node_t>& expression,
-                std::unique_ptr<ast_node_t>& body,
+    switch_node(std::shared_ptr<ast_node_t> expression,
+                std::shared_ptr<ast_node_t> body,
                 source_location              location);
 };
 
 struct case_node final : public ast_node
 {
-    std::unique_ptr<ast_node_t> value;
-    std::unique_ptr<ast_node_t> body;
+    std::shared_ptr<ast_node_t> value;
+    std::shared_ptr<ast_node_t> body;
 
-    case_node(std::unique_ptr<ast_node_t>& value,
-              std::unique_ptr<ast_node_t>& body,
+    case_node(std::shared_ptr<ast_node_t> value,
+              std::shared_ptr<ast_node_t> body,
               source_location              location);
 };
 // Needed forawrd declaration
@@ -333,7 +333,7 @@ void to_json(json& j, const leaf_node& node);
 void from_json(const json& j, ast_node_t& node);
 
 template <typename T>
-inline void to_json(json& j, const std::unique_ptr<T>& node)
+inline void to_json(json& j, const std::shared_ptr<T>& node)
 {
     if (node != nullptr)
     {
@@ -348,7 +348,7 @@ inline void to_json(json& j, const std::unique_ptr<T>& node)
 // Needed dummy methods because  NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_UNORDERED also
 // generates json->T conversion functions
 template <typename T>
-void from_json(const json& j, std::unique_ptr<T>& node);
+void from_json(const json& j, std::shared_ptr<T>& node);
 
 // These must be declared after all structs are fully defined, because they are all part
 // of ast_node_t

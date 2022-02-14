@@ -45,65 +45,58 @@ leaf_node::leaf_node(struct token token_) :
     value(token_.value)
 {}
 
-program_node::program_node(std::vector<std::unique_ptr<ast_node_t>>&& globals,
+program_node::program_node(std::vector<std::shared_ptr<ast_node_t>>&& globals,
                            source_location                            location) :
     ast_node(ast_node_type::PROGRAM, location), globals{std::move(globals)}
 {}
 
 
-binary_op_node::binary_op_node(std::unique_ptr<ast_node_t>& lhs_,
-                               std::unique_ptr<ast_node_t>& rhs_,
-                               std::unique_ptr<ast_node_t>& operator_,
-                               source_location              location) :
+binary_op_node::binary_op_node(std::shared_ptr<ast_node_t> lhs_,
+                               std::shared_ptr<ast_node_t> rhs_,
+                               std::shared_ptr<ast_node_t> operator_,
+                               source_location             location) :
     ast_node(ast_node_type::BINARY_OP, location),
-    lhs{std::move(lhs_)},
-    rhs{std::move(rhs_)},
-    operator_{std::move(operator_)}
+    lhs{lhs_},
+    rhs{rhs_},
+    operator_{operator_}
 {}
 
-unary_op_node::unary_op_node(std::unique_ptr<ast_node_t>& operand,
-                             std::unique_ptr<ast_node_t>& operator_,
-                             source_location              location) :
-    ast_node(ast_node_type::UNARY_OP, location),
-    operand{std::move(operand)},
-    operator_{std::move(operator_)}
+unary_op_node::unary_op_node(std::shared_ptr<ast_node_t> operand,
+                             std::shared_ptr<ast_node_t> operator_,
+                             source_location             location) :
+    ast_node(ast_node_type::UNARY_OP, location), operand{operand}, operator_{operator_}
 {}
 
-func_def_node::func_def_node(std::unique_ptr<ast_node_t>& signature,
-                             std::unique_ptr<ast_node_t>& body,
-                             source_location              location) :
-    ast_node(ast_node_type::FUNC_DEF, location),
-    signature{std::move(signature)},
-    body{std::move(body)}
+func_def_node::func_def_node(std::shared_ptr<ast_node_t> signature,
+                             std::shared_ptr<ast_node_t> body,
+                             source_location             location) :
+    ast_node(ast_node_type::FUNC_DEF, location), signature{signature}, body{body}
 {}
 
-procedure_def_node::procedure_def_node(std::unique_ptr<ast_node_t>& signature,
-                                       std::unique_ptr<ast_node_t>& body,
-                                       source_location              location) :
-    ast_node(ast_node_type::PROCEDURE_DEF, location),
-    signature{std::move(signature)},
-    body{std::move(body)}
+procedure_def_node::procedure_def_node(std::shared_ptr<ast_node_t> signature,
+                                       std::shared_ptr<ast_node_t> body,
+                                       source_location             location) :
+    ast_node(ast_node_type::PROCEDURE_DEF, location), signature{signature}, body{body}
 {}
 
-signature_node::signature_node(std::string_view             identifier,
-                               std::unique_ptr<ast_node_t>& parameter_list,
-                               source_location              location) :
+signature_node::signature_node(std::string_view            identifier,
+                               std::shared_ptr<ast_node_t> parameter_list,
+                               source_location             location) :
 
     ast_node(ast_node_type::FUNC_SIGNATURE, location),
     identifier{identifier},
-    parameter_list{std::move(parameter_list)}
+    parameter_list{parameter_list}
 {}
-return_stmt_node::return_stmt_node(std::unique_ptr<ast_node_t>& value,
-                                   source_location              location) :
+return_stmt_node::return_stmt_node(std::shared_ptr<ast_node_t> value,
+                                   source_location             location) :
 
-    ast_node(ast_node_type::RETURN_STMT, location), value{std::move(value)}
+    ast_node(ast_node_type::RETURN_STMT, location), value{value}
 {}
 
 parameter_def_node::parameter_def_node(std::vector<std::string_view>&& parameter_list,
                                        source_location                 location) :
 
-    ast_node(ast_node_type::PARAMETER_DEF, location),
-    parameter_list{std::move(parameter_list)}
+    ast_node(ast_node_type::PARAMETER_DEF, location), parameter_list{parameter_list}
 {}
 
 var_decl_node::var_decl_node(std::string_view identifier, source_location location) :
@@ -111,31 +104,29 @@ var_decl_node::var_decl_node(std::string_view identifier, source_location locati
     ast_node(ast_node_type::VAR_DECL, location), identifier{identifier}
 {}
 
-var_init_node::var_init_node(std::string_view             identifier,
-                             std::unique_ptr<ast_node_t>& value,
-                             source_location              location) :
+var_init_node::var_init_node(std::string_view            identifier,
+                             std::shared_ptr<ast_node_t> value,
+                             source_location             location) :
 
-    ast_node(ast_node_type::VAR_INIT, location),
-    identifier{identifier},
-    value{std::move(value)}
+    ast_node(ast_node_type::VAR_INIT, location), identifier{identifier}, value{value}
 {}
 
-var_assignment_node::var_assignment_node(std::string_view             identifier,
-                                         std::unique_ptr<ast_node_t>& value,
-                                         source_location              location) :
+var_assignment_node::var_assignment_node(std::string_view            identifier,
+                                         std::shared_ptr<ast_node_t> value,
+                                         source_location             location) :
 
     ast_node(ast_node_type::VAR_ASSIGNMENT, location),
     identifier{identifier},
-    value{std::move(value)}
+    value{value}
 {}
 
-call_node::call_node(std::string_view             identifier,
-                     std::unique_ptr<ast_node_t>& parameter_pass,
-                     source_location              location) :
+call_node::call_node(std::string_view            identifier,
+                     std::shared_ptr<ast_node_t> parameter_pass,
+                     source_location             location) :
 
     ast_node(ast_node_type::CALL, location),
     identifier{identifier},
-    parameter_pass{std::move(parameter_pass)}
+    parameter_pass{parameter_pass}
 {}
 
 parameter_pass_node::parameter_pass_node(std::vector<std::string_view>&& parameter_list,
@@ -145,70 +136,60 @@ parameter_pass_node::parameter_pass_node(std::vector<std::string_view>&& paramet
     parameter_list{std::move(parameter_list)}
 {}
 
-block_node::block_node(std::vector<std::unique_ptr<ast_node_t>>&& statements,
+block_node::block_node(std::vector<std::shared_ptr<ast_node_t>>&& statements,
                        source_location                            location) :
 
-    ast_node(ast_node_type::BLOCK, location), statements{std::move(statements)}
+    ast_node(ast_node_type::BLOCK, location), statements{statements}
 {}
 
 
-if_stmt_node::if_stmt_node(std::unique_ptr<ast_node_t>& condition,
-                           std::unique_ptr<ast_node_t>& body,
-                           source_location              location) :
-    ast_node(ast_node_type::IF, location),
-    condition{std::move(condition)},
-    body{std::move(body)}
+if_stmt_node::if_stmt_node(std::shared_ptr<ast_node_t> condition,
+                           std::shared_ptr<ast_node_t> body,
+                           source_location             location) :
+    ast_node(ast_node_type::IF, location), condition{condition}, body{body}
 {}
 
 
-else_if_stmt_node::else_if_stmt_node(std::unique_ptr<ast_node_t>& condition,
-                                     std::unique_ptr<ast_node_t>& body,
-                                     source_location              location) :
-    ast_node(ast_node_type::ELSE_IF, location),
-    condition{std::move(condition)},
-    body{std::move(body)}
+else_if_stmt_node::else_if_stmt_node(std::shared_ptr<ast_node_t> condition,
+                                     std::shared_ptr<ast_node_t> body,
+                                     source_location             location) :
+    ast_node(ast_node_type::ELSE_IF, location), condition{condition}, body{body}
 {}
 
 
-else_stmt_node::else_stmt_node(std::unique_ptr<ast_node_t>& body,
-                               source_location              location) :
-    ast_node(ast_node_type::ELSE, location), body{std::move(body)}
+else_stmt_node::else_stmt_node(std::shared_ptr<ast_node_t> body,
+                               source_location             location) :
+    ast_node(ast_node_type::ELSE, location), body{body}
 {}
 
-for_loop_node::for_loop_node(std::unique_ptr<ast_node_t>& init_stmt,
-                             std::unique_ptr<ast_node_t>& test_expression,
-                             std::unique_ptr<ast_node_t>& update_expression,
-                             std::unique_ptr<ast_node_t>& body,
-                             source_location              location) :
+for_loop_node::for_loop_node(std::shared_ptr<ast_node_t> init_stmt,
+                             std::shared_ptr<ast_node_t> test_expression,
+                             std::shared_ptr<ast_node_t> update_expression,
+                             std::shared_ptr<ast_node_t> body,
+                             source_location             location) :
     ast_node(ast_node_type::FOR, location),
-    init_stmt{std::move(init_stmt)},
-    test_expression{std::move(test_expression)},
-    update_expression{std::move(update_expression)},
-    body{std::move(body)}
+    init_stmt{init_stmt},
+    test_expression{test_expression},
+    update_expression{update_expression},
+    body{body}
 {}
 
-while_loop_node::while_loop_node(std::unique_ptr<ast_node_t>& condition,
-                                 std::unique_ptr<ast_node_t>& body,
-                                 source_location              location) :
-    ast_node(ast_node_type::WHILE, location),
-    condition{std::move(condition)},
-    body{std::move(body)}
+while_loop_node::while_loop_node(std::shared_ptr<ast_node_t> condition,
+                                 std::shared_ptr<ast_node_t> body,
+                                 source_location             location) :
+    ast_node(ast_node_type::WHILE, location), condition{condition}, body{body}
 {}
 
-switch_node::switch_node(std::unique_ptr<ast_node_t>& expression,
-                         std::unique_ptr<ast_node_t>& body,
-                         source_location              location) :
-    ast_node(ast_node_type::SWITCH, location),
-    expression{std::move(expression)},
-    body{std::move(body)}
+switch_node::switch_node(std::shared_ptr<ast_node_t> expression,
+                         std::shared_ptr<ast_node_t> body,
+                         source_location             location) :
+    ast_node(ast_node_type::SWITCH, location), expression{expression}, body{body}
 {}
 
-case_node::case_node(std::unique_ptr<ast_node_t>& value,
-                     std::unique_ptr<ast_node_t>& body,
-                     source_location              location) :
-    ast_node(ast_node_type::CASE, location),
-    value{std::move(value)},
-    body{std::move(body)}
+case_node::case_node(std::shared_ptr<ast_node_t> value,
+                     std::shared_ptr<ast_node_t> body,
+                     source_location             location) :
+    ast_node(ast_node_type::CASE, location), value{value}, body{body}
 {}
 
 missing_optional_node::missing_optional_node(parse_error encountered_error) :

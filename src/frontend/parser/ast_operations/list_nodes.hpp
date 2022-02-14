@@ -31,130 +31,98 @@ struct node_lister_visitor
         results{results_out}
     {}
 
-    void operator()(std::shared_ptr<program_node> node)
+    void operator()(program_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        for (auto& statement : node->globals)
+        for (auto& statement : node.globals)
         {
-            std::visit(node_lister_visitor(results), statement);
+            std::visit(node_lister_visitor(results), *statement);
         }
     }
-    void operator()(std::shared_ptr<binary_op_node> node)
+    void operator()(binary_op_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node->lhs);
-        std::visit(node_lister_visitor(results), node->rhs);
+        std::visit(node_lister_visitor(results), *node.lhs);
+        std::visit(node_lister_visitor(results), *node.rhs);
     }
-    void operator()(std::shared_ptr<unary_op_node> node)
+    void operator()(unary_op_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node->operand);
+        std::visit(node_lister_visitor(results), *node.operand);
     }
-    void operator()(std::shared_ptr<func_def_node> node)
+    void operator()(func_def_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node->signature);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.signature);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<procedure_def_node> node)
+    void operator()(procedure_def_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.signature);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.signature);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<signature_node> node)
+    void operator()(signature_node node) {}
+    void operator()(return_stmt_node node)
     {
-        std::visit(node_lister_visitor(results), node);
+        std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(std::shared_ptr<return_stmt_node> node)
+    void operator()(parameter_def_node node) {}
+    void operator()(var_decl_node node) {}
+    void operator()(var_init_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.value);
+        std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(std::shared_ptr<parameter_def_node> node)
+    void operator()(var_assignment_node node)
     {
-        std::visit(node_lister_visitor(results), node);
+        std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(std::shared_ptr<var_decl_node> node)
+    void operator()(call_node node)
     {
-        std::visit(node_lister_visitor(results), node);
+        std::visit(node_lister_visitor(results), *node.parameter_pass);
     }
-    void operator()(std::shared_ptr<var_init_node> node)
+    void operator()(parameter_pass_node node) {}
+    void operator()(block_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.value);
-    }
-    void operator()(std::shared_ptr<var_assignment_node> node)
-    {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.value);
-    }
-    void operator()(std::shared_ptr<call_node> node)
-    {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.parameter_pass);
-    }
-    void operator()(std::shared_ptr<parameter_pass_node> node)
-    {
-        std::visit(node_lister_visitor(results), node);
-    }
-    void operator()(std::shared_ptr<block_node> node)
-    {
-        std::visit(node_lister_visitor(results), node);
         for (auto& statement : node.statements)
         {
-            std::visit(node_lister_visitor(results), statement);
+            std::visit(node_lister_visitor(results), *statement);
         }
     }
-    void operator()(std::shared_ptr<if_stmt_node> node)
+    void operator()(if_stmt_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.condition);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.condition);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<else_if_stmt_node> node)
+    void operator()(else_if_stmt_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.condition);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.condition);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<else_stmt_node> node)
+    void operator()(else_stmt_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<for_loop_node> node)
+    void operator()(for_loop_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.init_stmt);
-        std::visit(node_lister_visitor(results), node.test_expression);
-        std::visit(node_lister_visitor(results), node.update_expression);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.init_stmt);
+        std::visit(node_lister_visitor(results), *node.test_expression);
+        std::visit(node_lister_visitor(results), *node.update_expression);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<while_loop_node> node)
+    void operator()(while_loop_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.condition);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.condition);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<switch_node> node)
+    void operator()(switch_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.expression);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.expression);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<case_node> node)
+    void operator()(case_node node)
     {
-        std::visit(node_lister_visitor(results), node);
-        std::visit(node_lister_visitor(results), node.value);
-        std::visit(node_lister_visitor(results), node.body);
+        std::visit(node_lister_visitor(results), *node.value);
+        std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(std::shared_ptr<missing_optional_node> node)
+    void operator()(missing_optional_node node)
     {
         ;
     }
-    void operator()(std::shared_ptr<leaf_node> node)
-    {
-        std::visit(node_lister_visitor(results), node);
-    }
+    void operator()(leaf_node node) {}
 };

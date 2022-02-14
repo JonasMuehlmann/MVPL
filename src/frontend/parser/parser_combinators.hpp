@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -38,7 +39,6 @@
 #include "frontend/parser/ast_node.hpp"
 #include "frontend/parser/ast_operations/retrieve_source_location.hpp"
 #include "frontend/parser/util.hpp"
-#include <nlohmann/json.hpp>
 #include "parser.hpp"
 #include "token_type.hpp"
 
@@ -110,7 +110,7 @@ struct optional
         }
         parse_result new_node =
             parse_content{ts,
-                          std::make_unique<ast_node_t>(
+                          std::make_shared<ast_node_t>(
                               std::in_place_type<missing_optional_node>, err)};
 
         results.clear();

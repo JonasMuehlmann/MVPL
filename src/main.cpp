@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
     if (!args["--stage"].isString()
         || STAGES[args["--stage"].asString()] > STAGES["token_stream"])
     {
-        std::unique_ptr<ast_node_t> ast                 = parse(token_stream);
+        std::shared_ptr<ast_node_t> ast                 = parse(token_stream);
         auto                        ast_output_artifact = ast_to_json(*ast);
 
         if (output_artifacts_set.contains("ast"))
