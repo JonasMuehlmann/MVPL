@@ -21,16 +21,37 @@
 #pragma once
 
 #include <memory>
-#include <string>
+#include <string_view>
 #include <vector>
+
+#include "ast_node.hpp"
 
 struct scope_node
 {
-    std::string                              name;
+    std::string_view                         name;
     std::shared_ptr<scope_node>              parent_scope;
     std::vector<std::shared_ptr<scope_node>> child_scopes;
 
-    scope_node(const std::string& name_, std::shared_ptr<scope_node> parent_scope_) :
+    scope_node(std::string_view name_, std::shared_ptr<scope_node> parent_scope_) :
         name{name_}, parent_scope{parent_scope_}, child_scopes{}
     {}
+
+    scope_node() : name{}, parent_scope{}, child_scopes{} {}
+
+    std::shared_ptr<ast_node_t> find_symbol_identifier_in_parents(
+        std::string_view needle)
+    {
+        if (parent_scope == nullptr)
+        {
+            return {};
+        }
+
+        auto result = parent_scope->find_symbol_identifier_in_parents(needle);
+
+        if (result != nullptr)
+        {
+            return result;
+        }
+        return {};
+    }
 };

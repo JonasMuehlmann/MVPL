@@ -37,12 +37,20 @@ bool does_node_declare_symbol(ast_node_t node)
     return std::holds_alternative<var_decl_node>(node)
            || std::holds_alternative<var_init_node>(node)
            || std::holds_alternative<func_def_node>(node)
-           || std::holds_alternative<procedure_def_node>(node);
+           || std::holds_alternative<procedure_def_node>(node)
+           || (std::holds_alternative<for_loop_node>(node)
+               && (std::holds_alternative<var_init_node>(
+                       *std::get<for_loop_node>(node).init_stmt)
+                   || std::holds_alternative<var_init_node>(
+                       *std::get<for_loop_node>(node).init_stmt)));
 }
 
 symbol_table build_symbol_table(ast_node_t ast)
 {
-    scope_node                                     scope_tree("global", nullptr);
+    // TODO: The use of shared_ptr might not be optimal/needed
+    std::shared_ptr<scope_node> scope_tree =
+        std::make_shared<scope_node>("global", nullptr);
+    std::shared_ptr<scope_node>                    cur_scope_node = scope_tree;
     symbol_table                                   symbol_table;
     std::forward_list<std::shared_ptr<ast_node_t>> ast_nodes;
     std::vector<semantic_error_t>                  semantic_errors;
@@ -58,7 +66,10 @@ symbol_table build_symbol_table(ast_node_t ast)
                 std::visit(symbol_identifier_retriever_visitor(), *ast_node);
 
             // TODO: How can we efficiently find the scope of a node?
-            auto scope      = scope_node{};
+            //  We could keep track of the current scope and when processing a leaf
+            //  node, we could add the current scope path to the scope tree
+
+            auto scope      = std::make_shared<scope_node>(symbol_name, cur_scope_node);
             auto identifier = symbol_identifier(symbol_name, scope);
         }
     }
