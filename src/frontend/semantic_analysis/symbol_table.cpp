@@ -29,6 +29,7 @@
 #include "frontend/semantic_analysis/symbol.hpp"
 #include "frontend/semantic_analysis/symbol_identifier.hpp"
 #include "list_nodes.hpp"
+#include "retrieve_source_location.hpp"
 #include "semantic_error.hpp"
 #include "stringify_semantic_error.hpp"
 
@@ -71,6 +72,16 @@ symbol_table build_symbol_table(ast_node_t ast)
 
             auto scope      = std::make_shared<scope_node>(symbol_name, cur_scope_node);
             auto identifier = symbol_identifier(symbol_name, scope);
+
+            if (!symbol_table.contains(identifier))
+            {
+                auto type = get_symbol_type_from_ast_node(ast_node);
+
+                symbol_table[identifier] =
+                    symbol(type,
+                           identifier,
+                           std::visit(source_location_retriever_visitor(), ast_node));
+            }
         }
     }
 

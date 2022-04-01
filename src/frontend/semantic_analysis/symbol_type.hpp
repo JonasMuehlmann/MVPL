@@ -20,6 +20,10 @@
 
 #pragma once
 
+#include <variant>
+
+#include "ast_node.hpp"
+
 enum class symbol_type
 {
     PROCEDURE,
@@ -27,3 +31,22 @@ enum class symbol_type
     MAIN_FUNCTION,
     VARIABLE
 };
+
+symbol_type get_symbol_type_from_ast_node(ast_node_t& node)
+{
+    if (std::holds_alternative<procedure_def_node>(node))
+    {}
+
+    else if (std::holds_alternative<func_def_node>(node))
+    {}
+
+    else if (std::holds_alternative<func_def_node>(node)
+             && std::get<signature_node>(std::get<func_def_node>(node).signature)
+                        .identifier
+                    == "main")
+    {}
+
+    else if (std::holds_alternative<var_decl_node>(node)
+             || std::holds_alternative<var_init_node>(node))
+    {}
+}
