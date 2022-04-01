@@ -292,3 +292,8 @@ into an *absract syntax tree* (AST) like this:
 - [ ] [Struct support](https://github.com/JonasMuehlmann/MVPL/milestone/5)
 - [ ] [Array support](https://github.com/JonasMuehlmann/MVPL/milestone/6)
 - [ ] [Functional Optimizer](https://github.com/JonasMuehlmann/MVPL/milestone/4)
+
+## License
+Copyright (C) 2021-2022 [Jonas Muehlmann](https://github.com/JonasMuehlmann)
+ 
+The project is licensed under the terms of the MIT license, you can view it [here](LICENSE.md).
