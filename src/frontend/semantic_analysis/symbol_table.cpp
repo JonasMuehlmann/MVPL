@@ -40,8 +40,7 @@ bool does_node_declare_symbol(ast_node_t node)
            || std::holds_alternative<func_def_node>(node)
            || std::holds_alternative<procedure_def_node>(node)
            || (std::holds_alternative<for_loop_node>(node)
-               && (std::holds_alternative<var_init_node>(
-                       *std::get<for_loop_node>(node).init_stmt)
+               && (std::holds_alternative<var_init_node>(*std::get<for_loop_node>(node).init_stmt)
                    || std::holds_alternative<var_init_node>(
                        *std::get<for_loop_node>(node).init_stmt)));
 }
@@ -49,12 +48,11 @@ bool does_node_declare_symbol(ast_node_t node)
 symbol_table build_symbol_table(ast_node_t ast)
 {
     // TODO: The use of shared_ptr might not be optimal/needed
-    std::shared_ptr<scope_node> scope_tree =
-        std::make_shared<scope_node>("global", nullptr);
-    std::shared_ptr<scope_node>                    cur_scope_node = scope_tree;
-    symbol_table                                   symbol_table;
-    std::forward_list<std::shared_ptr<ast_node_t>> ast_nodes;
-    std::vector<semantic_error_t>                  semantic_errors;
+    std::shared_ptr<scope_node>   scope_tree     = std::make_shared<scope_node>("global", nullptr);
+    std::shared_ptr<scope_node>   cur_scope_node = scope_tree;
+    symbol_table                  symbol_table;
+    std::forward_list<ast_node_t> ast_nodes;
+    std::vector<semantic_error_t> semantic_errors;
 
 
     std::visit(node_lister_visitor(ast_nodes), ast);
@@ -63,8 +61,7 @@ symbol_table build_symbol_table(ast_node_t ast)
     {
         if (does_node_declare_symbol(*ast_node))
         {
-            auto symbol_name =
-                std::visit(symbol_identifier_retriever_visitor(), *ast_node);
+            auto symbol_name = std::visit(symbol_identifier_retriever_visitor(), *ast_node);
 
             // TODO: How can we efficiently find the scope of a node?
             //  We could keep track of the current scope and when processing a leaf
@@ -77,10 +74,8 @@ symbol_table build_symbol_table(ast_node_t ast)
             {
                 auto type = get_symbol_type_from_ast_node(ast_node);
 
-                symbol_table[identifier] =
-                    symbol(type,
-                           identifier,
-                           std::visit(source_location_retriever_visitor(), ast_node));
+                symbol_table[identifier] = symbol(
+                    type, identifier, std::visit(source_location_retriever_visitor(), ast_node));
             }
         }
     }
@@ -94,8 +89,7 @@ void throw_semantic_analysis_error(const std::vector<semantic_error_t>& errors)
 
     for (auto& error : errors)
     {
-        error_message +=
-            std::visit(semantic_error_stringifier_visitor(), error) + "\n\n";
+        error_message += std::visit(semantic_error_stringifier_visitor(), error) + "\n\n";
     }
 
     throw std::runtime_error(error_message);

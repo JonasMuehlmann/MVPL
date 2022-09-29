@@ -38,12 +38,11 @@ struct scope_node
 
     scope_node() : name{}, parent_scope{}, child_scopes{} {}
 
-    std::shared_ptr<scope_node> find_symbol_identifier_in_parents(
-        std::string_view needle)
+    std::shared_ptr<scope_node> find_symbol_identifier_in_parents(std::string_view needle)
     {
         if (name == needle)
         {
-            return std::make_shared<scope_node>(this);
+            return std::make_shared<scope_node>(*this);
         }
 
         if (parent_scope == nullptr)

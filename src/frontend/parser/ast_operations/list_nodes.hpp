@@ -24,105 +24,154 @@
 
 struct node_lister_visitor
 {
-    std::forward_list<std::shared_ptr<ast_node_t>>& results;
+    std::forward_list<ast_node_t>& results;
 
-    explicit node_lister_visitor(
-        std::forward_list<std::shared_ptr<ast_node_t>>& results_out) :
-        results{results_out}
+    explicit node_lister_visitor(std::forward_list<ast_node_t>& results_out) : results{results_out}
     {}
 
-    void operator()(program_node node)
+    void operator()(program_node& node)
     {
-        for (auto& statement : node.globals)
+        results.push_front({node});
+
+        for (const auto& statement : node.globals)
         {
             std::visit(node_lister_visitor(results), *statement);
         }
     }
-    void operator()(binary_op_node node)
+    void operator()(binary_op_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.lhs);
         std::visit(node_lister_visitor(results), *node.rhs);
     }
-    void operator()(unary_op_node node)
+    void operator()(unary_op_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.operand);
     }
-    void operator()(func_def_node node)
+    void operator()(func_def_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.signature);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(procedure_def_node node)
+    void operator()(procedure_def_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.signature);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(signature_node node) {}
-    void operator()(return_stmt_node node)
+    void operator()(signature_node& node)
     {
+        results.push_front({node});
+
+        std::visit(node_lister_visitor(results), *node.parameter_list);
+    }
+    void operator()(return_stmt_node& node)
+    {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(parameter_def_node node) {}
-    void operator()(var_decl_node node) {}
-    void operator()(var_init_node node)
+    void operator()(parameter_def_node& node)
     {
+        results.push_front({node});
+    }
+    void operator()(var_decl_node& node)
+    {
+        results.push_front({node});
+    }
+    void operator()(var_init_node& node)
+    {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(var_assignment_node node)
+    void operator()(var_assignment_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.value);
     }
-    void operator()(call_node node)
+    void operator()(call_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.parameter_pass);
     }
-    void operator()(parameter_pass_node node) {}
-    void operator()(block_node node)
+    void operator()(parameter_pass_node& node)
     {
-        for (auto& statement : node.statements)
+        results.push_front({node});
+    }
+    void operator()(block_node& node)
+    {
+        results.push_front({node});
+
+        for (const auto& statement : node.statements)
         {
             std::visit(node_lister_visitor(results), *statement);
         }
     }
-    void operator()(if_stmt_node node)
+    void operator()(if_stmt_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.condition);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(else_if_stmt_node node)
+    void operator()(else_if_stmt_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.condition);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(else_stmt_node node)
+    void operator()(else_stmt_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(for_loop_node node)
+    void operator()(for_loop_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.init_stmt);
         std::visit(node_lister_visitor(results), *node.test_expression);
         std::visit(node_lister_visitor(results), *node.update_expression);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(while_loop_node node)
+    void operator()(while_loop_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.condition);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(switch_node node)
+    void operator()(switch_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.expression);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(case_node node)
+    void operator()(case_node& node)
     {
+        results.push_front({node});
+
         std::visit(node_lister_visitor(results), *node.value);
         std::visit(node_lister_visitor(results), *node.body);
     }
-    void operator()(missing_optional_node node)
+    void operator()(missing_optional_node& node)
     {
-        ;
+        results.push_front({node});
     }
-    void operator()(leaf_node node) {}
+    void operator()(leaf_node& node)
+    {
+        results.push_front({node});
+    }
 };
