@@ -35,18 +35,27 @@ enum class symbol_type
 symbol_type get_symbol_type_from_ast_node(ast_node_t& node)
 {
     if (std::holds_alternative<procedure_def_node>(node))
-    {}
+    {
+        return symbol_type::PROCEDURE;
+    }
 
     else if (std::holds_alternative<func_def_node>(node))
-    {}
+    {
+        return symbol_type::FUNCTION;
+    }
 
     else if (std::holds_alternative<func_def_node>(node)
-             && std::get<signature_node>(std::get<func_def_node>(node).signature)
-                        .identifier
+             && std::get<signature_node>(*std::get<func_def_node>(node).signature).identifier
                     == "main")
-    {}
+    {
+        return symbol_type::MAIN_FUNCTION;
+    }
 
     else if (std::holds_alternative<var_decl_node>(node)
              || std::holds_alternative<var_init_node>(node))
-    {}
+    {
+        return symbol_type::VARIABLE;
+    }
+
+    throw std::runtime_error("ast node does not declare a symbol");
 }
