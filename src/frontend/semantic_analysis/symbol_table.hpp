@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include "ast_node.hpp"
 #include "frontend/semantic_analysis/symbol.hpp"
@@ -29,7 +29,7 @@
 #include "semantic_error.hpp"
 // The key here should probably be a fully qualified identifier (including all enclosing
 // scopes
-using symbol_table = std::map<symbol_identifier, symbol>;
+using symbol_table = std::unordered_map<symbol_identifier, symbol, hash_fn>;
 
 bool         does_node_declare_symbol(ast_node_t node);
 symbol_table build_symbol_table(ast_node_t ast);

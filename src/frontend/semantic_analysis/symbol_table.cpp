@@ -59,9 +59,9 @@ symbol_table build_symbol_table(ast_node_t ast)
 
     for (auto& ast_node : ast_nodes)
     {
-        if (does_node_declare_symbol(*ast_node))
+        if (does_node_declare_symbol(ast_node))
         {
-            auto symbol_name = std::visit(symbol_identifier_retriever_visitor(), *ast_node);
+            auto symbol_name = std::visit(symbol_identifier_retriever_visitor(), ast_node);
 
             // TODO: How can we efficiently find the scope of a node?
             //  We could keep track of the current scope and when processing a leaf
@@ -73,9 +73,14 @@ symbol_table build_symbol_table(ast_node_t ast)
             if (!symbol_table.contains(identifier))
             {
                 auto type = get_symbol_type_from_ast_node(ast_node);
+                // FIX: Properly calculate this
+                std::size_t scope_index_of_definition = 0;
 
-                symbol_table[identifier] = symbol(
-                    type, identifier, std::visit(source_location_retriever_visitor(), ast_node));
+                symbol_table[identifier] =
+                    symbol(type,
+                           scope_index_of_definition,
+                           identifier,
+                           std::visit(source_location_retriever_visitor(), ast_node));
             }
         }
     }
