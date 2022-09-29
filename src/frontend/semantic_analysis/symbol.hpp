@@ -44,4 +44,6 @@ struct symbol
         identifier{identifier},
         source_location(source_location)
     {}
+    // Needed for assignemnt operator of map
+    symbol() : type{}, scope_index_of_defintion{}, identifier{}, source_location() {}
 };

@@ -18,30 +18,48 @@
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#include "symbol_identifier.hpp"
 
+#include <functional>
 #include <memory>
+#include <ranges>
 #include <string_view>
 
 #include "scope_node.hpp"
 
-struct symbol_identifier
+
+std::string_view symbol_identifier::make_fully_qualified_name() const
 {
-    std::string_view            name;
-    std::shared_ptr<scope_node> enclosing_scope;
+    std::stringstream ss;
 
-    symbol_identifier(std::string_view name, std::shared_ptr<scope_node> enclosing_scope) :
-        name{name}, enclosing_scope{enclosing_scope}
-    {}
-    symbol_identifier() = default;
-    std::string_view make_fully_qualified_name() const;
-    bool             operator==(const symbol_identifier& other) const;
+    this->add_parent_scope_name(ss, this->enclosing_scope.get());
+    ss << this->name;
 
- private:
-    void add_parent_scope_name(std::stringstream& name, scope_node* parent_scope) const;
-};
+    return ss.view();
+}
 
-struct hash_fn
+// TODO: This should probably be moved into the scope_node type
+
+// TODO: We should do more elaborate mangling in order to differentiate between e.g.
+// equal variable declarations in two for loops in the same scope
+void symbol_identifier::add_parent_scope_name(std::stringstream& name_,
+                                              scope_node*        parent_scope) const
 {
-    std::size_t operator()(const symbol_identifier& s) const;
-};
+    if (parent_scope == nullptr)
+    {
+        return;
+    }
+
+    this->add_parent_scope_name(name_, parent_scope->parent_scope.get());
+    name_ << parent_scope->name << "::";
+}
+
+bool symbol_identifier::operator==(const symbol_identifier& other) const
+{
+    return this->make_fully_qualified_name() == other.make_fully_qualified_name();
+}
+
+std::size_t hash_fn::operator()(const symbol_identifier& s) const
+{
+    return std::hash<std::string_view>()(s.make_fully_qualified_name());
+}
