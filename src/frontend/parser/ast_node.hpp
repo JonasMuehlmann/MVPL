@@ -108,15 +108,10 @@ struct leaf_node final : public ast_node
 
     leaf_node(token_type token, std::string_view value, source_location location);
     explicit leaf_node(struct token token_);
+
+    ~leaf_node();
 };
 
-struct program_node final : public ast_node
-{
-    std::vector<std::shared_ptr<ast_node_t>> globals;
-
-    program_node(std::vector<std::shared_ptr<ast_node_t>>&& globals,
-                 source_location                            location);
-};
 
 struct binary_op_node final : public ast_node
 {
@@ -127,7 +122,8 @@ struct binary_op_node final : public ast_node
     binary_op_node(std::shared_ptr<ast_node_t> lhs_,
                    std::shared_ptr<ast_node_t> rhs_,
                    std::shared_ptr<ast_node_t> operator_,
-                   source_location              location);
+                   source_location             location);
+    ~binary_op_node();
 };
 
 
@@ -138,7 +134,8 @@ struct unary_op_node final : public ast_node
 
     unary_op_node(std::shared_ptr<ast_node_t> operand,
                   std::shared_ptr<ast_node_t> operator_,
-                  source_location              location);
+                  source_location             location);
+    ~unary_op_node();
 };
 
 
@@ -149,7 +146,8 @@ struct func_def_node final : public ast_node
 
     func_def_node(std::shared_ptr<ast_node_t> signature,
                   std::shared_ptr<ast_node_t> body,
-                  source_location              location);
+                  source_location             location);
+    ~func_def_node();
 };
 
 
@@ -160,7 +158,8 @@ struct procedure_def_node final : public ast_node
 
     procedure_def_node(std::shared_ptr<ast_node_t> signature,
                        std::shared_ptr<ast_node_t> body,
-                       source_location              location);
+                       source_location             location);
+    ~procedure_def_node();
 };
 
 
@@ -169,9 +168,10 @@ struct signature_node final : public ast_node
     std::string_view            identifier;
     std::shared_ptr<ast_node_t> parameter_list;
 
-    signature_node(std::string_view             identifier,
+    signature_node(std::string_view            identifier,
                    std::shared_ptr<ast_node_t> parameter_list,
-                   source_location              location);
+                   source_location             location);
+    ~signature_node();
 };
 
 
@@ -180,6 +180,7 @@ struct return_stmt_node final : public ast_node
     std::shared_ptr<ast_node_t> value;
 
     return_stmt_node(std::shared_ptr<ast_node_t> value, source_location location);
+    ~return_stmt_node();
 };
 
 
@@ -189,6 +190,7 @@ struct parameter_def_node final : public ast_node
 
     parameter_def_node(std::vector<std::string_view>&& parameter_list,
                        source_location                 location);
+    ~parameter_def_node();
 };
 
 
@@ -197,6 +199,7 @@ struct var_decl_node final : public ast_node
     std::string_view identifier;
 
     var_decl_node(std::string_view identifier, source_location location);
+    ~var_decl_node();
 };
 
 
@@ -205,9 +208,10 @@ struct var_init_node final : public ast_node
     std::string_view            identifier;
     std::shared_ptr<ast_node_t> value;
 
-    var_init_node(std::string_view             identifier,
+    var_init_node(std::string_view            identifier,
                   std::shared_ptr<ast_node_t> value,
-                  source_location              location);
+                  source_location             location);
+    ~var_init_node();
 };
 
 
@@ -216,9 +220,10 @@ struct var_assignment_node final : public ast_node
     std::string_view            identifier;
     std::shared_ptr<ast_node_t> value;
 
-    var_assignment_node(std::string_view             identifier,
+    var_assignment_node(std::string_view            identifier,
                         std::shared_ptr<ast_node_t> value,
-                        source_location              location);
+                        source_location             location);
+    ~var_assignment_node();
 };
 
 
@@ -227,9 +232,10 @@ struct call_node final : public ast_node
     std::string_view            identifier;
     std::shared_ptr<ast_node_t> parameter_pass;
 
-    call_node(std::string_view             identifier,
+    call_node(std::string_view            identifier,
               std::shared_ptr<ast_node_t> parameter_pass,
-              source_location              location);
+              source_location             location);
+    ~call_node();
 };
 
 
@@ -239,17 +245,8 @@ struct parameter_pass_node final : public ast_node
 
     parameter_pass_node(std::vector<std::string_view>&& parameter_list,
                         source_location                 location);
+    ~parameter_pass_node();
 };
-
-
-struct block_node final : public ast_node
-{
-    std::vector<std::shared_ptr<ast_node_t>> statements;
-
-    block_node(std::vector<std::shared_ptr<ast_node_t>>&& statements,
-               source_location                            location);
-};
-
 
 struct if_stmt_node final : public ast_node
 {
@@ -258,7 +255,8 @@ struct if_stmt_node final : public ast_node
 
     if_stmt_node(std::shared_ptr<ast_node_t> condition,
                  std::shared_ptr<ast_node_t> body,
-                 source_location              location);
+                 source_location             location);
+    ~if_stmt_node();
 };
 
 struct else_if_stmt_node final : public ast_node
@@ -268,7 +266,8 @@ struct else_if_stmt_node final : public ast_node
 
     else_if_stmt_node(std::shared_ptr<ast_node_t> condition,
                       std::shared_ptr<ast_node_t> body,
-                      source_location              location);
+                      source_location             location);
+    ~else_if_stmt_node();
 };
 
 struct else_stmt_node final : public ast_node
@@ -276,6 +275,7 @@ struct else_stmt_node final : public ast_node
     std::shared_ptr<ast_node_t> body;
 
     else_stmt_node(std::shared_ptr<ast_node_t> body, source_location location);
+    ~else_stmt_node();
 };
 
 struct for_loop_node final : public ast_node
@@ -290,7 +290,8 @@ struct for_loop_node final : public ast_node
                   std::shared_ptr<ast_node_t> test_expression,
                   std::shared_ptr<ast_node_t> update_expression,
                   std::shared_ptr<ast_node_t> body,
-                  source_location              location);
+                  source_location             location);
+    ~for_loop_node();
 };
 
 struct while_loop_node final : public ast_node
@@ -300,7 +301,8 @@ struct while_loop_node final : public ast_node
 
     while_loop_node(std::shared_ptr<ast_node_t> condition,
                     std::shared_ptr<ast_node_t> body,
-                    source_location              location);
+                    source_location             location);
+    ~while_loop_node();
 };
 
 struct switch_node final : public ast_node
@@ -310,7 +312,8 @@ struct switch_node final : public ast_node
 
     switch_node(std::shared_ptr<ast_node_t> expression,
                 std::shared_ptr<ast_node_t> body,
-                source_location              location);
+                source_location             location);
+    ~switch_node();
 };
 
 struct case_node final : public ast_node
@@ -320,8 +323,30 @@ struct case_node final : public ast_node
 
     case_node(std::shared_ptr<ast_node_t> value,
               std::shared_ptr<ast_node_t> body,
-              source_location              location);
+              source_location             location);
+    ~case_node();
 };
+
+
+struct program_node final : public ast_node
+{
+    std::vector<std::shared_ptr<ast_node_t>> globals;
+
+    program_node(std::vector<std::shared_ptr<ast_node_t>>&& globals,
+                 source_location                            location);
+    ~program_node();
+};
+
+struct block_node final : public ast_node
+{
+    std::vector<std::shared_ptr<ast_node_t>> statements;
+
+    block_node(std::vector<std::shared_ptr<ast_node_t>>&& statements,
+               source_location                            location);
+    ~block_node();
+};
+
+
 // Needed forawrd declaration
 void to_json(json& j, const ast_node_t& node);
 
