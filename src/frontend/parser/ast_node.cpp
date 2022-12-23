@@ -28,6 +28,87 @@
 #include "source_location.hpp"
 #include "util.hpp"
 
+
+dummy_iterator::reference dummy_iterator::operator*() const
+{
+    return *m_ptr;
+}
+
+dummy_iterator::pointer dummy_iterator::operator->()
+{
+    return m_ptr;
+}
+
+dummy_iterator& dummy_iterator::operator++()
+{
+    return *this;
+}
+
+dummy_iterator dummy_iterator::operator++(int)
+{
+    return *this;
+}
+
+dummy_iterator& dummy_iterator::operator--()
+{
+    return *this;
+}
+
+dummy_iterator dummy_iterator::operator--(int)
+{
+    return *this;
+}
+
+dummy_iterator::difference_type dummy_iterator::operator-(dummy_iterator rhs)
+{
+    return this->m_ptr - rhs.m_ptr;
+}
+
+// dummy_iterator::difference_type dummy_iterator::operator+(dummy_iterator rhs)
+// {
+//     return this->m_ptr + rhs.m_ptr;
+// }
+
+dummy_iterator dummy_iterator::operator+(std::size_t n)
+{
+    return *this;
+}
+
+dummy_iterator dummy_iterator::operator-(std::size_t n)
+{
+    return *this;
+}
+
+dummy_iterator& dummy_iterator::operator+=(std::size_t n)
+{
+    return *this;
+}
+
+dummy_iterator& dummy_iterator::operator-=(std::size_t n)
+{
+    return *this;
+}
+
+bool operator==(const dummy_iterator& a, const dummy_iterator& b)
+{
+    return a.m_ptr == b.m_ptr;
+};
+
+bool operator!=(const dummy_iterator& a, const dummy_iterator& b)
+{
+    return a.m_ptr != b.m_ptr;
+};
+
+dummy_iterator dummy_iterator::begin() const
+{
+    return dummy_iterator();
+}
+dummy_iterator dummy_iterator::end() const
+{
+    return dummy_iterator();
+}
+
+
 ast_node::ast_node(const ast_node_type type, source_location location) :
     type{type}, source_location_{location}
 {}
@@ -36,11 +117,24 @@ ast_node::ast_node(const ast_node_type type, source_location location) :
 leaf_node::~leaf_node() = default;
 leaf_node::leaf_node(token_type token, std::string_view value, source_location location) :
     ast_node(ast_node_type::LEAF, location), token(token), value(value)
-{}
+{
+    // TODO: Set childrens parent to self, but implement iterators first
+}
+
+dummy_iterator ast_node::begin() const
+{
+    return dummy_iterator().begin();
+}
+
+dummy_iterator ast_node::end() const
+{
+    return dummy_iterator().end();
+}
 
 leaf_node::leaf_node(struct token token_) :
     ast_node(ast_node_type::LEAF, token_.source_location_), token(token_.type), value(token_.value)
 {}
+
 
 program_node::~program_node() = default;
 program_node::program_node(std::vector<std::shared_ptr<ast_node_t>>&& globals,
@@ -56,6 +150,16 @@ binary_op_node::binary_op_node(std::shared_ptr<ast_node_t> lhs_,
                                source_location             location) :
     ast_node(ast_node_type::BINARY_OP, location), lhs{lhs_}, rhs{rhs_}, operator_{operator_}
 {}
+
+binary_op_node::iterator binary_op_node::begin() const
+{
+    return data.begin();
+}
+
+binary_op_node::iterator binary_op_node::end() const
+{
+    return data.end();
+}
 
 unary_op_node::~unary_op_node() = default;
 unary_op_node::unary_op_node(std::shared_ptr<ast_node_t> operand,
@@ -203,3 +307,13 @@ case_node::case_node(std::shared_ptr<ast_node_t> value,
 missing_optional_node::missing_optional_node(parse_error encountered_error) :
     encountered_error(encountered_error)
 {}
+
+dummy_iterator missing_optional_node::begin() const
+{
+    return dummy_iterator().begin();
+}
+
+dummy_iterator missing_optional_node::end() const
+{
+    return dummy_iterator().end();
+}

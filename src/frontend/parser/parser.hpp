@@ -189,6 +189,10 @@ struct program_parser
         auto new_node = std::make_shared<ast_node_t>(
             std::in_place_type<program_node>, std::move(globals), new_location);
 
+        std::ranges::for_each(std::get<program_node>(*new_node).globals, [&new_node](auto& element) {
+            std::visit(parent_adder_visitor(new_node), element);
+        });
+
         log_parse_success(parsed_structure);
         return parse_result(std::in_place_type<parse_content>,
                             get_token_stream(program.back()),
@@ -260,6 +264,12 @@ parse_result binary_op_parser::parse(std::span<token> ts,
                                      get_node(bin_op[1]),
                                      get_node(bin_op[0]),
                                      get_source_location_from_compound(bin_op));
+
+
+        std::ranges::for_each(std::array{get_node(lhs), get_node(bin_op[1]), get_node(bin_op[0])}, [&new_node](auto& element) {
+            std::visit(parent_adder_visitor(new_node), element);
+        });
+
 
 
     log_parse_success(parsed_structure);
@@ -349,6 +359,10 @@ parse_result expression_parser::parse(std::span<token> ts,
             lhs.back() = std::move(bin_op);
         }
     }
+
+        std::ranges::for_each(std::array{get_node(lhs), get_node(bin_op[1]), get_node(bin_op[0])}, [&new_node](auto& element) {
+            std::visit(parent_adder_visitor(new_node), element);
+        });
 
     log_parse_success(parsed_structure);
     return parse_result(std::in_place_type<parse_content>,

@@ -47,7 +47,6 @@ bool does_node_declare_symbol(ast_node_t node)
 
 symbol_table build_symbol_table(ast_node_t ast)
 {
-    // TODO: The use of shared_ptr might not be optimal/needed
     std::shared_ptr<scope_node>   scope_tree     = std::make_shared<scope_node>("global", nullptr);
     std::shared_ptr<scope_node>   cur_scope_node = scope_tree;
     symbol_table                  symbol_table;
@@ -67,6 +66,7 @@ symbol_table build_symbol_table(ast_node_t ast)
             //  We could keep track of the current scope and when processing a leaf
             //  node, we could add the current scope path to the scope tree
 
+            // TODO: We should add a parent pointer to all ast nodes
             auto scope      = std::make_shared<scope_node>(symbol_name, cur_scope_node);
             auto identifier = symbol_identifier(symbol_name, scope);
 

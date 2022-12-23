@@ -61,6 +61,7 @@ set(SOURCE_FILES
     frontend/parser/ast_operations/list_nodes.hpp
     frontend/parser/ast_operations/find_node.hpp
     frontend/parser/ast_operations/stringify_semantic_error.hpp
+    frontend/parser/ast_operations/add_parent.hpp
 
 
 
