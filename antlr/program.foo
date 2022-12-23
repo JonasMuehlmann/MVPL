@@ -1,0 +1,113 @@
+package foo;
+
+import foo;
+
+import [
+    bar;
+    bar.baz;
+    bar.foo2.*;
+]
+
+comptime ShallDoFoo: bool = true;
+
+namespace imp {
+    var x: int = 5;
+    var y: int = x + 1;
+
+    mut z: int;
+
+    namespace foo {
+        trait baz {
+            fn bazFunc(x: int) int;
+            fn bazFunc2(x: int) int;
+        }
+
+        class a {
+            mut [
+                x: int;
+            ]
+
+            @ctor [](x: float, y: float) Self {this.x = x + y;}
+
+            @ctor [
+                [](x: int, y: int) Self;
+                [](x: int) Self;
+            ]
+
+            @dtor []() void {return;}
+
+            @public fn myFunc [
+                []() int {return 0;}
+                [](int: x) int {return x;}
+                [](int: x, int: y) int {return x + y;}
+            ]
+
+            @private fn myOtherFunc(x: int) int {return x;}
+
+            impl baz {
+                fn bazFunc(x: int) int {return x;}
+                fn bazFunc2(x: int) int {return x;}
+            }
+        }
+    }
+
+    namespace bar {
+        enum states {
+            BROKEN,
+            RUNNING,
+            RUNNING = 5
+        }
+        choice results {
+            GOOD{parsed_objects: int},
+            BAD{err_index: int}
+        }
+    }
+}
+
+fn foo() (int, int, float) {
+fn main(argc: int, argv: stringarr) int {
+    var [x,y,z] = foo();
+    var mask: int = 0b00010001;
+    var mask2: int = 0xF0;
+
+    with (mut pointer: int = 1 << 7;)
+    while (pointer > 0 do pointer >>= 1;) {
+        var res: int = f(pointer) else 1;
+        defer clear_nth_resource(res);
+
+        switch (res) {
+        case 1:
+            print("Foo");
+        case 2:
+            print("Bar");
+        case 3:
+            print("Baz");
+        }
+
+        var resource: Thing = try get_nth_resource(res) elsedo return fooError();
+
+        mut x: int = 10 if resource.foo > 10 else resource.foo;
+
+        try resource.accept([x](resource: Thing) int {print(resource.bar + x);});
+
+        for (x in resources[0:1e10]) {
+            if (x % 2 == 0) {
+                continue;
+            } elif (x > 1e100) {
+                break;
+            }
+        }
+    }
+
+    repeat {
+        print(get_progress());
+    }
+
+    with (var foo: Bar = getFoo();)
+    repeat {
+        print($"Current foo value: {foo.value}");
+    }
+    while (foo.invariant());
+
+    return 0;
+}

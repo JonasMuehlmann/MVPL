@@ -1,0 +1,3 @@
+/home/jonas/CLionProjects/MVPL/antlr/build/CMakeFiles/antlr.dir
+/home/jonas/CLionProjects/MVPL/antlr/build/CMakeFiles/edit_cache.dir
+/home/jonas/CLionProjects/MVPL/antlr/build/CMakeFiles/rebuild_cache.dir
